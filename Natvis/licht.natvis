@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <!-- AlignedStorage -->
+    <Type Name="Wl::AlignedStorage&lt;*&gt;::type">
+        <DisplayString>{*($T1*)storage}</DisplayString>
+        <Expand>
+            <Item Name="value">*($T1*)storage</Item>
+        </Expand>
+    </Type>
+
+    <!-- BufferedSlot -->
+    <Type Name="Wl::BufferedSlot&lt;*,*&gt;">
+        <DisplayString Condition="state == 0">
+            [{*($T1*)key.storage}] = {*($T2*)value.storage}
+        </DisplayString>
+        <DisplayString Condition="state == 1">[EMPTY]</DisplayString>
+        <DisplayString Condition="state == 2">[REMOVED]</DisplayString>
+
+        <Expand>
+            <Item Name="state">state</Item>
+            <Item Name="key" Condition="state == 0">*($T1*)key.storage</Item>
+            <Item Name="value" Condition="state == 0">*($T2*)value.storage</Item>
+        </Expand>
+    </Type>
+
+    <!-- HashMap -->
+    <Type Name="Wl::HashMap&lt;*,*,*,*&gt;">
+        <DisplayString>{{ size={size_} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]">size_</Item>
+            <CustomListItems MaxItemsPerView="5000" ExcludeView="Test">
+                <Variable Name="i" InitialValue="0" />
+                <Variable Name="count" InitialValue="0" />
+                <Loop>
+                    <Break Condition="i &gt;= (int)slots_.size_" />
+                    <If Condition="slots_.data_[i].state == 0">
+                        <Item Name="[{*($T1*)slots_.data_[i].key.storage}]">
+                            *($T2*)slots_.data_[i].value.storage
+                        </Item>
+                        <Exec>count++</Exec>
+                    </If>
+                    <Exec>i++</Exec>
+                </Loop>
+            </CustomListItems>
+        </Expand>
+    </Type>
+
+    <!-- Array -->
+    <Type Name="Wl::Array&lt;*,*&gt;">
+        <DisplayString>{{ size={size_} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]" ExcludeView="simple">size_</Item>
+            <ArrayItems>
+                <Size>size_</Size>
+                <ValuePointer>data_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <!-- ArrayView -->
+    <Type Name="Wl::ArrayView&lt;*&gt;">
+        <DisplayString>{{ size={size_} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]" ExcludeView="simple">size_</Item>
+            <ArrayItems>
+                <Size>size_</Size>
+                <ValuePointer>data_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <!-- String -->
+    <!-- UTF-8 -->
+    <Type Name="Wl::StringBase&lt;char&gt;">
+        <DisplayString>{buffer_.data_,s8}</DisplayString>
+        <StringView>buffer_.data_,s8</StringView>
+        <Expand>
+            <Item Name="size">buffer_.size_ - 1</Item>
+            <Item Name="[raw view]">buffer_</Item>
+        </Expand>
+    </Type>
+    <!-- UTF-16 -->
+    <Type Name="Wl::StringBase&lt;wchar_t&gt;">
+        <DisplayString>{buffer_.data_,su}</DisplayString>
+        <StringView>buffer_.data_,su</StringView>
+        <Expand>
+            <Item Name="size">buffer_.size_ - 1</Item>
+            <Item Name="[raw view]">buffer_</Item>
+        </Expand>
+    </Type>
+
+    <!-- StringRef -->
+    <!-- UTF-8 -->
+    <Type Name="Wl::StringRefBase&lt;char&gt;">
+        <DisplayString>{data_,s8}</DisplayString>
+        <StringView>data_,s8</StringView>
+        <Expand>
+            <Item Name="[raw data]">data_,s8</Item>
+        </Expand>
+    </Type>
+    <!-- UTF-16 -->
+    <Type Name="Wl::StringRefBase&lt;wchar_t&gt;">
+        <DisplayString>{data_,su}</DisplayString>
+        <StringView>data_,su</StringView>
+        <Expand>
+            <Item Name="[raw data]">data_,su</Item>
+        </Expand>
+    </Type>
+
+    <!-- Entry -->
+    <Type Name="Wl::Entry&lt;*,*&gt;">
+        <DisplayString>{{ key = {key}, value = {value} }}</DisplayString>
+        <Expand>
+            <Item Name="key">key</Item>
+            <Item Name="value">value</Item>
+        </Expand>
+    </Type>
+
+    <!-- Result visualization -->
+    <Type Name="Wl::Result&lt;*,*&gt;">
+        <Expand>
+            <!-- Success value -->
+            <Item Name="value" Condition="data_.index() == 1">data_.1</Item>
+
+            <!-- Error value -->
+            <Item Name="error" Condition="data_.index() == 2">data_.2</Item>
+
+            <!-- Variant index -->
+            <Item Name="variant_index">data_.index()</Item>
+        </Expand>
+    </Type>
+
+    <!-- Specialization for void success type -->
+    <Type Name="Wl::Result&lt;void,*&gt;">
+        <Expand>
+            <Item Name="error" Condition="data_.index() == 2">data_.2</Item>
+            <Item Name="variant_index">data_.index()</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="Wl::HashSetElement&lt;*&gt;">
+        <DisplayString>{{ key = {key}, hash = {hash} }}</DisplayString>
+        <Expand>
+            <Item Name="key">key</Item>
+            <Item Name="hash">hash</Item>
+            <Item Name="next">next</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="Wl::HashSet&lt;*&gt;">
+        <DisplayString>{{ size = {size_}, capacity = {capacity_} }}</DisplayString>
+        <Expand>
+            <!-- Basic information -->
+            <Item Name="size">size_</Item>
+            <Item Name="capacity">capacity_</Item>
+            <Item Name="load_factor" Condition="capacity_ != 0">(double)size_ / capacity_</Item>
+
+            <!-- Buckets array -->
+            <ArrayItems Condition="buckets_ != nullptr &amp;&amp; capacity_ > 0">
+                <Size>capacity_</Size>
+                <ValuePointer>buckets_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="Wl::HashSet&lt;*&gt;::Iterator">
+        <Expand>
+            <Item Name="bucket_index">bucket_index_</Item>
+            <Item Name="key" Condition="elem_ != nullptr">elem_->key</Item>
+            <Item Name="hash" Condition="elem_ != nullptr">elem_->hash</Item>
+            <Item Name="set">set_</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="Wl::HashSet&lt;*&gt;::ConstIterator">
+        <Expand>
+            <Item Name="bucket_index">bucket_index_</Item>
+            <Item Name="key" Condition="elem_ != nullptr">elem_->key</Item>
+            <Item Name="hash" Condition="elem_ != nullptr">elem_->hash</Item>
+            <Item Name="set">set_</Item>
+        </Expand>
+    </Type>
+</AutoVisualizer>

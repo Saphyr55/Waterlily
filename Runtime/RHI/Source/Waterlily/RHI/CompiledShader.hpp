@@ -1,0 +1,38 @@
+#pragma once
+
+#include "Types.hpp"
+#include "Waterlily/Core/Containers/Array.hpp"
+#include "Waterlily/Core/Defines.hpp"
+
+namespace Wl
+{
+
+    class SPIRVShader
+    {
+    public:
+        inline const Array<uint8_t>& GetByteCode() const
+        {
+            return m_byteCode;
+        }
+
+        inline RHIShaderStage GetStage() const
+        {
+            return m_stage;
+        }
+
+    public:
+        SPIRVShader() = default;
+        SPIRVShader(RHIShaderStage stage, const Array<uint8_t>& code)
+            : m_stage(stage)
+            , m_byteCode(code)
+        {
+        }
+
+        ~SPIRVShader() = default;
+
+    private:
+        RHIShaderStage m_stage;
+        Array<uint8_t> m_byteCode;
+    };
+
+}// namespace Wl
