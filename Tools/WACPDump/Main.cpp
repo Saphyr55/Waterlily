@@ -132,12 +132,12 @@ int32_t main(int32_t argc, const char* argv[])
 
     FileSystem& fs = FileSystem::GetPlatform();
 
-    LLOG_INFO("[LARDump]", Wl::Format("Opening file: \"%s\"", filepath.data()));
+    WL_LOG_INFO("[LARDump]", Wl::Format("Opening file: \"%s\"", filepath.data()));
 
     FileResult file_result = fs.Open(filepath);
     if (!file_result.HasValue())
     {
-        LLOG_ERROR("[LARDump]", "Failed to open the file.");
+        WL_LOG_ERROR("[LARDump]", "Failed to open the file.");
         return EXIT_FAILURE;
     }
 

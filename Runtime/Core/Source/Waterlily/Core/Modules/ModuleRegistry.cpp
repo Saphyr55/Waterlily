@@ -30,13 +30,13 @@ namespace Wl
         }
         else
         {
-            LLOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" not found.", name.data()));
+            WL_LOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" not found.", name.data()));
             return nullptr;
         }
 
         if (!m_pendingModules.Contains(name))
         {
-            LLOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" is not registered and cannot be loaded.", name.data()))
+            WL_LOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" is not registered and cannot be loaded.", name.data()))
             return nullptr;
         }
 
@@ -45,7 +45,7 @@ namespace Wl
 
         if (!modulePtr)
         {
-            LLOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" failed to initialize.", name.data()))
+            WL_LOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" failed to initialize.", name.data()))
             return nullptr;
         }
 
@@ -104,7 +104,7 @@ namespace Wl
         if (!m_pendingModules.Contains(name))
         {
             m_pendingModules.Put(name, initializer);
-            LLOG_DEBUG("[ModuleRegistry]", Wl::Format("The module '%s' has been registered.", name.data()));
+            WL_LOG_DEBUG("[ModuleRegistry]", Wl::Format("The module '%s' has been registered.", name.data()));
         }
     }
 

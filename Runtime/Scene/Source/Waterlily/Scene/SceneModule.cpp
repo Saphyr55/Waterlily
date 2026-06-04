@@ -9,22 +9,22 @@ namespace Wl
 
     void SceneModule::OnLoad()
     {
-        LLOG_INFO("[SceneModule]", "Scene module loaded.");
+        WL_LOG_INFO("[SceneModule]", "Scene module loaded.");
     }
 
     void SceneModule::OnStartup()
     {
-        LLOG_INFO("[SceneModule]", "Scene module started.");
+        WL_LOG_INFO("[SceneModule]", "Scene module started.");
     }
 
     void SceneModule::OnShutdown()
     {
-        LLOG_INFO("[SceneModule]", "Scene module stopped.");
+        WL_LOG_INFO("[SceneModule]", "Scene module stopped.");
     }
 
     void SceneModule::OnUnload()
     {
-        LLOG_INFO("[SceneModule]", "Scene module unloaded.");
+        WL_LOG_INFO("[SceneModule]", "Scene module unloaded.");
     }
 
 }// namespace Wl

@@ -53,7 +53,7 @@ namespace Wl
                     format = RHIFormat::RGBA8;
                     break;
                 default:
-                    LLOG_WARN("[Image]", Wl::Format("Unsupported image component count: %u", image.Channels));
+                    WL_LOG_WARN("[Image]", Wl::Format("Unsupported image component count: %u", image.Channels));
                     break;
             }
         }
@@ -74,7 +74,7 @@ namespace Wl
                     format = RHIFormat::RGBA8sRGB;
                     break;
                 default:
-                    LLOG_WARN("[Image]", Wl::Format("Unsupported image component count: %u", image.Channels));
+                    WL_LOG_WARN("[Image]", Wl::Format("Unsupported image component count: %u", image.Channels));
                     break;
             }
         }

@@ -16,19 +16,19 @@ namespace Wl
         switch (messageSeverity)
         {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                LLOG_INFO("[Vulkan]", callbackData->pMessage);
+                WL_LOG_INFO("[Vulkan]", callbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                LLOG_INFO("[Vulkan]", callbackData->pMessage);
+                WL_LOG_INFO("[Vulkan]", callbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                LLOG_WARN("[Vulkan]", callbackData->pMessage);
+                WL_LOG_WARN("[Vulkan]", callbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                LLOG_ERROR("[Vulkan]", callbackData->pMessage);
+                WL_LOG_ERROR("[Vulkan]", callbackData->pMessage);
                 break;
             default:
-                LLOG_FATAL("[Vulkan]", "Unknown message severity.");
+                WL_LOG_FATAL("[Vulkan]", "Unknown message severity.");
                 break;
         }
 
@@ -37,7 +37,7 @@ namespace Wl
 
     void VulkanDebugMessengerCreate(VulkanContext& context)
     {
-        LLOG_INFO("[Vulkan]", "Initializing Vulkan debug messenger...");
+        WL_LOG_INFO("[Vulkan]", "Initializing Vulkan debug messenger...");
 
         PFN_vkCreateDebugUtilsMessengerEXT fvkCreateDebugUtilsMessengerEXT =
                 reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
@@ -60,12 +60,12 @@ namespace Wl
         fvkCreateDebugUtilsMessengerEXT(context.Instance, &createInfo, context.Allocator, &context.DebugUtilsMessenger);
         WL_CHECK(context.DebugUtilsMessenger != VK_NULL_HANDLE);
 
-        LLOG_INFO("[Vulkan]", "Vulkan debug messenger initialized.");
+        WL_LOG_INFO("[Vulkan]", "Vulkan debug messenger initialized.");
     }
 
     void VulkanDebugMessengerDestroy(VulkanContext& context)
     {
-        LLOG_INFO("[Vulkan]", "Destroying Vulkan debug messenger...");
+        WL_LOG_INFO("[Vulkan]", "Destroying Vulkan debug messenger...");
 
         // Destroy the debug messenger
         PFN_vkDestroyDebugUtilsMessengerEXT fvkDestroyDebugUtilsMessengerEXT =
@@ -77,11 +77,11 @@ namespace Wl
         {
             fvkDestroyDebugUtilsMessengerEXT(context.Instance, context.DebugUtilsMessenger, context.Allocator);
             context.DebugUtilsMessenger = VK_NULL_HANDLE;
-            LLOG_INFO("[Vulkan]", "Vulkan debug messenger destroyed.");
+            WL_LOG_INFO("[Vulkan]", "Vulkan debug messenger destroyed.");
         }
         else
         {
-            LLOG_WARN("[Vulkan]", "No Vulkan debug messenger to destroy.");
+            WL_LOG_WARN("[Vulkan]", "No Vulkan debug messenger to destroy.");
         }
     }
 

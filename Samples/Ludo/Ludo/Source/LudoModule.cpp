@@ -25,20 +25,20 @@ void LudoModule::OnLoad()
     // Vulkan API is already the default option.
     RHI_module->SetGraphicsAPI(GraphicsAPI::Vulkan);
 
-    LLOG_INFO("[LudoModule]", "Ludo module loaded.");
+    WL_LOG_INFO("[LudoModule]", "Ludo module loaded.");
 }
 
 void LudoModule::OnStartup()
 {
-    LLOG_INFO("[LudoModule]", "Starting Ludo application.");
+    WL_LOG_INFO("[LudoModule]", "Starting Ludo application.");
 }
 
 void LudoModule::OnShutdown()
 {
-    LLOG_INFO("[LudoModule]", "Shutting down Ludo application.");
+    WL_LOG_INFO("[LudoModule]", "Shutting down Ludo application.");
 }
 
 void LudoModule::OnUnload()
 {
-    LLOG_INFO("[LudoModule]", "Ludo module unloaded.");
+    WL_LOG_INFO("[LudoModule]", "Ludo module unloaded.");
 }

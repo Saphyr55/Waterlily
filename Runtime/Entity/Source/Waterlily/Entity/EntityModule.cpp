@@ -9,22 +9,22 @@ namespace Wl
 
     void EntityModule::OnLoad()
     {
-        LLOG_INFO("[EntityModule]", "Entity module loaded.");
+        WL_LOG_INFO("[EntityModule]", "Entity module loaded.");
     }
 
     void EntityModule::OnStartup()
     {
-        LLOG_INFO("[SchemaModule]", "Entity module started.");
+        WL_LOG_INFO("[SchemaModule]", "Entity module started.");
     }
 
     void EntityModule::OnShutdown()
     {
-        LLOG_INFO("[EntityModule]", "Entity module stopped.");
+        WL_LOG_INFO("[EntityModule]", "Entity module stopped.");
     }
 
     void EntityModule::OnUnload()
     {
-        LLOG_INFO("[EntityModule]", "Entity module unloaded.");
+        WL_LOG_INFO("[EntityModule]", "Entity module unloaded.");
     }
 
 }// namespace Wl

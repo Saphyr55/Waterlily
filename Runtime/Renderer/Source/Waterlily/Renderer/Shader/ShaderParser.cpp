@@ -255,7 +255,7 @@ namespace Wl
         SpvReflectShaderModule spvModule;
 
         result = spvReflectCreateShaderModule(shader.GetByteCode().GetSize(), shader.GetByteCode().GetData(), &spvModule);
-        WL_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to parse the SPIRV shader.");
+        WL_LOG_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to parse the SPIRV shader.");
 
         SharedPtr<SpvReflectShaderModule> spvModuleGuard(&spvModule, [](SpvReflectShaderModule* m) -> void
         {
@@ -264,13 +264,13 @@ namespace Wl
 
         uint32_t bindingCount = 0;
         result = spvReflectEnumerateDescriptorBindings(&spvModule, &bindingCount, nullptr);
-        WL_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to enumerate descriptor bindings.");
+        WL_LOG_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to enumerate descriptor bindings.");
 
         Array<SpvReflectDescriptorBinding*> spvBindings;
         spvBindings.Resize(bindingCount);
 
         result = spvReflectEnumerateDescriptorBindings(&spvModule, &bindingCount, spvBindings.GetData());
-        WL_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to enumerate descriptor bindings.");
+        WL_LOG_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to enumerate descriptor bindings.");
 
         for (size_t i = 0; i < bindingCount; i++)
         {

@@ -29,7 +29,7 @@ namespace Wl
 
     void RHIVulkanWindowsSurface::Create()
     {
-        LLOG_INFO("[Vulkan]", "Initializing Vulkan surface...");
+        WL_LOG_INFO("[Vulkan]", "Initializing Vulkan surface...");
 
         PFN_vkCreateWin32SurfaceKHR WL_vkCreateWin32SurfaceKHR = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(
                 VulkanAPI::vkGetInstanceProcAddr(m_instance, "vkCreateWin32SurfaceKHR"));
@@ -46,13 +46,13 @@ namespace Wl
 
     void RHIVulkanWindowsSurface::Destroy()
     {
-        LLOG_INFO("[Vulkan]", "Destroying Vulkan surface...");
+        WL_LOG_INFO("[Vulkan]", "Destroying Vulkan surface...");
 
         if (m_handle != VK_NULL_HANDLE)
         {
             VulkanAPI::vkDestroySurfaceKHR(m_instance, m_handle, m_allocator);
             m_handle = VK_NULL_HANDLE;
-            LLOG_INFO("[Vulkan]", "Vulkan surface destroyed.");
+            WL_LOG_INFO("[Vulkan]", "Vulkan surface destroyed.");
         }
     }
 

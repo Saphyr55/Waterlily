@@ -27,22 +27,22 @@ namespace Wl
 
     void RHIModule::OnLoad()
     {
-        LLOG_INFO("[RHIModule]", "Loading RHI Module.");
+        WL_LOG_INFO("[RHIModule]", "Loading RHI Module.");
     }
 
     void RHIModule::OnStartup()
     {
-        LLOG_INFO("[RHIModule]", "Start up RHI Module.");
+        WL_LOG_INFO("[RHIModule]", "Start up RHI Module.");
     }
 
     void RHIModule::OnShutdown()
     {
-        LLOG_INFO("[RHIModule]", "Shuting down RHI Module...");
+        WL_LOG_INFO("[RHIModule]", "Shuting down RHI Module...");
     }
 
     void RHIModule::OnUnload()
     {
-        LLOG_INFO("[RHIModule]", "Unload RHI Module.");
+        WL_LOG_INFO("[RHIModule]", "Unload RHI Module.");
     }
 
 }// namespace Wl

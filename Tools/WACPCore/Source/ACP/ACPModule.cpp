@@ -8,22 +8,22 @@ namespace Wl
 
     void ACPModule::OnLoad()
     {
-        LLOG_INFO("[ACPModule]", "ACP module loaded.");
+        WL_LOG_INFO("[ACPModule]", "ACP module loaded.");
     }
 
     void ACPModule::OnStartup()
     {
-        LLOG_INFO("[ACPModule]", "ACP module started.");
+        WL_LOG_INFO("[ACPModule]", "ACP module started.");
     }
 
     void ACPModule::OnShutdown()
     {
-        LLOG_INFO("[ACPModule]", "ACP module stopped.");
+        WL_LOG_INFO("[ACPModule]", "ACP module stopped.");
     }
 
     void ACPModule::OnUnload()
     {
-        LLOG_INFO("[ACPModule]", "ACP module unloaded.");
+        WL_LOG_INFO("[ACPModule]", "ACP module unloaded.");
     }
 
 }// namespace Wl

@@ -28,13 +28,13 @@ namespace Wl
 
         if (!applicationManifest.LoadLua(applicationManifestFilepath))
         {
-            LLOG_ERROR("[Main]", Wl::Format("Cannot load the manifest '%s'", applicationManifestFilepath.GetData()));
+            WL_LOG_ERROR("[Main]", Wl::Format("Cannot load the manifest '%s'", applicationManifestFilepath.GetData()));
             return false;
         }
 
         if (!engine.GetManifest().LoadLua(engineManifestFilepath))
         {
-            LLOG_ERROR("[Main]", Wl::Format("Cannot load the manifest '%s'", engineManifestFilepath.GetData()))
+            WL_LOG_ERROR("[Main]", Wl::Format("Cannot load the manifest '%s'", engineManifestFilepath.GetData()))
             return false;
         }
 
@@ -46,7 +46,7 @@ namespace Wl
 
         if (!ModuleManifestResolveDependencies(engineManifest, order))
         {
-            LLOG_ERROR("[Main]", "Cannot resolve manifest dependencies.");
+            WL_LOG_ERROR("[Main]", "Cannot resolve manifest dependencies.");
             return false;
         }
 
@@ -54,7 +54,7 @@ namespace Wl
         {
             if (!ModuleRegistry::GetInstance().LoadModule(info->Name))
             {
-                LLOG_ERROR("[Main]", Wl::Format("Cannot load module: %s", info->Name.GetData()));
+                WL_LOG_ERROR("[Main]", Wl::Format("Cannot load module: %s", info->Name.GetData()));
                 return false;
             }
         }
@@ -69,13 +69,13 @@ namespace Wl
         {
             const ModuleManifestInformation* info = engine.GetOrderedModuleInformations()[i];
             ModuleRegistry::GetInstance().UnloadModule(info->Name);
-            LLOG_INFO("[Main]", Wl::Format("Unloaded module: %s", info->Name.GetData()));
+            WL_LOG_INFO("[Main]", Wl::Format("Unloaded module: %s", info->Name.GetData()));
         }
     }
 
     bool MainPreLaunch(int32_t argc, const char** argv)
     {
-        LLOG_INFO("[Main]", "Pre init Engine.");
+        WL_LOG_INFO("[Main]", "Pre init Engine.");
 
         HashMap<StringRef, StringRef> commands = CommandLineParse(argc, argv);
         StringRef projectdir = commands["projectdir"];

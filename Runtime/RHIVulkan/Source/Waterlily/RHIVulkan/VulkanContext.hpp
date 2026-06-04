@@ -17,7 +17,7 @@
     do                                                                                                      \
     {                                                                                                       \
         VkResult __WL_vulkan_result__ = (Expr);                                                             \
-        LLOG_FATAL_WHEN(__WL_vulkan_result__ != VK_SUCCESS,                                                 \
+        WL_LOG_FATAL_WHEN(__WL_vulkan_result__ != VK_SUCCESS,                                                 \
                         "[Vulkan]",                                                                         \
                         Wl::Format("Failed with the result '%s'", VulkanStringOfResult(__WL_vulkan_result__))) \
     } while (false)
@@ -404,7 +404,7 @@ namespace Wl
             case RHIShaderResourceType::CombinedTextureSampler:
                 return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             default:
-                LLOG_FATAL("[Vulkan]", "Unknown RHIShaderResourceType.");
+                WL_LOG_FATAL("[Vulkan]", "Unknown RHIShaderResourceType.");
                 return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         }
     }

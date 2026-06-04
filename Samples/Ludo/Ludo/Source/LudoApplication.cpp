@@ -103,6 +103,7 @@ namespace Wl
 
         Model* sponzaModelAsset = assetManager->GetAsset<Model>(LudoAssetModelSponza);
         WL_CHECK(sponzaModelAsset);
+
         Array<StaticMesh*> modelStaticMeshesAsset(sponzaModelAsset->Meshes.GetSize());
         for (const AssetHandle& meshAssetHandle: sponzaModelAsset->Meshes)
         {
@@ -122,7 +123,7 @@ namespace Wl
         UIDrawElement uiDrawElement;
         RenderMesh uiMesh = uiDrawElement.Instanciate(device, uploadScheduler);
 
-        LLOG_INFO("[Ludo]", Wl::Format("Uploading to the device... '%s'", LudoAssetModelSponza.GetText().data()))
+        WL_LOG_INFO("[Ludo]", Wl::Format("Uploading to the device... '%s'", LudoAssetModelSponza.GetText().data()))
 
         RenderMesh sponzaMesh(device);
         // TODO: We should create one big mesh to send.
@@ -137,7 +138,7 @@ namespace Wl
             submesh.Model = Matrix4f::Scale(submesh.Model, Vector3f(0.005f));
         }
 
-        LLOG_INFO("[Ludo]", Wl::Format("Uploading '%s' finish.", LudoAssetModelSponza.GetText().data()))
+        WL_LOG_INFO("[Ludo]", Wl::Format("Uploading '%s' finish.", LudoAssetModelSponza.GetText().data()))
 
         Array<RHIDrawIndexedCommand> drawIndexedCommands = sponzaMesh.CreateDrawIndexedCommands();
         RHIBuffer* indirectBuffer = device->CreateIndirectBuffer(drawIndexedCommands);
@@ -157,7 +158,7 @@ namespace Wl
             double byte = static_cast<double>(uploadScheduler.GetTotalPendingBytes());
             double megaByte = byte / static_cast<double>(WL_MB);
             uploadScheduler.Flush(commandBuffere);
-            LLOG_DEBUG(
+            WL_LOG_DEBUG(
                     "[Ludo]",
                     Wl::Format("Flushed global upload scheduler, total uploaded: %.2lfMB", megaByte));
         },
@@ -175,13 +176,13 @@ namespace Wl
 
         DisplaySignals::OnWindowClose.Connect([&](WindowHandle)
         {
-            LLOG_INFO("[Ludo]", "Window closed.");
+            WL_LOG_INFO("[Ludo]", "Window closed.");
             application.Stop();
         });
 
         DisplaySignals::OnWindowResized.Connect([&](WindowHandle window, uint32_t width, uint32_t height)
         {
-            LLOG_INFO("[Ludo]", Wl::Format("Window resized to %dx%d", width, height));
+            WL_LOG_INFO("[Ludo]", Wl::Format("Window resized to %dx%d", width, height));
             frameContext->Resize(width, height);
             framegraph->Dispose();
         });

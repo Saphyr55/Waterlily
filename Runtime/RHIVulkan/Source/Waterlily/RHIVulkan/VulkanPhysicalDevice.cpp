@@ -158,7 +158,7 @@ namespace Wl
         WL_VULKAN_CHECK(VulkanAPI::vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr));
         if (deviceCount == 0)
         {
-            LLOG_ERROR("[Vulkan]", "No physical devices found.");
+            WL_LOG_ERROR("[Vulkan]", "No physical devices found.");
             return false;
         }
 
@@ -175,20 +175,20 @@ namespace Wl
             // Check if the device meets the requirements
             if (m_info.IsSuitable)
             {
-                LLOG_INFO("[Vulkan]", "Physical device selected successfully.");
-                LLOG_ERROR("[Vulkan]", "No suitable physical device found.");
+                WL_LOG_INFO("[Vulkan]", "Physical device selected successfully.");
+                WL_LOG_ERROR("[Vulkan]", "No suitable physical device found.");
 
-                LLOG_INFO("[Vulkan]", "Selected Physical Device Properties:");
-                LLOG_INFO("[Vulkan]", Wl::Format("Device Name: %s", m_info.Properties.deviceName));
-                LLOG_INFO("[Vulkan]",
+                WL_LOG_INFO("[Vulkan]", "Selected Physical Device Properties:");
+                WL_LOG_INFO("[Vulkan]", Wl::Format("Device Name: %s", m_info.Properties.deviceName));
+                WL_LOG_INFO("[Vulkan]",
                           Wl::Format("API Version: %u.%u.%u",
                                   VK_VERSION_MAJOR(m_info.Properties.apiVersion),
                                   VK_VERSION_MINOR(m_info.Properties.apiVersion),
                                   VK_VERSION_PATCH(m_info.Properties.apiVersion)));
-                LLOG_INFO("[Vulkan]", Wl::Format("Driver Version: %u", m_info.Properties.driverVersion));
-                LLOG_INFO("[Vulkan]", Wl::Format("Vendor ID: %u", m_info.Properties.vendorID));
-                LLOG_INFO("[Vulkan]", Wl::Format("Device ID: %u", m_info.Properties.deviceID));
-                LLOG_INFO("[Vulkan]", Wl::Format("Device Type: %d", m_info.Properties.deviceType));
+                WL_LOG_INFO("[Vulkan]", Wl::Format("Driver Version: %u", m_info.Properties.driverVersion));
+                WL_LOG_INFO("[Vulkan]", Wl::Format("Vendor ID: %u", m_info.Properties.vendorID));
+                WL_LOG_INFO("[Vulkan]", Wl::Format("Device ID: %u", m_info.Properties.deviceID));
+                WL_LOG_INFO("[Vulkan]", Wl::Format("Device Type: %d", m_info.Properties.deviceType));
                 return true;
             }
         }

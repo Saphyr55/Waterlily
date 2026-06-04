@@ -43,15 +43,15 @@ namespace Wl
         cmd.Append(" -Os");
 
         int32_t result = std::system(cmd.GetData());
-        LLOG_INFO("[SPIRVShaderCompiler]", Wl::Format("%s", cmd.GetData()));
+        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("%s", cmd.GetData()));
         if (result != 0)
         {
-            LLOG_ERROR("[SPIRVShaderCompiler]", Wl::Format("Failed to compile shader file: %s", inputFilepath.data()));
+            WL_LOG_ERROR("[SPIRVShaderCompiler]", Wl::Format("Failed to compile shader file: %s", inputFilepath.data()));
             return false;
         }
 
-        LLOG_INFO("[SPIRVShaderCompiler]", Wl::Format("Successfully compiled shader file: %s", inputFilepath.data()));
-        LLOG_INFO("[SPIRVShaderCompiler]", Wl::Format("Output spv file: %s", outputFilepath.data()));
+        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("Successfully compiled shader file: %s", inputFilepath.data()));
+        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("Output spv file: %s", outputFilepath.data()));
 
         return true;
     }

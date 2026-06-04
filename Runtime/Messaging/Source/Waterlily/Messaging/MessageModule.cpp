@@ -9,22 +9,22 @@ namespace Wl
 
     void MessagingModule::OnLoad()
     {
-        LLOG_INFO("[MessagingModule]", "Messaging module loaded.");
+        WL_LOG_INFO("[MessagingModule]", "Messaging module loaded.");
     }
 
     void MessagingModule::OnStartup()
     {
-        LLOG_INFO("[MessagingModule]", "Messaging module started.");
+        WL_LOG_INFO("[MessagingModule]", "Messaging module started.");
     }
 
     void MessagingModule::OnShutdown()
     {
-        LLOG_INFO("[MessagingModule]", "Messaging module stopped.");
+        WL_LOG_INFO("[MessagingModule]", "Messaging module stopped.");
     }
 
     void MessagingModule::OnUnload()
     {
-        LLOG_INFO("[MessagingModule]", "Messaging module unloaded.");
+        WL_LOG_INFO("[MessagingModule]", "Messaging module unloaded.");
     }
 
 }// namespace Wl

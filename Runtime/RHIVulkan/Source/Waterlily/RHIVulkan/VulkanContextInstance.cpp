@@ -42,7 +42,7 @@ namespace Wl
 
         for (StringRef ext: available_extension_names)
         {
-            LLOG_DEBUG("[Vulkan]", ext);
+            WL_LOG_DEBUG("[Vulkan]", ext);
         }
 
         for (StringRef required_extension: desired_extensions)
@@ -71,31 +71,31 @@ namespace Wl
         createInfo.enabledExtensionCount = static_cast<uint32_t>(desired_extensions.size());
         createInfo.ppEnabledExtensionNames = desired_extensions.data();
 
-        LLOG_INFO("[Vulkan]", "Creating Vulkan instance with the following extensions:");
+        WL_LOG_INFO("[Vulkan]", "Creating Vulkan instance with the following extensions:");
         for (const char* extension: desired_extensions)
         {
-            LLOG_INFO("[Vulkan]", Wl::Format("  - %s", extension));
+            WL_LOG_INFO("[Vulkan]", Wl::Format("  - %s", extension));
         }
 
-        LLOG_INFO("[Vulkan]", "Using the following validation layers:");
+        WL_LOG_INFO("[Vulkan]", "Using the following validation layers:");
         for (const char* layer: validationLayers)
         {
-            LLOG_INFO("[Vulkan]", Wl::Format("  - %s", layer));
+            WL_LOG_INFO("[Vulkan]", Wl::Format("  - %s", layer));
         }
 
         WL_VULKAN_CHECK(VulkanAPI::vkCreateInstance(&createInfo, context.Allocator, &context.Instance));
 
-        LLOG_INFO("[Vulkan]", "Vulkan instance created successfully.");
+        WL_LOG_INFO("[Vulkan]", "Vulkan instance created successfully.");
 
         VulkanInstanceAPILoad(context.Instance);
     }
 
     void VulkanInstanceDestroy(VulkanContext& context)
     {
-        LLOG_INFO("[Vulkan]", "Destroying Vulkan instance...");
+        WL_LOG_INFO("[Vulkan]", "Destroying Vulkan instance...");
         VulkanAPI::vkDestroyInstance(context.Instance, context.Allocator);
         context.Instance = VK_NULL_HANDLE;
-        LLOG_INFO("[Vulkan]", "Vulkan instance destroyed.");
+        WL_LOG_INFO("[Vulkan]", "Vulkan instance destroyed.");
     }
 
 }// namespace Wl

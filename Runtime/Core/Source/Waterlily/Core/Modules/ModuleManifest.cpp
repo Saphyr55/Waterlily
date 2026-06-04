@@ -22,7 +22,7 @@ namespace Wl
         }
         else
         {
-            LLOG_ERROR("[ModuleManifest]", "Module is missing a valid 'name' field.");
+            WL_LOG_ERROR("[ModuleManifest]", "Module is missing a valid 'name' field.");
         }
         lua_pop(L, 1);
 
@@ -33,7 +33,7 @@ namespace Wl
         }
         else
         {
-            LLOG_ERROR("[ModuleManifest]",
+            WL_LOG_ERROR("[ModuleManifest]",
                        Wl::Format("Module '%s' is missing a valid 'version' field.", description.Name.GetData()));
         }
         lua_pop(L, 1);
@@ -51,7 +51,7 @@ namespace Wl
                 }
                 else
                 {
-                    LLOG_ERROR(
+                    WL_LOG_ERROR(
                             "[ModuleManifest]",
                             Wl::Format("Module '%s' has a non-string dependency at index %zu.", description.Name.GetData(), i));
                 }
@@ -60,7 +60,7 @@ namespace Wl
         }
         else
         {
-            LLOG_ERROR("[ModuleManifest]",
+            WL_LOG_ERROR("[ModuleManifest]",
                        Wl::Format("Module '%s' ' has invalid 'dependencies', must be a table.", description.Name.GetData()))
         }
 
@@ -98,14 +98,14 @@ namespace Wl
         if (luaL_dofile(L, filepath.data()) != LUA_OK)
         {
             lua_close(L);
-            LLOG_ERROR("[ModuleManifest]", Wl::Format("Failed to load Lua file: ", filepath));
+            WL_LOG_ERROR("[ModuleManifest]", Wl::Format("Failed to load Lua file: ", filepath));
             return false;
         }
 
         if (!lua_istable(L, -1))
         {
             lua_close(L);
-            LLOG_ERROR("[ModuleManifest]", "Lua manifest must return a table.");
+            WL_LOG_ERROR("[ModuleManifest]", "Lua manifest must return a table.");
             return false;
         }
 
@@ -128,7 +128,7 @@ namespace Wl
         }
         else
         {
-            LLOG_ERROR("[ModuleManifest]", Wl::Format("Missing modules field in '%s' file.", filepath));
+            WL_LOG_ERROR("[ModuleManifest]", Wl::Format("Missing modules field in '%s' file.", filepath));
         }
 
         lua_pop(L, 1);
@@ -140,20 +140,20 @@ namespace Wl
     void ModuleManifestLog(const ModuleManifest& manifest)
     {
         const Array<ModuleManifestInformation>& moduleInformations = manifest.GetManifestInformations();
-        LLOG_INFO("[ModuleManifest]", Wl::Format("Module Manifest Informations (%d modules):", moduleInformations.GetSize()));
+        WL_LOG_INFO("[ModuleManifest]", Wl::Format("Module Manifest Informations (%d modules):", moduleInformations.GetSize()));
 
         for (size_t i = 0; i < manifest.GetManifestInformations().GetSize(); i++)
         {
             const ModuleManifestInformation& moduleInformation = moduleInformations[i];
-            LLOG_INFO("[ModuleManifest]", Wl::Format("Module:"));
-            LLOG_INFO("[ModuleManifest]",
+            WL_LOG_INFO("[ModuleManifest]", Wl::Format("Module:"));
+            WL_LOG_INFO("[ModuleManifest]",
                       Wl::Format("  %s: %s", ModuleManifestKeyNames::Name, moduleInformation.Name.GetData()));
-            LLOG_INFO("[ModuleManifest]",
+            WL_LOG_INFO("[ModuleManifest]",
                       Wl::Format("  %s: %s", ModuleManifestKeyNames::Version, moduleInformation.Version.GetData()));
 
             if (moduleInformation.Dependencies.IsEmpty())
             {
-                LLOG_INFO("[ModuleManifest]", Wl::Format("  %s: []", ModuleManifestKeyNames::Dependencies));
+                WL_LOG_INFO("[ModuleManifest]", Wl::Format("  %s: []", ModuleManifestKeyNames::Dependencies));
                 continue;
             }
 
@@ -168,7 +168,7 @@ namespace Wl
                 }
             }
 
-            LLOG_INFO("[ModuleManifest]",
+            WL_LOG_INFO("[ModuleManifest]",
                       Wl::Format("  %s: [%s]", ModuleManifestKeyNames::Dependencies, dependencyNames.GetData()));
         }
     }
@@ -211,7 +211,7 @@ namespace Wl
                 }
                 else
                 {
-                    LLOG_ERROR("[ModuleManifest]",
+                    WL_LOG_ERROR("[ModuleManifest]",
                                Wl::Format("Module '%s' has an unknown dependency '%s'.", info.Name.GetData(), dependency.data()));
                 }
             }

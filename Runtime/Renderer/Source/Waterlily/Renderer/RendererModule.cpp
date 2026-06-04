@@ -14,12 +14,12 @@ namespace Wl
 
     void RendererModule::OnLoad()
     {
-        LLOG_INFO("[RendererModule]", "Renderer module loaded.");
+        WL_LOG_INFO("[RendererModule]", "Renderer module loaded.");
     }
 
     void RendererModule::OnStartup()
     {
-        LLOG_INFO("[RendererModule]", "Renderer module started.");
+        WL_LOG_INFO("[RendererModule]", "Renderer module started.");
 
         AssetSerializer::RegisterAssetType<MaterialAsset>(AssetType_Material);
         AssetSerializer::RegisterAssetType<TextureAsset>(AssetType_Texture2D);
@@ -34,12 +34,12 @@ namespace Wl
         AssetSerializer::UnregisterAssetType<StaticMesh>(AssetType_StaticMesh);
         AssetSerializer::UnregisterAssetType<Model>(AssetType_Model);
 
-        LLOG_INFO("[RendererModule]", "Renderer module stopped.");
+        WL_LOG_INFO("[RendererModule]", "Renderer module stopped.");
     }
 
     void RendererModule::OnUnload()
     {
-        LLOG_INFO("[RendererModule]", "Renderer module unloaded.");
+        WL_LOG_INFO("[RendererModule]", "Renderer module unloaded.");
     }
 
 }// namespace Wl

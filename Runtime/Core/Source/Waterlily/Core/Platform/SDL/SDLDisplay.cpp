@@ -42,7 +42,7 @@ namespace Wl
 
         if (!sdlWindow)
         {
-            LLOG_ERROR("[SDLDisplay]", Wl::Format("Failed to create window: %s", SDL_GetError()));
+            WL_LOG_ERROR("[SDLDisplay]", Wl::Format("Failed to create window: %s", SDL_GetError()));
             return Display::InvalidWindowHandle;
         }
 
@@ -59,7 +59,7 @@ namespace Wl
 
         WindowProperties properties = m_windowPropertiesMap[window];
 
-        LLOG_INFO("[SDLDisplay]", Wl::Format("Retrieved window properties for handle: %d", window));
+        WL_LOG_INFO("[SDLDisplay]", Wl::Format("Retrieved window properties for handle: %d", window));
 
         return properties;
     }
@@ -101,7 +101,7 @@ namespace Wl
 
         SDL_ShowWindow(sdlWindow);
 
-        LLOG_INFO("[SDLDisplay]", Wl::Format("Showing window with handle: %d", window));
+        WL_LOG_INFO("[SDLDisplay]", Wl::Format("Showing window with handle: %d", window));
     }
 
     void SDLDisplay::HideWindow(WindowHandle window)

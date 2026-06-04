@@ -9,22 +9,22 @@ namespace Wl
 
     void EngineModule::OnLoad()
     {
-        LLOG_INFO("[EngineModule]", "Engine module loaded.");
+        WL_LOG_INFO("[EngineModule]", "Engine module loaded.");
     }
 
     void EngineModule::OnStartup()
     {
-        LLOG_INFO("[EngineModule]", "Engine module started.");
+        WL_LOG_INFO("[EngineModule]", "Engine module started.");
     }
 
     void EngineModule::OnShutdown()
     {
-        LLOG_INFO("[EngineModule]", "Engine module stopped.");
+        WL_LOG_INFO("[EngineModule]", "Engine module stopped.");
     }
 
     void EngineModule::OnUnload()
     {
-        LLOG_INFO("[EngineModule]", "Engine module unloaded.");
+        WL_LOG_INFO("[EngineModule]", "Engine module unloaded.");
     }
 
 }// namespace Wl

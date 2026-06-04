@@ -111,17 +111,15 @@ namespace Wl
             uploader.Upload(&material, m_materialStride, m_bufferStorage, m_materialStride * handle);
         }
 
-        m_device->ImediateSubmit(
-                [&](RHICommandBuffer* commandBuffer)
+        m_device->ImediateSubmit([&](RHICommandBuffer* commandBuffer)
         {
             double totalUploadedBytes = static_cast<double>(uploader.GetTotalPendingBytes());
             double totalUploadedMegaBytes = totalUploadedBytes / static_cast<double>(WL_KB);
             uploader.Flush(commandBuffer);
-            LLOG_DEBUG(
+            WL_LOG_DEBUG(
                     "[MaterialRegistry]",
                     Wl::Format("Flushed global upload scheduler, total uploaded: %.2lfKB", totalUploadedMegaBytes));
-        },
-                queue);
+        }, queue);
     }
 
     void MaterialRegistry::CompileShaderResource()

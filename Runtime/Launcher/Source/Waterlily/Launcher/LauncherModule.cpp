@@ -8,22 +8,22 @@ namespace Wl
 
     void LauncherModule::OnLoad()
     {
-        LLOG_INFO("[LauncherModule]", "Launcher module loaded.");
+        WL_LOG_INFO("[LauncherModule]", "Launcher module loaded.");
     }
 
     void LauncherModule::OnStartup()
     {
-        LLOG_INFO("[LauncherModule]", "Launcher module started.");
+        WL_LOG_INFO("[LauncherModule]", "Launcher module started.");
     }
 
     void LauncherModule::OnShutdown()
     {
-        LLOG_INFO("[LauncherModule]", "Launcher module stopped.");
+        WL_LOG_INFO("[LauncherModule]", "Launcher module stopped.");
     }
 
     void LauncherModule::OnUnload()
     {
-        LLOG_INFO("[LauncherModule]", "Launcher module unloaded.");
+        WL_LOG_INFO("[LauncherModule]", "Launcher module unloaded.");
     }
 
 }// namespace Wl

@@ -19,11 +19,11 @@ namespace Wl
             {
                 if (i + 1 >= argc)
                 {
-                    LLOG_ERROR("[main]", "--projectdir requires an argument.");
+                    WL_LOG_ERROR("[main]", "--projectdir requires an argument.");
                     return false;
                 }
                 projectdir = argv[++i];
-                LLOG_INFO("[main]", Wl::Format("Set project directory to: '%s'", projectdir.data()));
+                WL_LOG_INFO("[main]", Wl::Format("Set project directory to: '%s'", projectdir.data()));
                 continue;
             }
 
@@ -31,11 +31,11 @@ namespace Wl
             {
                 if (i + 1 >= argc)
                 {
-                    LLOG_ERROR("[main]", "--enginedir requires an argument.");
+                    WL_LOG_ERROR("[main]", "--enginedir requires an argument.");
                     return false;
                 }
                 enginedir = argv[++i];
-                LLOG_INFO("[main]", Wl::Format("Set engine directory to: '%s'", enginedir.data()));
+                WL_LOG_INFO("[main]", Wl::Format("Set engine directory to: '%s'", enginedir.data()));
                 continue;
             }
         }

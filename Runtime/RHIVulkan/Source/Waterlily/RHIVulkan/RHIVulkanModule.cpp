@@ -20,12 +20,12 @@ namespace Wl
 
     void RHIVulkanModule::OnLoad()
     {
-        LLOG_INFO("[RHIVulkanModule]", "Loading RHI Vulkan Module.");
+        WL_LOG_INFO("[RHIVulkanModule]", "Loading RHI Vulkan Module.");
     }
 
     void RHIVulkanModule::OnStartup()
     {
-        LLOG_INFO("[RHIVulkanModule]", "Startup RHI Vulkan Module.");
+        WL_LOG_INFO("[RHIVulkanModule]", "Startup RHI Vulkan Module.");
 
         ModuleRegistry& registry = ModuleRegistry::GetInstance();
         RHIModule* rhiModule = registry.GetModule<RHIModule>("Waterlily.RHI");
@@ -56,12 +56,12 @@ namespace Wl
         m_device->Shutdown();
         VulkanContextDestroy(context);
 
-        LLOG_INFO("[RHIVulkanModule]", "Shuting down RHI Vulkan Module...");
+        WL_LOG_INFO("[RHIVulkanModule]", "Shuting down RHI Vulkan Module...");
     }
 
     void RHIVulkanModule::OnUnload()
     {
-        LLOG_INFO("[RHIVulkanModule]", "Unload RHI Vulkan Module.");
+        WL_LOG_INFO("[RHIVulkanModule]", "Unload RHI Vulkan Module.");
     }
 
 }// namespace Wl
