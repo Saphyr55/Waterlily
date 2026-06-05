@@ -33,9 +33,9 @@ namespace Wl
         void LogDebug();
 
     public:
-        Camera(const Vector3f& position, const Vector3f& world_up = Vector3f(0.0f, 1.0f, 0.0f))
+        Camera(const Vector3f& position, const Vector3f& worldUp = Vector3f(0.0f, 1.0f, 0.0f))
             : Position(position)
-            , WorldUp(world_up)
+            , WorldUp(worldUp)
             , Rotation(0.0f, 0.0f, 0.0f)
         {
             UpdateVectors();

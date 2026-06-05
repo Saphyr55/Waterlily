@@ -1,10 +1,11 @@
-add_requires("spirv-reflect")
+add_requires("spirv-reflect", "directxshadercompiler")
 
-target("Waterlily.Renderer", function()
+target("Waterlily.Renderer")
+do
     set_kind("shared")
     set_group("Engine")
 
-    add_packages("spirv-reflect")
+    add_packages("spirv-reflect", "directxshadercompiler")
 
     add_deps("Waterlily.Core", "Waterlily.RHI", "Waterlily.Assets", "Waterlily.Scene")
 
@@ -13,4 +14,4 @@ target("Waterlily.Renderer", function()
     })
 
     add_defines("WL_RENDERER_EXPORTS")
-end)
+end

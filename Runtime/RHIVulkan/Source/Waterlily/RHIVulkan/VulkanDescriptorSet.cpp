@@ -34,7 +34,7 @@ namespace Wl
 
     void VulkanShaderResourceGroup::SetSampler(const RHIWriteSamplerResource& /*resource*/)
     {
-        WL_CRASH("Not implemented.")
+        WL_CRASH("Not implemented.");
     }
 
     void VulkanShaderResourceGroup::SetTextureSampler(const RHIWriteTextureSamplerResource& resource)
@@ -64,7 +64,7 @@ namespace Wl
 
     void VulkanShaderResourceGroup::SetTexture(const RHIWriteTextureResource& /*resource*/)
     {
-        WL_CRASH("Not implemented.")
+        WL_CRASH("Not implemented.");
     }
 
     void VulkanShaderResourceGroup::Update()

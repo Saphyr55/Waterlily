@@ -49,8 +49,6 @@ namespace Wl
     struct WL_RENDERER_API RenderMesh
     {
     public:
-        RenderMesh(SharedPtr<RHIDevice> device);
-
         void Instanciate(const Array<RHIBuffer*>& vertexBuffers,
                          RHIBuffer* indexBuffer,
                          const Array<RenderSubMesh>& subMeshes);
@@ -76,6 +74,10 @@ namespace Wl
         {
             return GetSubMeshes().GetSize();
         }
+
+    public:
+        RenderMesh(SharedPtr<RHIDevice> device);
+        ~RenderMesh();
 
     private:
         SharedPtr<RHIDevice> m_device;

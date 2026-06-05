@@ -3,7 +3,6 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
-#include "Waterlily/Core/Platform/WindowHandle.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/RHIModule.hpp"
@@ -16,7 +15,7 @@
 namespace Wl
 {
 
-    void FrameContext::Initialize(const FrameContextInitInfo& info)
+    void FrameContext::Init(const FrameContextInitInfo& info)
     {
         WL_CHECK_MSG(info.GraphicsCommandBufferCount > 0, "Must have at least 1 graphics command buffer.");
 

@@ -24,6 +24,14 @@ function target_files_default(param)
     add_files("Source/**.cpp")
 end
 
+target("Assets") 
+do 
+    set_kind("phony")
+    set_group("Assets")
+
+    add_headerfiles("Assets/**")
+end
+
 -- Engine sources --
 includes("Runtime/Core")
 includes("Runtime/Messaging")

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LudoExports.hpp"
-#include "PassContext.hpp"
+#include "Passes/PassContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
@@ -15,7 +15,7 @@ namespace Wl
         RenderMesh* Mesh;
     };
 
-    LUDO_API FrameGraphPass& UIPassCreate(PassContext& pass_context,
+    LUDO_API FrameGraphPass& UIPassCreate(PassContext& passContext,
                                           GraphicsPipelineProperties& pipeline,
                                           UIPassParameters& params);
 

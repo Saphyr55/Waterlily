@@ -385,7 +385,7 @@ namespace Wl
             }
         }
 
-        WL_CRASH("Failed to find suitable Vulkan memory type for requested properties.")
+        WL_CRASH("Failed to find suitable Vulkan memory type for requested properties.");
         return 0;
     }
 

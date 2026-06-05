@@ -1,4 +1,5 @@
-#include "Waterlily/Entity/Registry.hpp"
+#include "Waterlily/Entity/EntityRegistry.hpp"
+
 #include <catch2/catch_all.hpp>
 
 using namespace Wl;
@@ -42,7 +43,7 @@ TEST_CASE("Add, get, and remove components.", "[EntityRegistry]")
     REQUIRE_FALSE(registry.HasComponent<Position>(e));
     REQUIRE(registry.GetComponent<Position>(e) == nullptr);
 
-    Position position{1.0f, 2.0f};
+    Position position {1.0f, 2.0f};
     registry.AddComponent<Position>(e, position);
 
     REQUIRE(registry.HasComponent<Position>(e));

@@ -14,10 +14,11 @@ namespace Wl
             Vertex,
             Fragment,
             Compute,
-            Geometry,
         };
 
         static bool CompileGLSL(StringRef inputFilepath, StringRef outputFilepath, Stage stage);
+        static bool CompileHLSL(StringRef inputFilepath, StringRef outputFilepath, Stage stage);
+
     };
 
 }// namespace Wl

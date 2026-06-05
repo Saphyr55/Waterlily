@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Waterlily/Entity/Registry.hpp"
+#include "Waterlily/Entity/EntityRegistry.hpp"
 
 namespace Wl
 {
@@ -45,6 +45,7 @@ namespace Wl
         }
 
     private:
+        Entity m_root;
         EntityRegistry m_registry;
     };
 

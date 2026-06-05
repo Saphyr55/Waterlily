@@ -13,10 +13,15 @@ namespace Wl
 
     // Source Shader filepath
     // TODO: Remove GLSL path, we shouln't compile this in the game.
-    inline const StringID LudoAssetGLSLVertexShaderForward = WL_SID("../../../Assets/Shaders/GLSL/forward.vert");
-    inline const StringID LudoAssetGLSLFragmentShaderForward = WL_SID("../../../Assets/Shaders/GLSL/forward.frag");
-    inline const StringID LudoAssetGLSLVertexShaderUI = WL_SID("../../../Assets/Shaders/GLSL/ui.vert");
-    inline const StringID LudoAssetGLSLFragmentShaderUI = WL_SID("../../../Assets/Shaders/GLSL/ui.frag");
+    inline const StringID LudoAssetGLSLVertexShaderForward = WL_SID("../../../Assets/Shaders/GLSL/forward.vert.glsl");
+    inline const StringID LudoAssetGLSLFragmentShaderForward = WL_SID("../../../Assets/Shaders/GLSL/forward.frag.glsl");
+    inline const StringID LudoAssetGLSLVertexShaderUI = WL_SID("../../../Assets/Shaders/GLSL/ui.vert.glsl");
+    inline const StringID LudoAssetGLSLFragmentShaderUI = WL_SID("../../../Assets/Shaders/GLSL/ui.frag.glsl");
+
+    inline const StringID LudoAssetGLSLVertexShaderForward_HLSL = WL_SID("../../../Assets/Shaders/HLSL/forward.vert.hlsl");
+    inline const StringID LudoAssetGLSLFragmentShaderForward_HLSL = WL_SID("../../../Assets/Shaders/HLSL/forward.frag.hlsl");
+    inline const StringID LudoAssetGLSLVertexShaderUI_HLSL = WL_SID("../../../Assets/Shaders/HLSL/ui.vert.hlsl");
+    inline const StringID LudoAssetGLSLFragmentShaderUI_HLSL = WL_SID("../../../Assets/Shaders/HLSL/ui.frag.hlsl");
 
     // Compiled SPIR-V shader filepath
     inline const StringID LudoAssetSPVVertexShaderForward = WL_SID("Assets/Shaders/SPV/forward.vert.spv");

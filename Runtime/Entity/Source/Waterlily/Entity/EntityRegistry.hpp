@@ -23,36 +23,9 @@ namespace Wl
         static constexpr const Entity InvalidEntity = 0;
 
     public:
-        Entity Create()
-        {
-            Entity e = m_nextIndex++;
-            m_entityToIndex[e] = m_LivingEntities.GetSize();
-            m_LivingEntities.Append(e);
-            return e;
-        }
+        Entity Create();
 
-        void Destroy(Entity e)
-        {
-            auto it = m_entityToIndex.find(e);
-            if (it == m_entityToIndex.end())
-            {
-                return;
-            }
-
-            size_t index = (*it).Value;
-            Entity last = m_LivingEntities.Back();
-
-            m_LivingEntities[index] = last;
-            m_entityToIndex[last] = index;
-
-            m_LivingEntities.Pop();
-            m_entityToIndex.Remove(e);
-
-            for (auto [_, pool]: m_componentPools)
-            {
-                pool->RemoveComponent(e);
-            }
-        }
+        void Destroy(Entity e);
 
         bool IsValid(Entity e) const
         {
@@ -68,8 +41,7 @@ namespace Wl
         template<typename ComponentType>
         void RemoveComponent(Entity e)
         {
-            auto it = m_componentPools.find(GetTypeIndex<ComponentType>());
-            if (it != m_componentPools.end())
+            if (auto it = m_componentPools.find(GetTypeIndex<ComponentType>()); it != m_componentPools.end())
             {
                 Wl::StaticPtrCast<ComponentPool<ComponentType>>((*it).Value)->RemoveComponent(e);
             }
@@ -107,8 +79,8 @@ namespace Wl
         EntityView<Components...> View()
         {
             std::tuple<ComponentPool<Components>*...> pools = GetPools<Components...>();
-            IComponentPool* smallest_pool = FindSmallestPool<Components...>();
-            const Array<Entity>& entities = smallest_pool->GetEntities();
+            IComponentPool* smallestPool = FindSmallestPool<Components...>();
+            const Array<Entity>& entities = smallestPool->GetEntities();
             return EntityView<Components...>(entities, pools);
         }
 
@@ -133,18 +105,7 @@ namespace Wl
             return *StaticPtrCast<ComponentPool<ComponentType>>((*it).Value);
         }
 
-        void Dispose()
-        {
-            for (auto [type, pool]: m_componentPools)
-            {
-                pool->Dispose();
-            }
-
-            m_entityToIndex.Clear();
-            m_componentPools.Clear();
-            m_LivingEntities.Clear();
-            m_nextIndex = 1;
-        }
+        void Dispose();
 
         EntityRegistry()
             : m_nextIndex(1)
@@ -153,7 +114,6 @@ namespace Wl
 
         ~EntityRegistry()
         {
-            Dispose();
         }
 
     private:
@@ -171,12 +131,10 @@ namespace Wl
             else
             {
                 auto components = std::make_tuple(GetComponent<Components>(entity)...);
-                std::apply(
-                        [&](auto*... comps)
+                std::apply([&](auto*... comps)
                 {
                     func(entity, *comps...);
-                },
-                        components);
+                }, components);
             }
         }
 
@@ -193,8 +151,7 @@ namespace Wl
             IComponentPool* smallest = nullptr;
             size_t minSize = std::numeric_limits<size_t>::max();
 
-            std::apply(
-                    [&](auto*... poolsPtr)
+            std::apply([&](auto*... poolsPtr)
             {
                 size_t sizes[] = {poolsPtr->GetStorage().GetSize()...};
                 IComponentPool* ptrs[] = {poolsPtr...};
@@ -207,8 +164,7 @@ namespace Wl
                         smallest = ptrs[i];
                     }
                 }
-            },
-                    pools);
+            }, pools);
 
             return smallest;
         }
@@ -217,7 +173,7 @@ namespace Wl
         ComponentPoolMap m_componentPools;
         HashMap<Entity, size_t> m_entityToIndex;
         Array<Entity> m_LivingEntities;
-        Entity m_nextIndex = 0;// 0 reserved as invalid.
+        Entity m_nextIndex = InvalidEntity;
     };
 
 }// namespace Wl

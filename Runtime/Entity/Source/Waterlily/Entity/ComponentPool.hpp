@@ -78,6 +78,8 @@ namespace Wl
             return m_storage.GetDense();
         }
 
+        virtual ~ComponentPool() = default;
+        
     private:
         SparseSet<ComponentType, Entity> m_storage;
     };

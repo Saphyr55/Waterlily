@@ -1,7 +1,6 @@
 BasedOnStyle: LLVM
 
 IndentWidth: 4
-Language: Cpp
 
 AccessModifierOffset: -4
 AlignArrayOfStructures: Left

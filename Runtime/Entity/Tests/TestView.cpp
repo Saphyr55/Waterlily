@@ -1,5 +1,5 @@
 #include "Waterlily/Entity/EntityView.hpp"
-#include "Waterlily/Entity/Registry.hpp"
+#include "Waterlily/Entity/EntityRegistry.hpp"
 
 #include <catch2/catch_all.hpp>
 

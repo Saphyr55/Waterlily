@@ -89,7 +89,7 @@ inline TypeIndex GetTypeIndex()
 
 #define WL_CRASH(msg)         \
     WL_CHECK_MSG(false, msg); \
-    abort();
+    abort()
 
 #define WL_CONCAT_INNER(a, b) a##b
 #define WL_CONCAT(a, b) WL_CONCAT_INNER(a, b)

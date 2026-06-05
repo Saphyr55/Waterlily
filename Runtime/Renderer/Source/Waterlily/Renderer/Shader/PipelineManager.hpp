@@ -44,6 +44,14 @@ namespace Wl
             return m_cache;
         }
 
+        void Dispose()
+        {
+            for (auto [name, pipeline]: GetPipelines())
+            {
+                Destroy(name);
+            }
+        }
+
     public:
         PipelineManager(SharedPtr<RHIDevice> device,
                         SharedPtr<RHIShaderResourceGroupLayoutCache> srgLayoutCache,

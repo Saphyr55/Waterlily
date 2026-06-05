@@ -59,7 +59,7 @@ namespace Wl
         static constexpr uint32_t MaxFrameInFlight = 3;
 
     public:
-        void Initialize(const FrameContextInitInfo& info);
+        void Init(const FrameContextInitInfo& info);
         void Shutdown();
 
         // TODO: This is a temporary solution, we should have a better way to handle shader resource group pool in the

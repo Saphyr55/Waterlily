@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LudoExports.hpp"
-#include "Passes/passContext.hpp"
+#include "Passes/PassContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
@@ -23,7 +23,7 @@ namespace Wl
         RenderAllocation* RenderViewAllocation;
     };
 
-    LUDO_API FrameGraphPass& ForwardPassCreate(PassContext& context,
+    LUDO_API FrameGraphPass& ForwardPassCreate(PassContext& passContext,
                                                GraphicsPipelineProperties& pipeline,
                                                ForwardPassParameters& params);
 

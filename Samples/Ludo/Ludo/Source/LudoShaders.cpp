@@ -12,19 +12,19 @@ namespace Wl
     {
         FileSystem& fileSystem = FileSystem::GetPlatform();
 
-        bool success = SPIRVShaderCompiler::CompileGLSL(LudoAssetGLSLVertexShaderForward.GetText(),
+        bool success = SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLVertexShaderForward_HLSL.GetText(),
                                                         LudoAssetSPVVertexShaderForward.GetText(),
                                                         SPIRVShaderCompiler::Stage::Vertex);
 
-        success = success && SPIRVShaderCompiler::CompileGLSL(LudoAssetGLSLFragmentShaderForward.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLFragmentShaderForward_HLSL.GetText(),
                                                               LudoAssetSPVFragmentShaderForward.GetText(),
                                                               SPIRVShaderCompiler::Stage::Fragment);
 
-        success = success && SPIRVShaderCompiler::CompileGLSL(LudoAssetGLSLVertexShaderUI.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLVertexShaderUI_HLSL.GetText(),
                                                               LudoAssetSPVVertexShaderUI.GetText(),
                                                               SPIRVShaderCompiler::Stage::Vertex);
 
-        success = success && SPIRVShaderCompiler::CompileGLSL(LudoAssetGLSLFragmentShaderUI.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLFragmentShaderUI_HLSL.GetText(),
                                                               LudoAssetSPVFragmentShaderUI.GetText(),
                                                               SPIRVShaderCompiler::Stage::Fragment);
 

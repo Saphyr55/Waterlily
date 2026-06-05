@@ -84,26 +84,20 @@ namespace Wl
         fileAssetRegistry.Close();
 
         SharedPtr<IAssetLoader> assetLoader = MakeShared<LCAAssetLoader>(assetsFileSystem);
-        SharedPtr<AssetManager> assetManager =
-                MakeShared<AssetManager>(assetRegistry, assetLoader);
-
+        SharedPtr<AssetManager> assetManager = MakeShared<AssetManager>(assetRegistry, assetLoader);
+        
+        SharedPtr<FrameContext> frameContext = MakeShared<FrameContext>();
         FrameContextInitInfo frameContextInitInfo = {};
         frameContextInitInfo.StagingBufferSize = 16 * WL_MB;
         frameContextInitInfo.StorageBufferSize = 16 * WL_MB;
         frameContextInitInfo.UniformBufferSize = 16 * WL_MB;
         frameContextInitInfo.FrameWidth = window->GetProperties().Width;
         frameContextInitInfo.FrameHeight = window->GetProperties().Height;
+        frameContext->Init(frameContextInitInfo);
 
-        SharedPtr<FrameContext> frameContext = MakeShared<FrameContext>();
-        frameContext->Initialize(frameContextInitInfo);
-
-        SharedPtr<TextureRegistry> textureRegistry =
-                MakeShared<TextureRegistry>(device, *assetManager, LudoTexturesSRGBinding);
-
+        SharedPtr<TextureRegistry> textureRegistry = MakeShared<TextureRegistry>(device, *assetManager, LudoTexturesSRGBinding);
         SharedPtr<MaterialRegistry> materialRegistry = MakeShared<MaterialRegistry>(device, LudoMaterialsSRGBinding);
-
-        SharedPtr<PipelineManager> pipelineManager =
-                MakeShared<PipelineManager>(device, frameContext->GetSRGLayoutCache(), assetsFileSystem);
+        SharedPtr<PipelineManager> pipelineManager = MakeShared<PipelineManager>(device, frameContext->GetSRGLayoutCache(), assetsFileSystem);
 
         Model* sponzaModelAsset = assetManager->GetAsset<Model>(LudoAssetModelSponza);
         WL_CHECK(sponzaModelAsset);
@@ -114,14 +108,11 @@ namespace Wl
             modelStaticMeshesAsset.Append(assetManager->GetAsset<StaticMesh>(meshAssetHandle));
         }
 
-        const RHIDeviceProperties& deviceProperties = device->GetDeviceProperties();
-
+        UploadScheduler uploadScheduler;
         UploadSchedulerInitInfo uploadSchedulerInit = {};
         uploadSchedulerInit.Device = device;
         uploadSchedulerInit.StagingSize = 16 * WL_MB;
-        uploadSchedulerInit.MinAlignment = deviceProperties.NonCoherentAtomSize;
-
-        UploadScheduler uploadScheduler;
+        uploadSchedulerInit.MinAlignment = device->GetDeviceProperties().NonCoherentAtomSize;
         uploadScheduler.Init(uploadSchedulerInit);
 
         UIDrawElement uiDrawElement;
@@ -140,7 +131,6 @@ namespace Wl
         RHIBuffer* indirectBuffer = device->CreateIndirectBuffer(drawIndexedCommands);
 
         uploadScheduler.Upload(ArrayView(drawIndexedCommands), indirectBuffer);
-
         textureRegistry->Upload();
         materialRegistry->Upload(device->GetGraphicsQueue());
 
@@ -359,10 +349,8 @@ namespace Wl
             forwardPipelineProperties.FragmentShaderPath = LudoAssetSPVFragmentShaderForward;
             forwardPipelineProperties.Scissor = scissor;
             forwardPipelineProperties.Viewport = viewport;
-            forwardPipelineProperties.SRGLayouts[LudoTextureGRGIndex] =
-                    textureRegistry->GetSRGLayout();
-            forwardPipelineProperties.SRGLayouts[LudoMaterialsSRGIndex] =
-                    materialRegistry->GetSRGLayout();
+            forwardPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
+            forwardPipelineProperties.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
 
             // Setup ui pipeline
             uiPipelineProperties.RenderPass = frameGraph->GetRenderPass(LudoUIPassName);
@@ -371,8 +359,7 @@ namespace Wl
             uiPipelineProperties.FragmentShaderPath = LudoAssetSPVFragmentShaderUI;
             uiPipelineProperties.Scissor = scissor;
             uiPipelineProperties.Viewport = viewport;
-            uiPipelineProperties.SRGLayouts[LudoTextureGRGIndex] =
-                    textureRegistry->GetSRGLayout();
+            uiPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
 
             // Creating pipelines.
             pipelineManager->GetOrCreate(forwardPass.GetName(), forwardPipelineProperties);
@@ -416,10 +403,7 @@ namespace Wl
 
         device->DestroyBuffer(indirectBuffer);
 
-        for (FrameGraphPass& pass: frameGraph->GetPasses())
-        {
-            pipelineManager->Destroy(pass.GetName());
-        }
+        pipelineManager->Dispose();
 
         textureRegistry->Dispose();
         frameContext->Shutdown();

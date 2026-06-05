@@ -21,6 +21,10 @@ namespace Wl
     {
     }
 
+    RenderMesh::~RenderMesh()
+    {
+    }
+
     RenderSubMeshDataLayout RenderSubMeshData::CreateLayout(size_t alignment)
     {
         size_t offset = 0;
