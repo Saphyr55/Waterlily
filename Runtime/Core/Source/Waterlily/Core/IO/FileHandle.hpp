@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 
 namespace Wl

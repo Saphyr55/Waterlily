@@ -18,7 +18,6 @@ namespace Wl
 
     void FrameContext::Initialize(const FrameContextInitInfo& info)
     {
-        m_windowHandle = info.WindowHandle;
         WL_CHECK_MSG(info.GraphicsCommandBufferCount > 0, "Must have at least 1 graphics command buffer.");
 
         ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
@@ -28,10 +27,7 @@ namespace Wl
 
         m_device = rhiModule->GetDevice();
 
-        WindowProperties windowProperties = display.QueryWindowProperties(m_windowHandle);
-        uint32_t frameHeight = static_cast<uint32_t>(windowProperties.Height);
-        uint32_t frameWidth = static_cast<uint32_t>(windowProperties.Width);
-        m_swapchain = m_device->CreateSwapchain(frameWidth, frameHeight, m_frameCount);
+        m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_frameCount);
 
         m_frameInFlightFences.Resize(m_swapchain->GetTextureViews().GetSize(), nullptr);
 
@@ -54,7 +50,7 @@ namespace Wl
             frame.RenderFinishedSemaphore = m_device->CreateSemaphore();
             frame.InFlightFence = m_device->CreateFence();
 
-            RHIBuffer* uniformBuffer = m_device->CreateBuffer(RHIBufferDescription{
+            RHIBuffer* uniformBuffer = m_device->CreateBuffer(RHIBufferDescription {
                     .Size = info.UniformBufferSize,
                     .Usage = RHIBufferUsageFlags::Uniform,
                     .MemoryUsage = RHIMemoryUsage::Host,
@@ -63,7 +59,7 @@ namespace Wl
 
             frame.UniformAllocator.Initialize(uniformBuffer, properties.MinUniformBufferOffsetAlignment);
 
-            RHIBuffer* storageBuffer = m_device->CreateBuffer(RHIBufferDescription{
+            RHIBuffer* storageBuffer = m_device->CreateBuffer(RHIBufferDescription {
                     .Size = info.StorageBufferSize,
                     .Usage = RHIBufferUsageFlags::Storage,
                     .MemoryUsage = RHIMemoryUsage::Host,
@@ -100,13 +96,6 @@ namespace Wl
 
     void FrameContext::Resize(uint32_t width, uint32_t height)
     {
-        while (width == 0 || height == 0)
-        {
-            WindowProperties windowProperties = Display::GetDefault().QueryWindowProperties(m_windowHandle);
-            width = windowProperties.Width;
-            height = windowProperties.Height;
-            Display::GetDefault().WaitEvent();
-        }
 
         m_device->WaitIdle();
         m_device->RecreateSwapchain(m_swapchain, width, height);

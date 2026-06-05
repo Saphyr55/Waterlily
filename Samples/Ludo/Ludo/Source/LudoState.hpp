@@ -6,32 +6,32 @@ namespace Wl
     namespace LudoState
     {
 
-        enum class Enum
+        enum class Type
         {
             Paused,
             Running,
         };
 
-        inline bool IsPaused(Enum state)
+        inline bool IsPaused(Type state)
         {
-            return state == Enum::Paused;
+            return state == Type::Paused;
         }
 
-        inline bool IsRunning(Enum state)
+        inline bool IsRunning(Type state)
         {
-            return state == Enum::Paused;
+            return state == Type::Paused;
         }
 
-        inline Enum TooglePause(Enum state)
+        inline Type TooglePause(Type state)
         {
-            if (state == Enum::Running)
+            if (state == Type::Running)
             {
-                return Enum::Paused;
+                return Type::Paused;
             }
 
-            if (state == Enum::Paused)
+            if (state == Type::Paused)
             {
-                return Enum::Running;
+                return Type::Running;
             }
 
             return state;

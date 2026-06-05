@@ -1,6 +1,5 @@
 #include "Waterlily/RHI/RHIModule.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
-#include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/Core/Trace/Trace.hpp"
 
 namespace Wl
@@ -20,7 +19,7 @@ namespace Wl
     }
 
     RHIModule::RHIModule()
-        : m_windowHandle(Display::InvalidWindowHandle)
+        : m_nativeWindow(nullptr)
         , m_graphicsAPI(GraphicsAPI::Vulkan)
     {
     }

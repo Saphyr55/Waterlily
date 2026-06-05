@@ -70,13 +70,13 @@ namespace Wl
         switch (accessor.componentType)
         {
             case TINYGLTF_COMPONENT_TYPE_BYTE:
-                return GlTLGetIndicesType<int8>(model, primitive.indices);
+                return GlTLGetIndicesType<int8_t>(model, primitive.indices);
             case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
                 return GlTLGetIndicesType<uint8_t>(model, primitive.indices);
             case TINYGLTF_COMPONENT_TYPE_SHORT:
-                return GlTLGetIndicesType<int16>(model, primitive.indices);
+                return GlTLGetIndicesType<int16_t>(model, primitive.indices);
             case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-                return GlTLGetIndicesType<uint16>(model, primitive.indices);
+                return GlTLGetIndicesType<uint16_t>(model, primitive.indices);
             case TINYGLTF_COMPONENT_TYPE_INT:
                 return GlTLGetIndicesType<int32_t>(model, primitive.indices);
             case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
@@ -147,7 +147,7 @@ namespace Wl
                        ImportContext& context,
                        StringRef basedir)
     {
-        uint64 uuidValue = handle.UUID.GetValue();
+        uint64_t uuidValue = handle.UUID.GetValue();
         StringRef format = "%s_%llu_%u";
 
         AssetRegistry& registry = *context.Registry;
@@ -201,10 +201,10 @@ namespace Wl
             tinygltf::Material& gltfMaterial = model.GlTFModel.materials[materialIndex];
             tinygltf::PbrMetallicRoughness& gltfPBR = gltfMaterial.pbrMetallicRoughness;
 
-            materialAsset->DiffuseFactor = {static_cast<float32>(gltfPBR.baseColorFactor[0]),
-                                            static_cast<float32>(gltfPBR.baseColorFactor[1]),
-                                            static_cast<float32>(gltfPBR.baseColorFactor[2]),
-                                            static_cast<float32>(gltfPBR.baseColorFactor[3])};
+            materialAsset->DiffuseFactor = {static_cast<float>(gltfPBR.baseColorFactor[0]),
+                                            static_cast<float>(gltfPBR.baseColorFactor[1]),
+                                            static_cast<float>(gltfPBR.baseColorFactor[2]),
+                                            static_cast<float>(gltfPBR.baseColorFactor[3])};
 
             if (gltfMaterial.normalTexture.index != -1)
             {

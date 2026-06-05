@@ -8,13 +8,12 @@
 namespace Wl
 {
 
-    class WL_CORE_API DisplaySignals
+    struct WL_CORE_API DisplaySignals
     {
-    public:
-        LSIGNAL_STATIC(OnWindowClose, WindowHandle /* window*/);
-        LSIGNAL_STATIC(OnWindowResized, WindowHandle /* window */, uint32_t /* width*/, uint32_t /* height */);
-        LSIGNAL_STATIC(OnWindowMinimized, WindowHandle /* window */);
-        LSIGNAL_STATIC(OnWindowShown, WindowHandle /* window */);
+        WL_SIGNAL_STATIC(OnWindowClose, WindowHandle /* window*/);
+        WL_SIGNAL_STATIC(OnWindowResized, WindowHandle /* window */, uint32_t /* width*/, uint32_t /* height */);
+        WL_SIGNAL_STATIC(OnWindowMinimized, WindowHandle /* window */);
+        WL_SIGNAL_STATIC(OnWindowShown, WindowHandle /* window */);
     };
 
     class WL_CORE_API DefaultDisplayEventHandler : public DisplayEventHandler

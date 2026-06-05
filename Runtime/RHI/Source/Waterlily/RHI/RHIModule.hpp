@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Modules/Module.hpp"
-#include "Waterlily/Core/Platform/WindowHandle.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/RHIExports.hpp"
 
@@ -13,7 +12,7 @@ namespace Wl
         Vulkan,
     };
 
-    StringRef GetGraphicsAPIName(GraphicsAPI graphics_api);
+    StringRef GetGraphicsAPIName(GraphicsAPI graphicsAPI);
 
     class WL_RHI_API RHIModule : public Module
     {
@@ -26,14 +25,14 @@ namespace Wl
 
         virtual void OnUnload() override;
 
-        inline void SetWindowHandle(WindowHandle window_handle)
+        inline void SetNativeWindow(void* nativeWindow)
         {
-            m_windowHandle = window_handle;
+            m_nativeWindow = nativeWindow;
         }
 
-        inline WindowHandle GetWindowHandle()
+        inline void* GetNativeWindow()
         {
-            return m_windowHandle;
+            return m_nativeWindow;
         }
 
         inline void SetDevice(SharedPtr<RHIDevice> device)
@@ -59,7 +58,7 @@ namespace Wl
         RHIModule();
 
     private:
-        WindowHandle m_windowHandle;
+        void* m_nativeWindow;
         GraphicsAPI m_graphicsAPI;
         SharedPtr<RHIDevice> m_device;
     };

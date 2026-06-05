@@ -10,12 +10,12 @@ namespace Wl
     class WL_ENGINE_API Application
     {
     public:
-        inline constexpr static double DefaultTargetFPS = 60.0;
+        inline constexpr static double DefaultTargetFPS = 144.0;
         inline constexpr static double DefaultTargetFrameRate = 1.0 / DefaultTargetFPS;
         inline constexpr static double UnlimtedFrameRate = 0.0;
 
     public:
-        LSIGNAL(OnTick, double /* deltaTime */);
+        WL_SIGNAL(OnTick, double /* deltaTime */);
 
     public:
         void Start();

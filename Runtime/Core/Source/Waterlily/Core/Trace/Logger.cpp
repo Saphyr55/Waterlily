@@ -56,14 +56,14 @@ namespace Wl
     ConsoleLogger::ConsoleLogger()
         : m_consoleLog([](const LogMessage& message) -> void
     {
-        const char* severity_str = Logger::GetSeverityMap()[message.Severity];
+        const char* severity = Logger::GetSeverityMap()[message.Severity];
 
-        if (!severity_str)
+        if (!severity)
         {
-            severity_str = "UNKNOWN";
+            severity = "UNKNOWN";
         }
 
-        std::cout << "[" << severity_str << "] " << message.Channel << " " << message.Message << "\n";
+        std::cout << "[" << severity << "] " << "[" << message.Time << "] " << message.Channel << " " << message.Message << "\n";
     })
     {
     }

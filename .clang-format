@@ -1,7 +1,13 @@
 BasedOnStyle: LLVM
+
+IndentWidth: 4
+Language: Cpp
+
 AccessModifierOffset: -4
+AlignArrayOfStructures: Left
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: None
+AlignEscapedNewlines: LeftWithLastLine
 AlignOperands: Align
 AllowAllArgumentsOnNextLine: false
 AllowShortLambdasOnASingleLine: None
@@ -9,9 +15,9 @@ AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
-AllowShortIfStatementsOnASingleLine: Always
-AllowShortLoopsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: MultiLine
 BreakBeforeBraces: Custom
@@ -30,7 +36,6 @@ BraceWrapping:
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   BeforeLambdaBody: true
-LambdaBodyIndentation: OuterScope
 BreakBeforeBinaryOperators: None
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
@@ -38,10 +43,11 @@ BreakInheritanceList: BeforeComma
 ColumnLimit: 0
 CompactNamespaces: false
 ContinuationIndentWidth: 8
+Cpp11BracedListStyle: true
 IndentCaseLabels: true
-IndentPPDirectives: None
-IndentWidth: 4
+IndentPPDirectives: BeforeHash
 KeepEmptyLinesAtTheStartOfBlocks: true
+LambdaBodyIndentation: OuterScope
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
 ObjCSpaceAfterProperty: false
@@ -52,7 +58,7 @@ SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
-SpaceBeforeCpp11BracedList: false
+SpaceBeforeCpp11BracedList: true
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements

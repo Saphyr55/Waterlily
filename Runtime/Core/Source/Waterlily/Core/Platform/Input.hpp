@@ -155,18 +155,18 @@ namespace Wl
     class WL_CORE_API Input
     {
     public:
-        LSIGNAL_STATIC(OnKeyDown, VirtualKey);
-        LSIGNAL_STATIC(OnKeyUp, VirtualKey);
-        LSIGNAL_STATIC(OnKeyPressed, VirtualKey);
-        LSIGNAL_STATIC(OnKeyRelease, VirtualKey);
+        WL_SIGNAL_STATIC(OnKeyDown, VirtualKey);
+        WL_SIGNAL_STATIC(OnKeyUp, VirtualKey);
+        WL_SIGNAL_STATIC(OnKeyPressed, VirtualKey);
+        WL_SIGNAL_STATIC(OnKeyRelease, VirtualKey);
 
-        LSIGNAL_STATIC(OnMouseMove, const MouseMove&);
-        LSIGNAL_STATIC(OnMouseWheel, const MouseWheel&);
+        WL_SIGNAL_STATIC(OnMouseMove, const MouseMove&);
+        WL_SIGNAL_STATIC(OnMouseWheel, const MouseWheel&);
 
-        LSIGNAL_STATIC(OnButtonDown, Button);
-        LSIGNAL_STATIC(OnButtonUp, Button);
-        LSIGNAL_STATIC(OnButtonPressed, Button);
-        LSIGNAL_STATIC(OnButtonRelease, Button);
+        WL_SIGNAL_STATIC(OnButtonDown, Button);
+        WL_SIGNAL_STATIC(OnButtonUp, Button);
+        WL_SIGNAL_STATIC(OnButtonPressed, Button);
+        WL_SIGNAL_STATIC(OnButtonRelease, Button);
 
         static bool KeyIsDown(VirtualKey key);
         static bool KeyIsUp(VirtualKey key);

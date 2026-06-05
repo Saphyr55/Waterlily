@@ -1,19 +1,19 @@
 #include "LudoApplication.hpp"
 
 #include "LudoAssets.hpp"
+#include "LudoModule.hpp"
 #include "LudoShaders.hpp"
 #include "LudoState.hpp"
 #include "LudoTypes.hpp"
 #include "Passes/ForwardPass.hpp"
 #include "Passes/UIPass.hpp"
+#include "Waterlily/Assets/AssetLoader.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
-#include "Waterlily/Core/Platform/DefaultDisplayEventHandler.hpp"
-#include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
 #include "Waterlily/Core/String/Format.hpp"
@@ -52,11 +52,14 @@ namespace Wl
 
     int32_t LudoApplication(Application& application)
     {
-        Display& display = Display::GetDefault();
         ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
+
+        LudoModule* ludoModule = moduleRegistry.GetModule<LudoModule>("Ludo");
         RHIModule* rhiModule = moduleRegistry.GetModule<RHIModule>("Waterlily.RHI");
-        WindowHandle windowHandle = rhiModule->GetWindowHandle();
+
+        SharedPtr<Window> window = ludoModule->GetWindow();
         SharedPtr<RHIDevice> device = rhiModule->GetDevice();
+
         Camera initialCamera = InitCamera();
         Camera camera = initialCamera;
 
@@ -68,8 +71,7 @@ namespace Wl
             }
         });
 
-        bool compiledShadersSuccess = Wl::CompileShaders();
-        WL_CHECK_MSG(compiledShadersSuccess, "Failed to compile shaders.");
+        WL_CHECK_MSG(Wl::CompileShaders(), "Failed to compile shaders.");
 
         FileSystem& assetsFileSystem = FileSystem::GetPlatform();
 
@@ -81,14 +83,16 @@ namespace Wl
         WL_CHECK(assetRegistry);
         fileAssetRegistry.Close();
 
+        SharedPtr<IAssetLoader> assetLoader = MakeShared<LCAAssetLoader>(assetsFileSystem);
         SharedPtr<AssetManager> assetManager =
-                MakeShared<AssetManager>(assetRegistry, MakeShared<LCAAssetLoader>(assetsFileSystem));
+                MakeShared<AssetManager>(assetRegistry, assetLoader);
 
         FrameContextInitInfo frameContextInitInfo = {};
         frameContextInitInfo.StagingBufferSize = 16 * WL_MB;
         frameContextInitInfo.StorageBufferSize = 16 * WL_MB;
         frameContextInitInfo.UniformBufferSize = 16 * WL_MB;
-        frameContextInitInfo.WindowHandle = windowHandle;
+        frameContextInitInfo.FrameWidth = window->GetProperties().Width;
+        frameContextInitInfo.FrameHeight = window->GetProperties().Height;
 
         SharedPtr<FrameContext> frameContext = MakeShared<FrameContext>();
         frameContext->Initialize(frameContextInitInfo);
@@ -123,37 +127,24 @@ namespace Wl
         UIDrawElement uiDrawElement;
         RenderMesh uiMesh = uiDrawElement.Instanciate(device, uploadScheduler);
 
-        WL_LOG_INFO("[Ludo]", Wl::Format("Uploading to the device... '%s'", LudoAssetModelSponza.GetText().data()))
-
         RenderMesh sponzaMesh(device);
         // TODO: We should create one big mesh to send.
-        sponzaMesh.Instanciate(uploadScheduler,
-                               assetManager,
-                               textureRegistry,
-                               materialRegistry,
-                               modelStaticMeshesAsset[0]);
+        sponzaMesh.Instanciate(uploadScheduler, assetManager, textureRegistry, materialRegistry, modelStaticMeshesAsset[0]);
 
-        for (RenderSubMesh& submesh: sponzaMesh.GetSubMeshes())
+        for (RenderSubMesh& subMesh: sponzaMesh.GetSubMeshes())
         {
-            submesh.Model = Matrix4f::Scale(submesh.Model, Vector3f(0.005f));
+            subMesh.Model = Matrix4f::Scale(subMesh.Model, Vector3f(0.005f));
         }
-
-        WL_LOG_INFO("[Ludo]", Wl::Format("Uploading '%s' finish.", LudoAssetModelSponza.GetText().data()))
 
         Array<RHIDrawIndexedCommand> drawIndexedCommands = sponzaMesh.CreateDrawIndexedCommands();
         RHIBuffer* indirectBuffer = device->CreateIndirectBuffer(drawIndexedCommands);
 
         uploadScheduler.Upload(ArrayView(drawIndexedCommands), indirectBuffer);
 
-        RHISwapchain* swapchain = frameContext->GetSwapchain();
-        float width = static_cast<float>(swapchain->GetWidth());
-        float height = static_cast<float>(swapchain->GetHeight());
-
         textureRegistry->Upload();
-        materialRegistry->UploadMaterials(device->GetGraphicsQueue());
+        materialRegistry->Upload(device->GetGraphicsQueue());
 
-        device->ImediateSubmit(
-                [&](RHICommandBuffer* commandBuffere)
+        device->ImediateSubmit([&](RHICommandBuffer* commandBuffere)
         {
             double byte = static_cast<double>(uploadScheduler.GetTotalPendingBytes());
             double megaByte = byte / static_cast<double>(WL_MB);
@@ -161,8 +152,8 @@ namespace Wl
             WL_LOG_DEBUG(
                     "[Ludo]",
                     Wl::Format("Flushed global upload scheduler, total uploaded: %.2lfMB", megaByte));
-        },
-                device->GetGraphicsQueue());
+        }, device->GetGraphicsQueue());
+
         uploadScheduler.Shutdown();
 
         textureRegistry->CompileSRG();
@@ -170,31 +161,31 @@ namespace Wl
 
         frameContext->InitializeSRGPools();
 
-        SharedPtr<FrameGraph> framegraph = MakeShared<FrameGraph>(device, frameContext);
+        SharedPtr<FrameGraph> frameGraph = MakeShared<FrameGraph>(device, frameContext);
 
-        LudoState::Enum state = LudoState::Enum::Running;
+        LudoState::Type state = LudoState::Type::Running;
 
-        DisplaySignals::OnWindowClose.Connect([&](WindowHandle)
+        window->GetEventHandler().OnClose.Connect([&]()
         {
             WL_LOG_INFO("[Ludo]", "Window closed.");
             application.Stop();
         });
 
-        DisplaySignals::OnWindowResized.Connect([&](WindowHandle window, uint32_t width, uint32_t height)
+        window->GetEventHandler().OnResized.Connect([&](uint32_t width, uint32_t height)
         {
             WL_LOG_INFO("[Ludo]", Wl::Format("Window resized to %dx%d", width, height));
             frameContext->Resize(width, height);
-            framegraph->Dispose();
+            frameGraph->Dispose();
         });
 
-        DisplaySignals::OnWindowMinimized.Connect([&](WindowHandle)
+        window->GetEventHandler().OnMinimized.Connect([&]()
         {
-            state = LudoState::Enum::Paused;
+            state = LudoState::Type::Paused;
         });
 
-        DisplaySignals::OnWindowShown.Connect([&](WindowHandle)
+        window->GetEventHandler().OnShown.Connect([&]()
         {
-            state = LudoState::Enum::Running;
+            state = LudoState::Type::Running;
         });
 
         GraphicsPipelineProperties forwardPipelineProperties = {};
@@ -207,7 +198,8 @@ namespace Wl
                 case VirtualKey::G: {
                     HashMap<StringID, GraphicsPipelineProperties*> propsMap = {
                             {LudoForwardPassName, &forwardPipelineProperties},
-                            {LudoUIPassName, &uiPipelineProperties}};
+                            {LudoUIPassName,      &uiPipelineProperties     }
+                    };
                     Wl::ReloadShaders(device, pipelineManager, propsMap);
                     break;
                 };
@@ -270,14 +262,14 @@ namespace Wl
         });
 
         // Render handle
-        application.OnTick.Connect([&](double deltaTime)
+        application.OnTick.Connect([&](double /* deltaTime */)
         {
             WL_RETURN_WHEN(LudoState::IsPaused(state));
 
             FrameResult result = frameContext->BeginFrame();
             WL_CHECK(result == FrameResult::Success);
 
-            framegraph->BeginFrame();
+            frameGraph->BeginFrame();
 
             Frame& frame = frameContext->GetCurrentFrame();
 
@@ -304,7 +296,7 @@ namespace Wl
             // Sponza allocation
             RenderAllocation sponzaAllocation = frame.StorageAllocator.AllocateArray<RenderSubMeshData>(sponzaMesh.GetSubMeshCount());
             RenderSubMeshDataLayout layout = RenderSubMeshData::CreateLayout(frame.StorageAllocator.GetMinAligment());
-            uint8_t* subMeshes = reinterpret_cast<uint8_t*>(sponzaAllocation.Data);
+            uint8_t* subMeshes = sponzaAllocation.Get<uint8_t>();
 
             for (size_t i = 0; i < sponzaMesh.GetSubMeshCount(); i++)
             {
@@ -316,22 +308,22 @@ namespace Wl
                 Memory::Copy(dest + layout.MaterialOffset, &data.Material, sizeof(MaterialHandle));
             }
 
-            FrameGraphBufferHandle indirect = framegraph->ImportBuffer(indirectBuffer, indirectBuffer->GetSize(), 0);
+            FrameGraphBufferHandle indirect = frameGraph->ImportBuffer(indirectBuffer, indirectBuffer->GetSize(), 0);
 
             FrameGraphTextureInfo colorTextureInfo = {};
             colorTextureInfo.Name = "Color";
-            colorTextureInfo.Format = swapchain->GetFormat();
+            colorTextureInfo.Format = frameContext->GetSwapchain()->GetFormat();
             colorTextureInfo.SizeClass = SizeClass::Swapchain;
-            FrameGraphTextureHandle color = framegraph->CreateTexture(colorTextureInfo);
+            FrameGraphTextureHandle color = frameGraph->CreateTexture(colorTextureInfo);
 
             FrameGraphTextureInfo depthStencilTextureInfo = {};
             depthStencilTextureInfo.Name = "DepthScentil";
             depthStencilTextureInfo.Format = RHIFormat::D24S8;
             depthStencilTextureInfo.SizeClass = SizeClass::Swapchain;
-            FrameGraphTextureHandle depthStencil = framegraph->CreateTexture(depthStencilTextureInfo);
+            FrameGraphTextureHandle depthStencil = frameGraph->CreateTexture(depthStencilTextureInfo);
 
             PassContext passContext = {};
-            passContext.FrameGraph = framegraph;
+            passContext.FrameGraph = frameGraph;
             passContext.MaterialRegistry = materialRegistry;
             passContext.TextureRegistry = textureRegistry;
             passContext.PipelineManager = pipelineManager;
@@ -354,14 +346,14 @@ namespace Wl
 
             FrameGraphPass& uiPass = UIPassCreate(passContext, uiPipelineProperties, uiParams);
 
-            framegraph->AddOutput(color);
-            framegraph->Compile();
+            frameGraph->AddOutput(color);
+            frameGraph->Compile();
 
             Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
             Rect2D scissor(0.0f, 0.0f, width, height);
 
             // Setup forward pipeline
-            forwardPipelineProperties.RenderPass = framegraph->GetRenderPass(LudoForwardPassName);
+            forwardPipelineProperties.RenderPass = frameGraph->GetRenderPass(LudoForwardPassName);
             forwardPipelineProperties.CullMode = RHICullModeFlags::Back;
             forwardPipelineProperties.VertexShaderPath = LudoAssetSPVVertexShaderForward;
             forwardPipelineProperties.FragmentShaderPath = LudoAssetSPVFragmentShaderForward;
@@ -373,7 +365,7 @@ namespace Wl
                     materialRegistry->GetSRGLayout();
 
             // Setup ui pipeline
-            uiPipelineProperties.RenderPass = framegraph->GetRenderPass(LudoUIPassName);
+            uiPipelineProperties.RenderPass = frameGraph->GetRenderPass(LudoUIPassName);
             uiPipelineProperties.CullMode = RHICullModeFlags::None;
             uiPipelineProperties.VertexShaderPath = LudoAssetSPVVertexShaderUI;
             uiPipelineProperties.FragmentShaderPath = LudoAssetSPVFragmentShaderUI;
@@ -386,13 +378,13 @@ namespace Wl
             pipelineManager->GetOrCreate(forwardPass.GetName(), forwardPipelineProperties);
             pipelineManager->GetOrCreate(uiPass.GetName(), uiPipelineProperties);
 
-            framegraph->Execute(frame.CommandBuffer);
-            framegraph->EndFrame();
+            frameGraph->Execute(frame.CommandBuffer);
+            frameGraph->EndFrame();
             frameContext->EndFrame();
         });
 
         // Input Handle
-        application.OnTick.Connect([&](double)
+        application.OnTick.Connect([&](double /* deltaTime */)
         {
             if (Input::KeyIsPressed(VirtualKey::C))
             {
@@ -409,22 +401,22 @@ namespace Wl
                 application.Stop();
             }
 
-            display.HandleEvents();
+            Display::GetDefault().HandleEvents();
         });
 
-        display.ShowWindow(windowHandle);
+        window->Show();
 
         application.Start();
         application.Run();
 
-        framegraph->Dispose();
+        frameGraph->Dispose();
 
         sponzaMesh.Destroy();
         uiMesh.Destroy();
 
         device->DestroyBuffer(indirectBuffer);
 
-        for (FrameGraphPass& pass: framegraph->GetPasses())
+        for (FrameGraphPass& pass: frameGraph->GetPasses())
         {
             pipelineManager->Destroy(pass.GetName());
         }
@@ -432,11 +424,11 @@ namespace Wl
         textureRegistry->Dispose();
         frameContext->Shutdown();
 
-        display.CloseWindow(windowHandle);
+        window->Close();
 
         application.Stop();
 
-        return 0;
+        return EXIT_SUCCESS;
     }
 
 }// namespace Wl

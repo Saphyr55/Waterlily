@@ -6,13 +6,13 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Signals/Connection.hpp"
 
-#define LSIGNAL_DETAILS(keyword, name, ...)            \
+#define WL_SIGNAL_DETAILS(keyword, name, ...)            \
     using name##_signal_t = ::Wl::Signal<__VA_ARGS__>; \
     keyword name##_signal_t name
 
-#define LSIGNAL_STATIC(name, ...) LSIGNAL_DETAILS(inline static, name, __VA_ARGS__)
-#define LSIGNAL_MEMBER(name, ...) LSIGNAL_DETAILS(mutable, name, __VA_ARGS__)
-#define LSIGNAL(name, ...) LSIGNAL_MEMBER(name, __VA_ARGS__)
+#define WL_SIGNAL_STATIC(name, ...) WL_SIGNAL_DETAILS(inline static, name, __VA_ARGS__)
+#define WL_SIGNAL_MEMBER(name, ...) WL_SIGNAL_DETAILS(mutable, name, __VA_ARGS__)
+#define WL_SIGNAL(name, ...) WL_SIGNAL_MEMBER(name, __VA_ARGS__)
 
 namespace Wl
 {

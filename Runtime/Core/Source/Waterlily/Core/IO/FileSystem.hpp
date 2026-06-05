@@ -2,7 +2,6 @@
 
 #include "Waterlily/Core/Containers/Result.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
 
@@ -31,34 +30,35 @@ namespace Wl
     enum class FileMode
     {
         /**
-     * Opens an existing file.
-     * Fails if the file does not exist.
-     */
+         * Opens an existing file.
+         * Fails if the file does not exist.
+         */
         Open,
 
         /**
-     * Creates a file.
-     * If the file already exists, its contents are typically overwritten.
-     */
+         * Creates a file.
+         * If the file already exists, its contents are typically overwritten.
+         */
         Create,
 
         /**
-     * Creates a new file only.
-     * Fails if the file already exists.
-     */
+         * Creates a new file only.
+         * Fails if the file already exists.
+         */
         CreateNew,
 
         /**
-     * Opens the file if it exists, otherwise creates it.
-     */
+         * Opens the file if it exists, otherwise creates it.
+         */
         OpenOrCreate,
 
         /**
-     * Opens the file and writes at the end.
-     * Creates the file if it does not exist.
-     */
+         * Opens the file and writes at the end.
+         * Creates the file if it does not exist.
+         */
         Append,
     };
+
     using FileResult = Result<SharedPtr<FileHandle>, FileError>;
 
     class WL_CORE_API FileSystem

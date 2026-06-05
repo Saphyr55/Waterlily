@@ -4,6 +4,7 @@
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Entity/Entity.hpp"
 #include "Waterlily/Entity/Registry.hpp"
+#include "Waterlily/Scene/Camera.hpp"
 
 namespace Wl
 {
@@ -11,12 +12,6 @@ namespace Wl
     struct NameComponent
     {
         StringID Name;
-
-        NameComponent() = default;
-        NameComponent(const StringID& name)
-            : Name(name)
-        {
-        }
     };
 
     struct TransformComponent
@@ -28,7 +23,7 @@ namespace Wl
     struct HierarchyComponent
     {
         Entity Parent = EntityRegistry::InvalidEntity;
-        Array<Entity> Children;
+        Array<Entity> Childrens;
 
         bool IsRoot() const
         {
@@ -37,8 +32,13 @@ namespace Wl
 
         bool HasChildren() const
         {
-            return !Children.IsEmpty();
+            return !Childrens.IsEmpty();
         }
+    };
+
+    struct CameraComponent
+    {
+        Camera camera;
     };
 
 }// namespace Wl

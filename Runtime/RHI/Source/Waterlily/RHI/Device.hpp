@@ -1,7 +1,6 @@
 #pragma once
 
 #include "BindlessShaderResources.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Function/Function.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
@@ -26,8 +25,8 @@ namespace Wl
         size_t MinStorageBufferOffsetAlignment = 0;
         size_t MaxUniformBufferRange = 0;
         size_t MaxStorageBufferRange = 0;
-        uint32_t MaxBoundShaderResourceGroup = 0;
-        uint32_t MaxComputeWorkGroupInvocations = 0;
+        size_t MaxBoundShaderResourceGroup = 0;
+        size_t MaxComputeWorkGroupInvocations = 0;
         size_t NonCoherentAtomSize = 0;
     };
 

@@ -37,7 +37,7 @@ namespace Wl
     {
         FrameGraphTextureHandle index = m_textures.GetSize();
 
-        m_textures.Append(FrameGraphTextureResource{
+        m_textures.Append(FrameGraphTextureResource {
                 .Info = info,
                 .IsTransient = true,
         });
@@ -49,7 +49,7 @@ namespace Wl
     {
         FrameGraphBufferHandle index = m_buffers.GetSize();
 
-        m_buffers.Append(FrameGraphBufferResource{
+        m_buffers.Append(FrameGraphBufferResource {
                 .Info = info,
                 .PhysicalTexture = {},
                 .IsTransient = true,
@@ -92,8 +92,7 @@ namespace Wl
 
     FrameGraphPass& FrameGraph::AddPass(const StringID& name)
     {
-        WL_CHECK_MSG(!m_passNames.Contains(name),
-                   Wl::Format("A pass named %s already exists in FrameGraph.", name.GetText().data()));
+        WL_CHECK_MSG(!m_passNames.Contains(name), Wl::Format("A pass named %s already exists in FrameGraph.", name.GetText().data()));
         m_passes.Emplace(name);
         m_passNames.Put(name, m_passes.GetSize() - 1);
         return m_passes.Back();
@@ -633,8 +632,7 @@ namespace Wl
             }
             else
             {
-                WL_CHECK_MSG(description.Width == width && description.Height == height,
-                           "All attachments in a framebuffer must have the same size!");
+                WL_CHECK_MSG(description.Width == width && description.Height == height, "All attachments in a framebuffer must have the same size!");
             }
         };
 

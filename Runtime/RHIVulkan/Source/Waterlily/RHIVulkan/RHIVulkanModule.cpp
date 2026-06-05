@@ -30,10 +30,7 @@ namespace Wl
         ModuleRegistry& registry = ModuleRegistry::GetInstance();
         RHIModule* rhiModule = registry.GetModule<RHIModule>("Waterlily.RHI");
 
-        m_windowHandle = rhiModule->GetWindowHandle();
-
-        void* nativeWindow = Display::GetDefault().GetNativeWindowHandle(m_windowHandle);
-        VulkanContextCreate(VulkanContextGet(), nativeWindow);
+        VulkanContextCreate(VulkanContextGet(), rhiModule->GetNativeWindow());
 
         m_device = MakeShared<VulkanDevice>();
         m_device->Init();

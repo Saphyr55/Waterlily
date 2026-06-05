@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 
 #include <type_traits>
@@ -11,6 +10,7 @@ namespace Wl
     template<typename T>
     struct AlignedStorage
     {
+
         static constexpr const size_t Size = sizeof(T);
         static constexpr const size_t Alignment = alignof(T);
 

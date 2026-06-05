@@ -95,7 +95,7 @@ namespace Wl
         return m_registry[handle];
     }
 
-    void MaterialRegistry::UploadMaterials(SharedPtr<RHICommandQueue> queue)
+    void MaterialRegistry::Upload(SharedPtr<RHICommandQueue> queue)
     {
         size_t minAlignment = m_device->GetDeviceProperties().MinStorageBufferOffsetAlignment;
 

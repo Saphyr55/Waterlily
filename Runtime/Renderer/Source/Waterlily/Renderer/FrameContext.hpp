@@ -45,7 +45,8 @@ namespace Wl
 
     struct FrameContextInitInfo
     {
-        WindowHandle WindowHandle;
+        uint32_t FrameWidth;
+        uint32_t FrameHeight;
         size_t UniformBufferSize;
         size_t StorageBufferSize;
         size_t StagingBufferSize;
@@ -78,15 +79,12 @@ namespace Wl
 
         inline RHISwapchain* GetSwapchain();
         inline SharedPtr<RHIShaderResourceGroupLayoutCache> GetSRGLayoutCache();
-        inline WindowHandle GetWindowHandle();
 
     public:
         FrameContext() = default;
         ~FrameContext() = default;
 
     private:
-        WindowHandle m_windowHandle = Display::InvalidWindowHandle;
-
         SharedPtr<RHIDevice> m_device;
 
         SharedPtr<RHIShaderResourceGroupLayoutCache> m_srgLayoutCache;
@@ -99,11 +97,6 @@ namespace Wl
         uint32_t frame_index_ = 0;
         uint32_t m_frameCount = MaxFrameInFlight;
     };
-
-    inline WindowHandle FrameContext::GetWindowHandle()
-    {
-        return m_windowHandle;
-    }
 
     inline SharedPtr<RHIShaderResourceGroupLayoutCache> FrameContext::GetSRGLayoutCache()
     {

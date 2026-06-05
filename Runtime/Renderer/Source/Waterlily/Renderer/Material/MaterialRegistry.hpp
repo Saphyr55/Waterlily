@@ -26,7 +26,7 @@ namespace Wl
         void SetMaterial(MaterialHandle handle, const MaterialData& data);
         const MaterialData& GetMaterial(MaterialHandle handle);
 
-        void UploadMaterials(SharedPtr<RHICommandQueue> queue);
+        void Upload(SharedPtr<RHICommandQueue> queue);
         void CompileShaderResource();
 
         inline uint32_t GetShaderBinding()
