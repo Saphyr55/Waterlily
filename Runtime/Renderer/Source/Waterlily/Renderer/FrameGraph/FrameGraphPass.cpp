@@ -1,7 +1,5 @@
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
-#include "Waterlily/RHI/RenderPass.hpp"
 #include "Waterlily/RHI/Types.hpp"
 
 namespace Wl

@@ -204,10 +204,10 @@ namespace Wl
         FrameGraphPassStage m_stage = FrameGraphPassStage::Graphics;
 
         Array<FrameGraphTextureHandle> m_textureReads;
-        Array<RHITextureLayout> m_textureReadStates;
+        HashMap<FrameGraphTextureHandle, RHITextureLayout> m_textureReadStates;
 
         Array<FrameGraphTextureHandle> m_textureWrites;
-        Array<RHITextureLayout> m_textureWriteStates;
+        HashMap<FrameGraphTextureHandle, RHITextureLayout> m_textureWriteStates;
 
         Option<FrameGraphTextureHandle> m_depthStencil;
 

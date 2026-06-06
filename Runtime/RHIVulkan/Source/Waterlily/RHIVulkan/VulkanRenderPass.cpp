@@ -13,9 +13,12 @@ namespace Wl
 
     void VulkanRenderPass::Create()
     {
-        Array<VkAttachmentDescription> attachments(m_description.ColorAttachmentDecriptions.size() + 1);
-        for (const RHIColorAttachmentDescription& attachment_description: m_description.ColorAttachmentDecriptions)
+        Array<VkAttachmentDescription> attachments(m_description.ColorAttachmentDecriptions.GetSize() + 1);
+        Array<VkAttachmentReference> colorAttachmentReferences(m_description.ColorAttachmentDecriptions.GetSize());
+
+        for (size_t attachmenIndex = 0; attachmenIndex < m_description.ColorAttachmentDecriptions.GetSize(); attachmenIndex++)
         {
+            const RHIColorAttachmentDescription& attachment_description = m_description.ColorAttachmentDecriptions[attachmenIndex];
             VkAttachmentDescription colorAttachmentDescription = {};
             colorAttachmentDescription.format = VulkanFormatGet(attachment_description.Format);
             colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -26,17 +29,19 @@ namespace Wl
             colorAttachmentDescription.initialLayout = VulkanTextureLayoutGet(attachment_description.InitialLayout);
             colorAttachmentDescription.finalLayout = VulkanTextureLayoutGet(attachment_description.FinalLayout);
             attachments.Append(colorAttachmentDescription);
+            
+            VkAttachmentReference colorAttachmentReference = {};
+            colorAttachmentReference.attachment = attachmenIndex;
+            colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            colorAttachmentReferences.Append(colorAttachmentReference);
         }
-
-        VkAttachmentReference colorAttachmentReference = {};
-        colorAttachmentReference.attachment = 0;
-        colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription subpassDescription = {};
         subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpassDescription.colorAttachmentCount = 1;
-        subpassDescription.pColorAttachments = &colorAttachmentReference;
+        subpassDescription.colorAttachmentCount = colorAttachmentReferences.GetSize();
+        subpassDescription.pColorAttachments = colorAttachmentReferences.GetData();
 
+        VkAttachmentReference depthAttachmentReference = {};
         if (m_description.DepthAttachmentDescription.HasValue())
         {
             RHIDepthAttachmentDescription& depthAttachmentDesc = *m_description.DepthAttachmentDescription;
@@ -65,11 +70,11 @@ namespace Wl
             depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             depthAttachmentDescription.finalLayout = layout;
 
-            VkAttachmentReference depthAttachmentReference = {};
-            depthAttachmentReference.attachment = 1;
+            depthAttachmentReference.attachment = colorAttachmentReferences.GetSize();
             depthAttachmentReference.layout = layout;
 
             subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+
             attachments.Append(depthAttachmentDescription);
         }
 
@@ -91,8 +96,8 @@ namespace Wl
                 VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
         depthSubpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-        Array<VkSubpassDependency> dependencies(attachments.size());
-        for (size_t i = 0; i < attachments.size() - 1; i++)
+        Array<VkSubpassDependency> dependencies(attachments.GetSize());
+        for (size_t i = 0; i < attachments.GetSize() - 1; i++)
         {
             dependencies.Append(subpassDependency);
         }
@@ -104,12 +109,12 @@ namespace Wl
 
         VkRenderPassCreateInfo renderPassCreateInfo = {};
         renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassCreateInfo.attachmentCount = attachments.size();
-        renderPassCreateInfo.pAttachments = attachments.data();
+        renderPassCreateInfo.attachmentCount = attachments.GetSize();
+        renderPassCreateInfo.pAttachments = attachments.GetData();
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDescription;
-        renderPassCreateInfo.dependencyCount = dependencies.size();
-        renderPassCreateInfo.pDependencies = dependencies.data();
+        renderPassCreateInfo.dependencyCount = dependencies.GetSize();
+        renderPassCreateInfo.pDependencies = dependencies.GetData();
 
         WL_VULKAN_CHECK(VulkanAPI::vkCreateRenderPass(m_context.Device,
                                                       &renderPassCreateInfo,

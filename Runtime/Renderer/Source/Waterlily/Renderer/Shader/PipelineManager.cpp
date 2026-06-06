@@ -14,6 +14,7 @@ namespace Wl
     RHIGraphicsPipeline* PipelineManager::Create(const StringID& name, GraphicsPipelineProperties& props)
     {
         WL_CHECK_MSG(!m_cache.Contains(name), Wl::Format("The pipeline named '%s' already exist.", name.GetText().data()));
+
         RHIGraphicsPipeline* pipeline = CreateInternal(props);
         m_cache[name] = pipeline;
         return pipeline;
@@ -58,6 +59,8 @@ namespace Wl
 
     RHIGraphicsPipeline* PipelineManager::CreateInternal(GraphicsPipelineProperties& props)
     {
+        WL_CHECK_MSG(props.RenderPass, "Render pass is required to create a graphics pipeline.");
+        
         bool result = false;
 
         // Load shaders binary codes.

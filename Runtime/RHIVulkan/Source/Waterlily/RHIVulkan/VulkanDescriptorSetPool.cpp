@@ -21,7 +21,7 @@ namespace Wl
         allocationInfo.descriptorSetCount = 1;
         allocationInfo.pSetLayouts = &vulkanLayoutHandle;
 
-        size_t groupIndex;
+        size_t groupIndex = 0;
         if (!m_freeGroups.IsEmpty())
         {
             groupIndex = *m_freeGroups.begin();
@@ -36,8 +36,7 @@ namespace Wl
         VulkanShaderResourceGroup* newGroup = &m_allocatedGroups[groupIndex];
         newGroup->Init(groupIndex, layout);
 
-        WL_VULKAN_CHECK(
-                VulkanAPI::vkAllocateDescriptorSets(context.Device, &allocationInfo, &newGroup->GetHandle()));
+        WL_VULKAN_CHECK(VulkanAPI::vkAllocateDescriptorSets(context.Device, &allocationInfo, &newGroup->GetHandle()));
 
         return newGroup;
     }

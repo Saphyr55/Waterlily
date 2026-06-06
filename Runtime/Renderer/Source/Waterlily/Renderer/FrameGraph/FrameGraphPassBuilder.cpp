@@ -9,7 +9,7 @@ namespace Wl
     void FrameGraphPassBuilder::Read(FrameGraphTextureHandle handle)
     {
         m_pass.m_textureReads.Append(handle);
-        m_pass.m_textureWriteStates.Append(RHITextureLayout::ShaderReadOnly);
+        m_pass.m_textureReadStates[handle] = RHITextureLayout::ShaderReadOnly;
 
         m_framegraph.GetTexture(handle).Usage |= RHITextureUsageFlags::Sampler;
     }
@@ -17,7 +17,7 @@ namespace Wl
     void FrameGraphPassBuilder::Write(FrameGraphTextureHandle handle)
     {
         m_pass.m_textureWrites.Append(handle);
-        m_pass.m_textureWriteStates.Append(RHITextureLayout::ColorAttachment);
+        m_pass.m_textureWriteStates[handle] = RHITextureLayout::ColorAttachment;
 
         m_framegraph.GetTexture(handle).Usage |= RHITextureUsageFlags::ColorAttachment;
     }
@@ -25,7 +25,7 @@ namespace Wl
     void FrameGraphPassBuilder::WriteStorage(FrameGraphTextureHandle handle)
     {
         m_pass.m_textureWrites.Append(handle);
-        m_pass.m_textureWriteStates.Append(RHITextureLayout::General);
+        m_pass.m_textureWriteStates[handle] = RHITextureLayout::General;
 
         m_framegraph.GetTexture(handle).Usage |= RHITextureUsageFlags::Storage;
     }

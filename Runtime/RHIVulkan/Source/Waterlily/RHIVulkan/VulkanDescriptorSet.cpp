@@ -19,10 +19,6 @@ namespace Wl
 
         if (entry.BufferInfos.GetSize() <= resource.ArrayIndex)
         {
-            if (entry.BufferInfos.IsEmpty())
-            {
-                entry.BufferInfos = {};
-            }
             entry.BufferInfos.Resize(resource.ArrayIndex + 1);
         }
 
@@ -49,10 +45,6 @@ namespace Wl
 
         if (entry.ImageInfos.GetSize() <= resource.ArrayIndex)
         {
-            if (entry.ImageInfos.IsEmpty())
-            {
-                entry.ImageInfos = {};
-            }
             entry.ImageInfos.Resize(resource.ArrayIndex + 1);
         }
 
@@ -62,9 +54,27 @@ namespace Wl
         info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
 
-    void VulkanShaderResourceGroup::SetTexture(const RHIWriteTextureResource& /*resource*/)
+    void VulkanShaderResourceGroup::SetTexture(const RHIWriteTextureResource& resource)
     {
-        WL_CRASH("Not implemented.");
+        VulkanTextureView* vulkanTextureView =
+                static_cast<VulkanTextureView*>(resource.TextureView);
+
+        VkDescriptorType descriptorType =
+                VulkanDescriptorTypeGet(m_layout->GetResourceType(resource.Binding));
+
+        PendingDescriptorArray& entry = m_pendings[resource.Binding];
+        entry.Type = descriptorType;
+
+        if (entry.ImageInfos.GetSize() <= resource.ArrayIndex)
+        {
+            entry.ImageInfos.Resize(resource.ArrayIndex + 1);
+        }
+
+        VkDescriptorImageInfo& info = entry.ImageInfos[resource.ArrayIndex];
+
+        info.sampler = VK_NULL_HANDLE;
+        info.imageView = vulkanTextureView->GetHandle();
+        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
 
     void VulkanShaderResourceGroup::Update()

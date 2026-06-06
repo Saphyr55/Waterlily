@@ -2,10 +2,10 @@
 
 struct VSInput
 {
-	WLS_LOCATION(0) 
+	WLSL_LOCATION(0) 
 	float3 Position : POSITION0;
 	
-	WLS_LOCATION(1) 
+	WLSL_LOCATION(1) 
 	float4 Color : COLOR0;
 };
 

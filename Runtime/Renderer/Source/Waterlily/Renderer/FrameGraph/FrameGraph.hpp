@@ -133,7 +133,7 @@ namespace Wl
 
         RHITextureLayoutTransition BarrierToRHITransition(const FrameGraphTextureBarrier& barrier);
 
-        bool IsSwapchainResource(FrameGraphTextureHandle handle);
+        bool IsOutputResource(FrameGraphTextureHandle handle);
 
     private:
         SharedPtr<RHIDevice> m_device;

@@ -23,9 +23,6 @@ namespace Wl
     inline constexpr uint32_t LudoMaterialsSRGIndex = 3;
     inline constexpr uint32_t LudoMaterialsSRGBinding = 0;
 
-    inline const StringID LudoForwardPassName = WL_SID("Forward");
-    inline const StringID LudoUIPassName = WL_SID("UI");
-
     struct UIDrawElement
     {
     public:

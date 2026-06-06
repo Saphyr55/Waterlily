@@ -6,6 +6,8 @@
 #include "LudoState.hpp"
 #include "LudoTypes.hpp"
 #include "Passes/ForwardPass.hpp"
+#include "Passes/GBufferPass.hpp"
+#include "Passes/LightingPass.hpp"
 #include "Passes/UIPass.hpp"
 #include "Waterlily/Assets/AssetLoader.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
@@ -85,7 +87,7 @@ namespace Wl
 
         SharedPtr<IAssetLoader> assetLoader = MakeShared<LCAAssetLoader>(assetsFileSystem);
         SharedPtr<AssetManager> assetManager = MakeShared<AssetManager>(assetRegistry, assetLoader);
-        
+
         SharedPtr<FrameContext> frameContext = MakeShared<FrameContext>();
         FrameContextInitInfo frameContextInitInfo = {};
         frameContextInitInfo.StagingBufferSize = 16 * WL_MB;
@@ -178,8 +180,8 @@ namespace Wl
             state = LudoState::Type::Running;
         });
 
-        GraphicsPipelineProperties forwardPipelineProperties = {};
-        GraphicsPipelineProperties uiPipelineProperties = {};
+        GraphicsPipelineProperties gbufferPipelineProperties = {};
+        GraphicsPipelineProperties lightingPipelineProperties = {};
 
         Input::OnKeyRelease.Connect([&](VirtualKey key)
         {
@@ -187,8 +189,8 @@ namespace Wl
             {
                 case VirtualKey::G: {
                     HashMap<StringID, GraphicsPipelineProperties*> propsMap = {
-                            {LudoForwardPassName, &forwardPipelineProperties},
-                            {LudoUIPassName,      &uiPipelineProperties     }
+                            {LudoForwardPassName, &gbufferPipelineProperties },
+                            {LudoUIPassName,      &lightingPipelineProperties}
                     };
                     Wl::ReloadShaders(device, pipelineManager, propsMap);
                     break;
@@ -306,6 +308,24 @@ namespace Wl
             colorTextureInfo.SizeClass = SizeClass::Swapchain;
             FrameGraphTextureHandle color = frameGraph->CreateTexture(colorTextureInfo);
 
+            FrameGraphTextureInfo positionTextureInfo = {};
+            positionTextureInfo.Name = "Position";
+            positionTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
+            positionTextureInfo.SizeClass = SizeClass::Swapchain;
+            FrameGraphTextureHandle position = frameGraph->CreateTexture(positionTextureInfo);
+
+            FrameGraphTextureInfo normalTextureInfo = {};
+            normalTextureInfo.Name = "Normal";
+            normalTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
+            normalTextureInfo.SizeClass = SizeClass::Swapchain;
+            FrameGraphTextureHandle normal = frameGraph->CreateTexture(normalTextureInfo);
+
+            FrameGraphTextureInfo albedoTextureInfo = {};
+            albedoTextureInfo.Name = "Albedo";
+            albedoTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
+            albedoTextureInfo.SizeClass = SizeClass::Swapchain;
+            FrameGraphTextureHandle albedo = frameGraph->CreateTexture(albedoTextureInfo);
+
             FrameGraphTextureInfo depthStencilTextureInfo = {};
             depthStencilTextureInfo.Name = "DepthScentil";
             depthStencilTextureInfo.Format = RHIFormat::D24S8;
@@ -318,23 +338,29 @@ namespace Wl
             passContext.TextureRegistry = textureRegistry;
             passContext.PipelineManager = pipelineManager;
 
-            ForwardPassParameters forwardParams = {};
-            forwardParams.Color = color;
-            forwardParams.DepthStencil = depthStencil;
-            forwardParams.Indirect = indirect;
-            forwardParams.DrawCount = drawIndexedCommands.GetSize();
-            forwardParams.MeshAllocation = &sponzaAllocation;
-            forwardParams.Mesh = &sponzaMesh;
-            forwardParams.RenderViewAllocation = &viewAllocation;
-            forwardParams.LightAllocation = &lightAllocation;
+            GBufferPassParameters gBufferParams = {};
+            gBufferParams.Position = position;
+            gBufferParams.Normal = normal;
+            gBufferParams.Albedo = albedo;
+            gBufferParams.DepthStencil = depthStencil;
+            gBufferParams.Indirect = indirect;
+            gBufferParams.DrawCount = drawIndexedCommands.GetSize();
+            gBufferParams.MeshAllocation = &sponzaAllocation;
+            gBufferParams.Mesh = &sponzaMesh;
+            gBufferParams.RenderViewAllocation = &viewAllocation;
 
-            FrameGraphPass& forwardPass = ForwardPassCreate(passContext, forwardPipelineProperties, forwardParams);
+            FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, gbufferPipelineProperties, gBufferParams);
 
-            UIPassParameters uiParams = {};
-            uiParams.Color = color;
-            uiParams.Mesh = &uiMesh;
+            LightingPassParameters lightingParams = {};
+            lightingParams.Color = color;
+            lightingParams.Albedo = albedo;
+            lightingParams.Normal = normal;
+            lightingParams.Position = position;
+            lightingParams.DepthStencil = depthStencil;
+            lightingParams.Indirect = indirect;
+            lightingParams.Mesh = &uiMesh;
 
-            FrameGraphPass& uiPass = UIPassCreate(passContext, uiPipelineProperties, uiParams);
+            FrameGraphPass& lightingPass = LightingPassCreate(passContext, lightingPipelineProperties, lightingParams);
 
             frameGraph->AddOutput(color);
             frameGraph->Compile();
@@ -342,28 +368,25 @@ namespace Wl
             Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
             Rect2D scissor(0.0f, 0.0f, width, height);
 
-            // Setup forward pipeline
-            forwardPipelineProperties.RenderPass = frameGraph->GetRenderPass(LudoForwardPassName);
-            forwardPipelineProperties.CullMode = RHICullModeFlags::Back;
-            forwardPipelineProperties.VertexShaderPath = LudoAssetSPVVertexShaderForward;
-            forwardPipelineProperties.FragmentShaderPath = LudoAssetSPVFragmentShaderForward;
-            forwardPipelineProperties.Scissor = scissor;
-            forwardPipelineProperties.Viewport = viewport;
-            forwardPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
-            forwardPipelineProperties.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
+            gbufferPipelineProperties.RenderPass = frameGraph->GetRenderPass(GBufferPassName);
+            gbufferPipelineProperties.CullMode = RHICullModeFlags::Back;
+            gbufferPipelineProperties.VertexShaderPath = AssetSPVVertexShaderGBuffer;
+            gbufferPipelineProperties.FragmentShaderPath = AssetSPVFragmentShaderGBuffer;
+            gbufferPipelineProperties.Scissor = scissor;
+            gbufferPipelineProperties.Viewport = viewport;
+            gbufferPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
+            gbufferPipelineProperties.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
 
-            // Setup ui pipeline
-            uiPipelineProperties.RenderPass = frameGraph->GetRenderPass(LudoUIPassName);
-            uiPipelineProperties.CullMode = RHICullModeFlags::None;
-            uiPipelineProperties.VertexShaderPath = LudoAssetSPVVertexShaderUI;
-            uiPipelineProperties.FragmentShaderPath = LudoAssetSPVFragmentShaderUI;
-            uiPipelineProperties.Scissor = scissor;
-            uiPipelineProperties.Viewport = viewport;
-            uiPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
+            lightingPipelineProperties.RenderPass = frameGraph->GetRenderPass(LightingPassName);
+            lightingPipelineProperties.CullMode = RHICullModeFlags::Back;
+            lightingPipelineProperties.VertexShaderPath = AssetSPVVertexShaderLighting;
+            lightingPipelineProperties.FragmentShaderPath = AssetSPVFragmentShaderLigthing;
+            lightingPipelineProperties.Scissor = scissor;
+            lightingPipelineProperties.Viewport = viewport;
+            lightingPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
 
-            // Creating pipelines.
-            pipelineManager->GetOrCreate(forwardPass.GetName(), forwardPipelineProperties);
-            pipelineManager->GetOrCreate(uiPass.GetName(), uiPipelineProperties);
+            pipelineManager->GetOrCreate(gBufferPass.GetName(), gbufferPipelineProperties);
+            pipelineManager->GetOrCreate(lightingPass.GetName(), lightingPipelineProperties);
 
             frameGraph->Execute(frame.CommandBuffer);
             frameGraph->EndFrame();

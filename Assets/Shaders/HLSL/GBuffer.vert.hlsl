@@ -1,6 +1,6 @@
 #include "Shared/Defines.hlsli"
 
-WLSL_BINDING(0, 0) 
+WLSL_BINDING(0, 0)
 cbuffer ViewBuffer : register(b0, space0)
 {
     ViewInstance View;

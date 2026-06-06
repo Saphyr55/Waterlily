@@ -1,13 +1,13 @@
 
 #ifdef __spirv__
-    #define WLS_BINDING(Binding, Set) [[vk::binding(Binding, Set)]]
-    #define WLS_LOCATION(Location) [[vk::location(Location)]]
+    #define WLSL_BINDING(Binding, Set) [[vk::binding(Binding, Set)]]
+    #define WLSL_LOCATION(Location) [[vk::location(Location)]]
 #else
-    #define WLS_BINDING(Binding, Set)
-    #define WLS_LOCATION(Location)
+    #define WLSL_BINDING(Binding, Set)
+    #define WLSL_LOCATION(Location)
 #endif
 
-#define WLS_INVALID_TEXTURE_INDEX 0xffffffff
+#define WLSL_INVALID_TEXTURE_INDEX 0xffffffff
 
 struct RenderInstance
 {

@@ -12,20 +12,20 @@ namespace Wl
     {
         FileSystem& fileSystem = FileSystem::GetPlatform();
 
-        bool success = SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLVertexShaderForward_HLSL.GetText(),
-                                                        LudoAssetSPVVertexShaderForward.GetText(),
+        bool success = SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLVertexShaderGBuffer.GetText(),
+                                                        AssetSPVVertexShaderGBuffer.GetText(),
                                                         SPIRVShaderCompiler::Stage::Vertex);
 
-        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLFragmentShaderForward_HLSL.GetText(),
-                                                              LudoAssetSPVFragmentShaderForward.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLFragmentShaderGBuffer.GetText(),
+                                                              AssetSPVFragmentShaderGBuffer.GetText(),
                                                               SPIRVShaderCompiler::Stage::Fragment);
 
-        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLVertexShaderUI_HLSL.GetText(),
-                                                              LudoAssetSPVVertexShaderUI.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLVertexShaderLighting.GetText(),
+                                                              AssetSPVVertexShaderLighting.GetText(),
                                                               SPIRVShaderCompiler::Stage::Vertex);
 
-        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLFragmentShaderUI_HLSL.GetText(),
-                                                              LudoAssetSPVFragmentShaderUI.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLFragmentShaderLighting.GetText(),
+                                                              AssetSPVFragmentShaderLigthing.GetText(),
                                                               SPIRVShaderCompiler::Stage::Fragment);
 
         return success;

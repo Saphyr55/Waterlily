@@ -1,32 +1,30 @@
-#include "Passes/ForwardPass.hpp"
+#include "Passes/GBufferPass.hpp"
 
-#include "LudoTypes.hpp"
-#include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Renderer/FrameContext.hpp"
-#include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
-#include "Waterlily/Renderer/Shader/PipelineManager.hpp"
+#include "LudoTypes.hpp"
 
 namespace Wl
 {
 
-    FrameGraphPass& ForwardPassCreate(PassContext& passContext,
+    FrameGraphPass& GBufferPassCreate(PassContext& passContext, 
                                       GraphicsPipelineProperties& pipeline,
-                                      ForwardPassParameters& params)
+                                      GBufferPassParameters& data)
     {
-        FrameGraphPass& forwardPass = passContext.FrameGraph->AddPass(LudoForwardPassName);
-        FrameGraphPassDelegate& forwardPassDelegate = forwardPass.EmplaceDefault();
+        FrameGraphPass& gBufferPass = passContext.FrameGraph->AddPass(GBufferPassName);
+        FrameGraphPassDelegate & gBufferPassDelegate = gBufferPass.EmplaceDefault();
 
-        forwardPassDelegate.SetOnSetup([&](FrameGraphPassSetupContext& context, FrameGraphPassBuilder& builder)
+        gBufferPassDelegate.SetOnSetup([&](FrameGraphPassSetupContext&, FrameGraphPassBuilder& builder)
         {
             builder.SetStage(FrameGraphPassStage::Graphics);
-            builder.Write(params.Color);
-            builder.ReadStorage(params.Indirect);
-            builder.SetDepthStencil(params.DepthStencil);
+            builder.Write(data.Position);
+            builder.Write(data.Normal);
+            builder.Write(data.Albedo);
+            builder.ReadStorage(data.Indirect);
+            builder.SetDepthStencil(data.DepthStencil);
         });
 
-        forwardPassDelegate.SetOnExecute([&](FrameGraphPassExecutionContext& context)
+        gBufferPassDelegate.SetOnExecute([&](FrameGraphPassExecutionContext& context)
         {
             RHISwapchain* swapchain = context.FrameContext->GetSwapchain();
             RHICommandBuffer* commandBuffer = context.CommandBuffer;
@@ -47,26 +45,20 @@ namespace Wl
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
 
             RHIWriteBufferResource writeRenderView(GlobalSRGRenderViewBinding,
-                                                   params.RenderViewAllocation->Buffer,
-                                                   params.RenderViewAllocation->Offset,
-                                                   params.RenderViewAllocation->Size);
-
-            RHIWriteBufferResource writeLight(GlobalSRGLightBinding,
-                                              params.LightAllocation->Buffer,
-                                              params.LightAllocation->Offset,
-                                              params.LightAllocation->Size);
+                                                   data.RenderViewAllocation->Buffer,
+                                                   data.RenderViewAllocation->Offset,
+                                                   data.RenderViewAllocation->Size);
 
             globalSRG->SetBuffer(writeRenderView);
-            globalSRG->SetBuffer(writeLight);
             globalSRG->Update();
 
             RHIShaderResourceGroupLayout* drawItemSRGLayout = pipeline.SRGLayouts[DrawItemSRGIndex];
             RHIShaderResourceGroup* drawItemSRG = frame.SRGPool->AllocateSRG(drawItemSRGLayout);
 
             RHIWriteBufferResource writeDrawItem(DrawItemSRGBinding,
-                                                 params.MeshAllocation->Buffer,
-                                                 params.MeshAllocation->Offset,
-                                                 params.MeshAllocation->Size);
+                                                 data.MeshAllocation->Buffer,
+                                                 data.MeshAllocation->Offset,
+                                                 data.MeshAllocation->Size);
 
             drawItemSRG->SetBuffer(writeDrawItem);
             drawItemSRG->Update();
@@ -76,7 +68,7 @@ namespace Wl
 
             commandBuffer->BeginRenderPass(renderPassBeginInfo);
             {
-                RHIPipeline* pipeline = passContext.PipelineManager->GetPipeline(LudoForwardPassName);
+                RHIPipeline* pipeline = passContext.PipelineManager->GetPipeline(GBufferPassName);
                 commandBuffer->BindPipeline(pipeline);
 
                 commandBuffer->SetViewport(viewport);
@@ -84,18 +76,20 @@ namespace Wl
 
                 commandBuffer->BindSRG(pipeline, {globalSRG}, GlobalSRGIndex);
                 commandBuffer->BindSRG(pipeline, {drawItemSRG}, DrawItemSRGIndex);
-                commandBuffer->BindSRG(pipeline, {textureSRG}, LudoTextureGRGIndex);
+                commandBuffer->BindSRG(pipeline,
+                                       {textureSRG},
+                                       LudoTextureGRGIndex);
                 commandBuffer->BindSRG(pipeline, {materialSRG}, LudoMaterialsSRGIndex);
 
-                commandBuffer->BindVertexBuffers(params.Mesh->GetVertexBuffers());
-                commandBuffer->BindIndexBuffer(params.Mesh->GetIndexBuffer());
+                commandBuffer->BindVertexBuffers(data.Mesh->GetVertexBuffers());
+                commandBuffer->BindIndexBuffer(data.Mesh->GetIndexBuffer());
 
-                FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(params.Indirect);
+                FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(data.Indirect);
 
                 RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand;
                 drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalTexture.Handle;
                 drawIndexedIndirectCommand.Offset = 0;
-                drawIndexedIndirectCommand.DrawCount = params.DrawCount;
+                drawIndexedIndirectCommand.DrawCount = data.DrawCount;
                 drawIndexedIndirectCommand.Stride = sizeof(RHIDrawIndexedCommand);
 
                 commandBuffer->Draw(drawIndexedIndirectCommand);
@@ -104,7 +98,7 @@ namespace Wl
             commandBuffer->EndRenderPass();
         });
 
-        return forwardPass;
+        return gBufferPass;
     }
 
-}// namespace Wl
+}

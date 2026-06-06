@@ -9,8 +9,8 @@ namespace Wl
 {
 
     /**
- * @brief Defines a single resource binding slot within a Shader Resource Group Layout.
- */
+     * @brief Defines a single resource binding slot within a Shader Resource Group Layout.
+     */
     struct RHIShaderResourceBinding
     {
         uint32_t Binding = 0;
@@ -49,8 +49,8 @@ namespace Wl
     };
 
     /**
- * @brief Data structure to update a Buffer (Uniform or Storage) resource in a Shader Resource Group.
- */
+     * @brief Data structure to update a Buffer (Uniform or Storage) resource in a Shader Resource Group.
+     */
     struct RHIWriteBufferResource
     {
         RHIBuffer* Buffer = nullptr;
@@ -76,8 +76,8 @@ namespace Wl
     };
 
     /**
- * @brief Data structure to update a Sampler resource (independent Sampler binding).
- */
+     * @brief Data structure to update a Sampler resource (independent Sampler binding).
+     */
     struct RHIWriteSamplerResource
     {
         RHISampler* Sampler = nullptr;
@@ -95,8 +95,8 @@ namespace Wl
     };
 
     /**
- * @brief Data structure to update a Combined Image Sampler resource (Texture + Sampler).
- */
+     * @brief Data structure to update a Combined Image Sampler resource (Texture + Sampler).
+     */
     struct RHIWriteTextureSamplerResource
     {
         RHITextureView* TextureView = nullptr;
@@ -119,9 +119,9 @@ namespace Wl
     };
 
     /**
- * @brief Data structure to update a Read-Only Texture (Sampled Image).
- * Used when the sampler is immutable or bound separately.
- */
+     * @brief Data structure to update a Read-Only Texture (Sampled Image).
+     * Used when the sampler is immutable or bound separately.
+     */
     struct RHIWriteTextureResource
     {
         RHITextureView* TextureView = nullptr;
@@ -139,9 +139,9 @@ namespace Wl
     };
 
     /**
- * @brief Base class representing the immutable definition of a Shader Resource Group (Vulkan example:
- * VkDescriptorSetLayout).
- */
+     * @brief Base class representing the immutable definition of a Shader Resource Group (Vulkan example:
+     * VkDescriptorSetLayout).
+     */
     class RHIShaderResourceGroupLayout
     {
     public:
@@ -156,42 +156,42 @@ namespace Wl
     };
 
     /**
- * @brief Base class representing a single instance of a Shader Resource Group (Vulkan example: VkDescriptorSet).
- */
+     * @brief Base class representing a single instance of a Shader Resource Group (Vulkan example: VkDescriptorSet).
+     */
     class RHIShaderResourceGroup
     {
     public:
         /**
-     * @brief Writes an RHI Buffer (Uniform or Storage) to the specified binding.
-     */
+         * @brief Writes an RHI Buffer (Uniform or Storage) to the specified binding.
+         */
         virtual void SetBuffer(const RHIWriteBufferResource& resource) = 0;
 
         /**
-     * @brief Writes a separate RHI Sampler to the specified binding.
-     */
+         * @brief Writes a separate RHI Sampler to the specified binding.
+         */
         virtual void SetSampler(const RHIWriteSamplerResource& resource) = 0;
 
         /**
-     * @brief Writes a Combined Image Sampler (Texture and Sampler) to the specified binding.
-     * Use this for textures that are sampled in the shader.
-     */
+         * @brief Writes a Combined Image Sampler (Texture and Sampler) to the specified binding.
+         * Use this for textures that are sampled in the shader.
+         */
         virtual void SetTextureSampler(const RHIWriteTextureSamplerResource& resource) = 0;
 
         /**
-     * @brief Writes a Storage Image or a Read-Only Texture View to the specified binding.
-     * Use this when the sampler is not part of the binding.
-     */
+         * @brief Writes a Storage Image or a Read-Only Texture View to the specified binding.
+         * Use this when the sampler is not part of the binding.
+         */
         virtual void SetTexture(const RHIWriteTextureResource& resource) = 0;
 
         /**
-     * @brief Finalizes the group if internal buffering or compilation is required (less common in Vulkan).
-     * This method is often a no-op but included for RHI flexibility.
-     */
+         * @brief Finalizes the group if internal buffering or compilation is required (less common in Vulkan).
+         * This method is often a no-op but included for RHI flexibility.
+         */
         virtual void Update() = 0;
 
         /**
-     * @brief
-     */
+         * @brief
+         */
         virtual uint32_t GetIndexPool() const = 0;
 
         virtual ~RHIShaderResourceGroup() = default;

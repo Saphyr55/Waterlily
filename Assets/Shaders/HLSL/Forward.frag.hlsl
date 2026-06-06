@@ -1,27 +1,27 @@
 
 #include "Shared/Defines.hlsli"
 
-WLS_BINDING(0, 0)  
+WLSL_BINDING(0, 0)  
 cbuffer ViewBuffer : register(b0, space0)
 {
     ViewInstance View;
 }
 
-WLS_BINDING(1, 0)
+WLSL_BINDING(1, 0)
 cbuffer PunctualLightBuffer : register(b1, space0)
 {
     PunctualLight PunctualLight;
 }
 
-WLS_BINDING(0, 1)
+WLSL_BINDING(0, 1)
 RWStructuredBuffer<RenderInstance> RenderInstanceBuffer : register(u0, space1);
 
-WLS_BINDING(0, 2)
+WLSL_BINDING(0, 2)
 Texture2D Texture2DRegistry[] : register(t0, space2);
-WLS_BINDING(0, 2)
+WLSL_BINDING(0, 2)
 SamplerState Samplers : register(s0, space2);
 
-WLS_BINDING(0, 3) 
+WLSL_BINDING(0, 3) 
 RWStructuredBuffer<Material> Materials : register(u0, space3);
 
 struct FSInput
@@ -37,7 +37,7 @@ struct FSInput
 
 struct FSOutput
 {
-    WLS_LOCATION(0)
+    WLSL_LOCATION(0)
     float4 FragColor : SV_TARGET;
 };
 
@@ -59,7 +59,7 @@ FSOutput main(FSInput input)
     
     float3 normal = normalize(input.Normal);
     
-    if (material.NormalIndex != WLS_INVALID_TEXTURE_INDEX)
+    if (material.NormalIndex != WLSL_INVALID_TEXTURE_INDEX)
     {
         float3 tangent = normalize(input.Tangent);
         float3 bitangent = normalize(input.Bitangent);

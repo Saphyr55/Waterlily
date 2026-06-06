@@ -171,6 +171,7 @@ namespace Wl
                 return RHIShaderResourceType::Uniform;
             case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER:
                 return RHIShaderResourceType::Sampler;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
             case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
                 return RHIShaderResourceType::CombinedTextureSampler;
             case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
@@ -178,21 +179,22 @@ namespace Wl
             case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
                 return RHIShaderResourceType::StorageTexture;
             case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
-                WL_CHECK_MSG(false, "No mapping found for SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER");
+                WL_CRASH("No mapping found for SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER");
                 return fallback;
             case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
-                WL_CHECK_MSG(false, "No mapping found for SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC");
+                WL_CRASH("No mapping found for SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC");
                 return fallback;
             case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:
-                WL_CHECK_MSG(false, "No mapping found for SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR");
+                WL_CRASH("No mapping found for SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR");
                 return fallback;
             case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
-                WL_CHECK_MSG(false, "No mapping found for SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT");
+                WL_CRASH("No mapping found for SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT");
                 return fallback;
             default:
+                WL_CRASH("Unknown SPIRV descriptor type!");
                 return fallback;
         };
-        WL_CHECK(false);
+        WL_CRASH("");
         return fallback;
     }
 

@@ -9,6 +9,8 @@
 namespace Wl
 {
 
+    inline const StringID LudoUIPassName = WL_SID("UI");
+
     struct UIPassParameters
     {
         FrameGraphTextureHandle Color;

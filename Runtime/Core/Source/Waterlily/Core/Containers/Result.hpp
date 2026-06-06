@@ -333,7 +333,7 @@ namespace Wl
             }
             else
             {
-                EmplaceError(std::move(rhs.error()));
+                EmplaceError(std::move(rhs.GetError()));
             }
             rhs.SetIsMovedFrom();
         }
@@ -419,12 +419,12 @@ namespace Wl
             return std::get<s_ValIdx>(m_data);
         }
 
-        constexpr E& error() noexcept
+        constexpr E& GetError() noexcept
         {
             return std::get<s_ErrIdx>(m_data);
         }
 
-        constexpr const E& error() const noexcept
+        constexpr const E& GetError() const noexcept
         {
             return std::get<s_ErrIdx>(m_data);
         }

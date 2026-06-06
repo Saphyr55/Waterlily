@@ -16,20 +16,18 @@
 namespace Wl
 {
 
-    static constexpr auto VulkanBindingMap =
-            [](const RHIVertexBindingDescription& description) -> VkVertexInputBindingDescription
+    static VkVertexInputBindingDescription VulkanBindingMap(const RHIVertexBindingDescription& description)
     {
-        VkVertexInputBindingDescription vulkanDescription;
+        VkVertexInputBindingDescription vulkanDescription = {};
         vulkanDescription.binding = description.Binding;
         vulkanDescription.stride = description.Stride;
         vulkanDescription.inputRate = VulkanVertexInputRateGet(description.InputRate);
         return vulkanDescription;
     };
 
-    static constexpr auto VulkanAttributeMap =
-            [](const RHIVertexAttributeDescription& description) -> VkVertexInputAttributeDescription
+    static VkVertexInputAttributeDescription VulkanAttributeMap(const RHIVertexAttributeDescription& description)
     {
-        VkVertexInputAttributeDescription vulkanDescription;
+        VkVertexInputAttributeDescription vulkanDescription = {};
         vulkanDescription.binding = description.Binding;
         vulkanDescription.location = description.Location;
         vulkanDescription.format = VulkanFormatGet(description.Format);
@@ -41,8 +39,10 @@ namespace Wl
 
     void VulkanGraphicsPipeline::Create(const RHIGraphicsPipelineDescription& description)
     {
-        VulkanContext& context = VulkanContextGet();
         m_description = description;
+
+        VulkanContext& context = VulkanContextGet();
+        VulkanRenderPass* renderPass = static_cast<VulkanRenderPass*>(m_description.RenderPass);
 
         SPIRVShader& vertexCompiledShader = m_description.VertexShaderInfo.Shader;
         VulkanShaderModule vertexShaderModule(vertexCompiledShader.GetByteCode());
@@ -165,23 +165,31 @@ namespace Wl
         pipelineViewportStateCreateInfo.scissorCount = 1;
         pipelineViewportStateCreateInfo.pScissors = &scissor;
 
-        VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState = {};
-        pipelineColorBlendAttachmentState.colorWriteMask =
-                VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        pipelineColorBlendAttachmentState.blendEnable = VK_FALSE;
-        pipelineColorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-        pipelineColorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;// Optional
-        pipelineColorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;            // Optional
-        pipelineColorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-        pipelineColorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;// Optional
-        pipelineColorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;            // Optional
+        Array<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
+        colorBlendAttachments.Resize(renderPass->GetDescription().ColorAttachmentDecriptions.GetSize());
+
+        for (size_t i = 0; i < colorBlendAttachments.GetSize(); i++)
+        {
+            VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState = {};
+            pipelineColorBlendAttachmentState.colorWriteMask =
+                    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+            pipelineColorBlendAttachmentState.blendEnable = VK_FALSE;
+            pipelineColorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+            pipelineColorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;// Optional
+            pipelineColorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;            // Optional
+            pipelineColorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+            pipelineColorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;// Optional
+            pipelineColorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;            // Optional
+
+            colorBlendAttachments[i] = pipelineColorBlendAttachmentState;
+        }
 
         VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
         pipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         pipelineColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
         pipelineColorBlendStateCreateInfo.logicOp = VK_LOGIC_OP_COPY;// Optional
-        pipelineColorBlendStateCreateInfo.attachmentCount = 1;
-        pipelineColorBlendStateCreateInfo.pAttachments = &pipelineColorBlendAttachmentState;
+        pipelineColorBlendStateCreateInfo.attachmentCount = colorBlendAttachments.size();
+        pipelineColorBlendStateCreateInfo.pAttachments = colorBlendAttachments.data();
         pipelineColorBlendStateCreateInfo.blendConstants[0] = 0.0f;// Optional
         pipelineColorBlendStateCreateInfo.blendConstants[1] = 0.0f;// Optional
         pipelineColorBlendStateCreateInfo.blendConstants[2] = 0.0f;// Optional
@@ -228,8 +236,6 @@ namespace Wl
                                                           &pipelineLayoutCreateInfo,
                                                           context.Allocator,
                                                           &m_handle.GetPipelineLayout()));
-
-        VulkanRenderPass* renderPass = static_cast<VulkanRenderPass*>(m_description.RenderPass);
 
         VkPipelineDepthStencilStateCreateInfo depthStencil = {};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;

@@ -38,6 +38,7 @@ namespace Wl
         cmd.Append(inputFilepath);
         cmd.Append(" -Fo ");
         cmd.Append(outputFilepath);
+        cmd.Append(" -Od ");
         cmd.Append(" -fspv-target-env=vulkan1.3");
         cmd.Append(" -fspv-extension=SPV_EXT_descriptor_indexing");
 

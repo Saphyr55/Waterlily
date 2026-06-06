@@ -17,28 +17,28 @@ namespace Wl
     public:
         operator size_type() const
         {
-            return m_handle;
+            return m_index;
         }
 
         size_type GetHandle() const
         {
-            return m_handle;
+            return m_index;
         }
 
         bool IsValid() const
         {
-            return m_handle != INVALID_HANDLE;
+            return m_index != INVALID_HANDLE;
         }
 
         Handler() = default;
         Handler(size_type handle)
-            : m_handle(handle)
+            : m_index(handle)
         {
         }
         ~Handler() = default;
 
     private:
-        size_type m_handle = INVALID_HANDLE;
+        size_type m_index = INVALID_HANDLE;
     };
 
 }// namespace Wl

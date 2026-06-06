@@ -8,7 +8,7 @@ struct FSInput
 
 struct FSOuput
 {
-    WLS_LOCATION(0) 
+    WLSL_LOCATION(0) 
     float4 Color : SV_TARGET;
 };
 
