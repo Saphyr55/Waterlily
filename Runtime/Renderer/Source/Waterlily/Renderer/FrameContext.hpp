@@ -16,6 +16,7 @@
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
 #include "Waterlily/Renderer/UploadScheduler.hpp"
+#include <cstdint>
 
 namespace Wl
 {
@@ -74,8 +75,9 @@ namespace Wl
         inline Frame& GetCurrentFrame();
         inline void NextFrame();
 
-        inline uint32_t GetFrameIndex();
-        inline uint32_t GetFrameCount();
+        inline uint64_t GetFrameIndex();
+        inline uint64_t GetMaxFrameInFlight();
+        inline uint64_t GetFrameCount();
 
         inline RHISwapchain* GetSwapchain();
         inline SharedPtr<RHIShaderResourceGroupLayoutCache> GetSRGLayoutCache();
@@ -94,8 +96,9 @@ namespace Wl
 
         RHISwapchain* m_swapchain = nullptr;
 
-        uint32_t frame_index_ = 0;
-        uint32_t m_frameCount = MaxFrameInFlight;
+        uint64_t m_frameIndex = 0;
+        uint64_t m_maxFrameInFlight = MaxFrameInFlight;
+        uint64_t m_frameCount = 0;
     };
 
     inline SharedPtr<RHIShaderResourceGroupLayoutCache> FrameContext::GetSRGLayoutCache()
@@ -103,24 +106,30 @@ namespace Wl
         return m_srgLayoutCache;
     }
 
-    inline uint32_t FrameContext::GetFrameIndex()
+    inline uint64_t FrameContext::GetFrameIndex()
     {
-        return frame_index_;
+        return m_frameIndex;
     }
 
-    inline uint32_t FrameContext::GetFrameCount()
+    inline uint64_t FrameContext::GetMaxFrameInFlight()
+    {
+        return m_maxFrameInFlight;
+    }
+
+    inline uint64_t FrameContext::GetFrameCount()
     {
         return m_frameCount;
     }
 
     inline Frame& FrameContext::GetCurrentFrame()
     {
-        return m_frames[frame_index_];
+        return m_frames[m_frameIndex];
     }
 
     inline void FrameContext::NextFrame()
     {
-        frame_index_ = (frame_index_ + 1) % m_frameCount;
+        m_frameIndex = (m_frameIndex + 1) % m_maxFrameInFlight;
+        m_frameCount++;
     }
 
     inline RHISwapchain* FrameContext::GetSwapchain()

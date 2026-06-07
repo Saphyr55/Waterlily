@@ -1,46 +1,45 @@
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
 
-#include <cstddef>
-
 namespace Wl
 {
-
-    FrameGraphTextureResource FrameGraphResource::FromRHI(RHITexture* texture, RHITextureView* view)
+    FrameGraphPhysicalTextureKey FrameGraphPhysicalTextureKey::Create(const FrameGraphTextureResource& resource)
     {
-        return FrameGraphTextureResource{
-                .Info =
-                        {
-                                .Format = texture->GetDescription().Format,
-                                .Width = texture->GetDescription().Width,
-                                .Height = texture->GetDescription().Height,
-                                .MipLevels = texture->GetDescription().MipLevels,
-                                .Layers = texture->GetDescription().Layers,
-                                .Levels = texture->GetDescription().MipLevels,
-                        },
-                .PhysicalTexture =
-                        {
-                                .Texture = texture,
-                                .View = view,
-                        },
-                .Usage = texture->GetDescription().Usage,
-                .IsTransient = false,
-        };
+        FrameGraphPhysicalTextureKey key = {};
+        key.Format = resource.Info.Format;
+        key.Usage = resource.Usage;
+        key.Width = resource.Info.Width;
+        key.Height = resource.Info.Height;
+
+        return key;
     }
 
-    FrameGraphBufferResource FrameGraphResource::FromRHI(RHIBuffer* buffer, size_t size, size_t offset)
+    FrameGraphTextureResource FrameGraphResource::CreatePersistantResource(RHITexture* texture, RHITextureView* view)
     {
-        return FrameGraphBufferResource{
-                .Info =
-                        {
-                                .Size = size,
-                                .Offset = offset},
-                .PhysicalTexture =
-                        {
-                                .Handle = buffer,
-                        },
-                .Usage = buffer->GetUsage(),
-                .IsTransient = false,
-        };
+        FrameGraphTextureResource resource = {};
+        resource.Info.Format = texture->GetDescription().Format;
+        resource.Info.Width = texture->GetDescription().Width;
+        resource.Info.Height = texture->GetDescription().Height;
+        resource.Info.MipLevels = texture->GetDescription().MipLevels;
+        resource.Info.Layers = texture->GetDescription().Layers;
+        resource.Info.Levels = texture->GetDescription().MipLevels;
+        resource.Usage = texture->GetDescription().Usage;
+        resource.IsTransient = false;
+        resource.PersistantResource.Texture = texture;
+        resource.PersistantResource.View = view;
+
+        return resource;
+    }
+
+    FrameGraphBufferResource FrameGraphResource::CreatePersistantResource(RHIBuffer* buffer, size_t size, size_t offset)
+    {
+        FrameGraphBufferResource resource = {};
+        resource.Info.Size = size;
+        resource.Info.Offset = offset;
+        resource.PhysicalTexture.Handle = buffer;
+        resource.Usage = buffer->GetUsage();
+        resource.IsTransient = false;
+
+        return resource;
     }
 
 }// namespace Wl

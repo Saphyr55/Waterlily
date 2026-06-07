@@ -20,7 +20,7 @@ namespace Wl
             return m_index;
         }
 
-        size_type GetHandle() const
+        size_type GetIndex() const
         {
             return m_index;
         }
@@ -49,6 +49,6 @@ class std::hash<Wl::Handler<HandleType, SizeType>>
 public:
     size_t operator()(const Wl::Handler<HandleType, SizeType>& handler) const
     {
-        return std::hash<SizeType>()(handler.GetHandle());
+        return std::hash<SizeType>()(handler.GetIndex());
     }
 };

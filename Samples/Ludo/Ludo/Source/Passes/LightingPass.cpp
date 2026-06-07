@@ -38,13 +38,13 @@ namespace Wl
             RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipeline.SRGLayouts[4];
             RHIShaderResourceGroup* gBufferTexturesSRG = frame.SRGPool->AllocateSRG(gBufferTexturesSRGLayout);
             
-            FrameGraphTextureResource positionResource = context.FrameGraph->GetTexture(params.Position);
-            FrameGraphTextureResource normalResource = context.FrameGraph->GetTexture(params.Normal);
-            FrameGraphTextureResource albedoResource = context.FrameGraph->GetTexture(params.Albedo);
+            FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(params.Position);
+            FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(params.Normal);
+            FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(params.Albedo);
 
-            RHIWriteTextureResource writePosition(0, positionResource.PhysicalTexture.View);
-            RHIWriteTextureResource writeNormal(1, normalResource.PhysicalTexture.View);
-            RHIWriteTextureResource writeAlbedo(2, albedoResource.PhysicalTexture.View);
+            RHIWriteTextureResource writePosition(0, positionResource.View);
+            RHIWriteTextureResource writeNormal(1, normalResource.View);
+            RHIWriteTextureResource writeAlbedo(2, albedoResource.View);
 
             gBufferTexturesSRG->SetTexture(writePosition);
             gBufferTexturesSRG->SetTexture(writeNormal);

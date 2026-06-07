@@ -1,14 +1,12 @@
 #pragma once
 
-#include "FrameGraphResourcePool.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/HashSet.hpp"
 #include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/Format.hpp"
+#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
-#include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
@@ -21,6 +19,7 @@
 #include "Waterlily/Renderer/FrameGraph/FrameGraphCache.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
+#include "Waterlily/Renderer/FrameGraph/FrameGraphResourcePool.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
 
 namespace Wl
@@ -63,24 +62,26 @@ namespace Wl
 
         void Dispose();
 
+        FrameGraphPhysicalTexture& ResolvePhysicalTexture(const FrameGraphTextureHandle& handle);
+
         inline FrameGraphTextureResource& GetTexture(const FrameGraphTextureHandle& handle)
         {
-            return m_textures[handle.GetHandle()];
+            return m_textures[handle.GetIndex()];
         }
 
         inline FrameGraphBufferResource& GetBuffer(const FrameGraphBufferHandle& handle)
         {
-            return m_buffers[handle.GetHandle()];
+            return m_buffers[handle.GetIndex()];
         }
 
         inline const FrameGraphTextureResource& GetTexture(const FrameGraphTextureHandle& handle) const
         {
-            return m_textures[handle.GetHandle()];
+            return m_textures[handle.GetIndex()];
         }
 
         inline const FrameGraphBufferResource& GetBuffer(const FrameGraphBufferHandle& handle) const
         {
-            return m_buffers[handle.GetHandle()];
+            return m_buffers[handle.GetIndex()];
         }
 
         inline const Array<size_t>& GetSortedPasses() const
@@ -149,7 +150,6 @@ namespace Wl
         Array<size_t> m_sortedPasses;
 
         FrameGraphPhysicalTexturePool m_texturePool;
-        FrameGraphPhysicalTextureCache m_textureCache;
 
         FrameGraphFramebufferCache m_framebufferCache;
         FrameGraphRenderPassCache m_renderPassCache;

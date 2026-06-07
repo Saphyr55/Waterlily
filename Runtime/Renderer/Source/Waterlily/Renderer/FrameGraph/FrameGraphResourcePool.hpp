@@ -1,51 +1,42 @@
 #pragma once
 
+#include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
-#include <cstddef>
+#include <cstdint>
 
 namespace Wl
 {
-
-    struct FrameGraphPhysicalTextureKey
-    {
-        RHIFormat Format;
-        RHITextureUsageFlags Usage;
-        uint32_t Width = 1;
-        uint32_t Height = 1;
-
-        bool operator==(const FrameGraphPhysicalTextureKey& other) const noexcept
-        {
-            return Format == other.Format && Width == other.Width && Height == other.Height;
-        }
-    };
-
-    class FrameGraphPhysicalTextureHash
-    {
-    public:
-        inline size_t operator()(const FrameGraphPhysicalTextureKey& key) const noexcept
-        {
-            RHIFormat format = key.Format;
-            size_t h = Hash<uint32_t>()(uint32_t(format));
-            h ^= Hash<uint32_t>()(key.Width);
-            h ^= Hash<uint32_t>()(key.Height);
-            return h;
-        }
-    };
+    using PooledPhysicalTextureHandle = size_t;
 
     struct PooledPhysicalTexture
     {
         FrameGraphPhysicalTexture PhysicalTexture;
-        size_t LastUsedFrame = 0;
+        uint64_t LastUsedFrame = 0;
+
+        PooledPhysicalTexture(const FrameGraphPhysicalTexture& physicalTexture, uint64_t lastUsedFrame)
+            : PhysicalTexture(physicalTexture)
+            , LastUsedFrame(lastUsedFrame)
+        {
+        }
     };
 
     class FrameGraphPhysicalTexturePool
     {
     public:
-        PooledPhysicalTexture* Obtain(const FrameGraphTextureCacheKey& key, size_t currentFrame);
+        using Handle = size_t;
 
-        void Release(PooledPhysicalTexture* handle);
+        inline PooledPhysicalTexture& GetResource(PooledPhysicalTextureHandle handle)
+        {
+            return m_resources[handle];
+        }
+
+        PooledPhysicalTextureHandle Obtain(const FrameGraphPhysicalTextureKey& key, uint64_t currentFrame);
+
+        void Release(const FrameGraphPhysicalTextureKey& key, PooledPhysicalTextureHandle handle);
+
+        void GarbageCollect(uint64_t currentFrame, uint64_t maxFrameLifetime);
 
         void Dispose();
 
@@ -55,13 +46,17 @@ namespace Wl
         }
 
     private:
-        FrameGraphPhysicalTexture Create(const FrameGraphTextureCacheKey& key);
-        void Destroy(Handle handle);
+        PooledPhysicalTexture& Allocate(const FrameGraphPhysicalTextureKey& key, uint64_t currentFrame);
+        FrameGraphPhysicalTexture Create(const FrameGraphPhysicalTextureKey& key);
+        void Destroy(PooledPhysicalTexture& handle);
 
     private:
         SharedPtr<RHIDevice> m_device;
-        Array<FrameGraphPhysicalTexture> m_resources;
-        Array<size_t> m_freeList;
+
+        using KeyType = FrameGraphPhysicalTextureKey;
+        HashMap<KeyType, Array<size_t>, FrameGraphPhysicalTextureKeyHash> m_freeList;
+
+        Array<PooledPhysicalTexture> m_resources;
     };
 
 }// namespace Wl

@@ -26,7 +26,7 @@ namespace Wl
 
         m_device = rhiModule->GetDevice();
 
-        m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_frameCount);
+        m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_maxFrameInFlight);
 
         m_frameInFlightFences.Resize(m_swapchain->GetTextureViews().GetSize(), nullptr);
 

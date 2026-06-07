@@ -14,8 +14,6 @@
 namespace Wl
 {
 
-    class FrameGraphPass;
-
     using FrameGraphTextureHandle = Handler<RHITexture>;
     using FrameGraphBufferHandle = Handler<RHIBuffer>;
 
@@ -64,14 +62,42 @@ namespace Wl
     struct FrameGraphTextureResource
     {
         FrameGraphTextureInfo Info;
-        FrameGraphPhysicalTexture PhysicalTexture;
-        size_t PoolHandle;
+        size_t PooledResource;
+        FrameGraphPhysicalTexture PersistantResource;
         RHITextureUsageFlags Usage = RHITextureUsageFlags::None;
         RHITextureLayout InitialLayout = RHITextureLayout::Undefined;
         RHITextureLayout FinalLayout = RHITextureLayout::Undefined;
         FrameGraphResourceLifetime Lifetime;
         bool IsTransient = false;
         bool IsAllocated = false;
+    };
+    
+    struct FrameGraphPhysicalTextureKey
+    {
+        RHIFormat Format;
+        RHITextureUsageFlags Usage;
+        uint32_t Width = 1;
+        uint32_t Height = 1;
+
+        static FrameGraphPhysicalTextureKey Create(const FrameGraphTextureResource& resource);
+
+        bool operator==(const FrameGraphPhysicalTextureKey& other) const noexcept
+        {
+            return Format == other.Format && Width == other.Width && Height == other.Height;
+        }
+    };
+
+    class FrameGraphPhysicalTextureKeyHash
+    {
+    public:
+        inline size_t operator()(const FrameGraphPhysicalTextureKey& key) const noexcept
+        {
+            RHIFormat format = key.Format;
+            size_t h = Hash<uint32_t>()(uint32_t(format));
+            h ^= Hash<uint32_t>()(key.Width);
+            h ^= Hash<uint32_t>()(key.Height);
+            return h;
+        }
     };
 
     struct FrameGraphBufferResource
@@ -94,8 +120,8 @@ namespace Wl
     class FrameGraphResource
     {
     public:
-        static FrameGraphTextureResource FromRHI(RHITexture* texture, RHITextureView* view);
-        static FrameGraphBufferResource FromRHI(RHIBuffer* buffer, size_t size, size_t offset);
+        static FrameGraphTextureResource CreatePersistantResource(RHITexture* texture, RHITextureView* view);
+        static FrameGraphBufferResource CreatePersistantResource(RHIBuffer* buffer, size_t size, size_t offset);
     };
 
 

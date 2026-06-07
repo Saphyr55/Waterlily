@@ -1,10 +1,7 @@
 #pragma once
 
-#include "FrameGraphResourcePool.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/ObjectCache.hpp"
-#include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/RHI/Device.hpp"
