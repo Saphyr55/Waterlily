@@ -12,22 +12,25 @@ namespace Wl
     {
         FileSystem& fileSystem = FileSystem::GetPlatform();
 
-        bool success = SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLVertexShaderGBuffer.GetText(),
+        bool success = SPIRVShaderCompiler::CompileHLSL(LudoAssetShaderGBuffer.GetText(),
                                                         AssetSPVVertexShaderGBuffer.GetText(),
+                                                        "VSMain",
                                                         SPIRVShaderCompiler::Stage::Vertex);
 
-        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLFragmentShaderGBuffer.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetShaderGBuffer.GetText(),
                                                               AssetSPVFragmentShaderGBuffer.GetText(),
+                                                              "FSMain",
                                                               SPIRVShaderCompiler::Stage::Fragment);
 
-        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLVertexShaderLighting.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetShaderLighting.GetText(),
                                                               AssetSPVVertexShaderLighting.GetText(),
-                                                              SPIRVShaderCompiler::Stage::Vertex);
+                                                              "VSMain",
+                                                               SPIRVShaderCompiler::Stage::Vertex);
 
-        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetGLSLFragmentShaderLighting.GetText(),
+        success = success && SPIRVShaderCompiler::CompileHLSL(LudoAssetShaderLighting.GetText(),
                                                               AssetSPVFragmentShaderLigthing.GetText(),
+                                                              "FSMain",
                                                               SPIRVShaderCompiler::Stage::Fragment);
-
         return success;
     }
 
@@ -38,7 +41,7 @@ namespace Wl
         device->WaitIdle();
 
         CompileShaders();
-        for (const auto& [name, props]: propsMap)
+        for (auto [name, props]: propsMap)
         {
             pipelineManager->Recreate(name, *props);
         }

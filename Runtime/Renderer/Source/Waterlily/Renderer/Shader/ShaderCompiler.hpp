@@ -17,7 +17,7 @@ namespace Wl
         };
 
         static bool CompileGLSL(StringRef inputFilepath, StringRef outputFilepath, Stage stage);
-        static bool CompileHLSL(StringRef inputFilepath, StringRef outputFilepath, Stage stage);
+        static bool CompileHLSL(StringRef inputFilepath, StringRef outputFilepath, StringRef entryPoint, Stage stage);
 
     };
 

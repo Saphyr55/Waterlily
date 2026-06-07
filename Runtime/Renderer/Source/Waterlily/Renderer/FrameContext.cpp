@@ -25,6 +25,7 @@ namespace Wl
         RHIModule* rhiModule = moduleRegistry.GetModule<RHIModule>("Waterlily.RHI");
 
         m_device = rhiModule->GetDevice();
+        m_defaultSampler = m_device->CreateSampler(RHISamplerDescription());
 
         m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_maxFrameInFlight);
 
@@ -103,6 +104,7 @@ namespace Wl
     void FrameContext::Shutdown()
     {
         m_device->WaitIdle();
+        m_device->DestroySampler(m_defaultSampler);    
 
         for (Frame& frame: m_frames)
         {
@@ -164,6 +166,11 @@ namespace Wl
         m_device->WaitFence(frame.InFlightFence);
 
         NextFrame();
+    }
+
+    RHISampler* FrameContext::GetDefaultSampler()
+    {
+        return m_defaultSampler;
     }
 
 }// namespace Wl

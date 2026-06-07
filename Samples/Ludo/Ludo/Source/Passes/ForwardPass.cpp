@@ -60,10 +60,10 @@ namespace Wl
             globalSRG->SetBuffer(writeLight);
             globalSRG->Update();
 
-            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipeline.SRGLayouts[DrawItemSRGIndex];
+            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipeline.SRGLayouts[RenderInstanceSRGIndex];
             RHIShaderResourceGroup* drawItemSRG = frame.SRGPool->AllocateSRG(drawItemSRGLayout);
 
-            RHIWriteBufferResource writeDrawItem(DrawItemSRGBinding,
+            RHIWriteBufferResource writeDrawItem(RenderInstanceSRGBinding,
                                                  params.MeshAllocation->Buffer,
                                                  params.MeshAllocation->Offset,
                                                  params.MeshAllocation->Size);
@@ -83,7 +83,7 @@ namespace Wl
                 commandBuffer->SetScissor(scissor);
 
                 commandBuffer->BindSRG(pipeline, {globalSRG}, GlobalSRGIndex);
-                commandBuffer->BindSRG(pipeline, {drawItemSRG}, DrawItemSRGIndex);
+                commandBuffer->BindSRG(pipeline, {drawItemSRG}, RenderInstanceSRGIndex);
                 commandBuffer->BindSRG(pipeline, {textureSRG}, LudoTextureGRGIndex);
                 commandBuffer->BindSRG(pipeline, {materialSRG}, LudoMaterialsSRGIndex);
 

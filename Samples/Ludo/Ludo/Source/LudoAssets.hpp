@@ -4,7 +4,6 @@
 
 namespace Wl
 {
-
     // Asset Registry
     inline const StringID LudoAssetRegistry = WL_SID("Assets/Registry.lar");
 
@@ -13,10 +12,8 @@ namespace Wl
 
     // Source Shader filepath
     // TODO: Remove HLSL path, we shouln't compile this in the game.
-    inline const StringID LudoAssetGLSLVertexShaderGBuffer = WL_SID("../../../Assets/Shaders/HLSL/GBuffer.vert.hlsl");
-    inline const StringID LudoAssetGLSLFragmentShaderGBuffer = WL_SID("../../../Assets/Shaders/HLSL/GBuffer.frag.hlsl");
-    inline const StringID LudoAssetGLSLVertexShaderLighting = WL_SID("../../../Assets/Shaders/HLSL/Lighting.vert.hlsl");
-    inline const StringID LudoAssetGLSLFragmentShaderLighting = WL_SID("../../../Assets/Shaders/HLSL/Lighting.frag.hlsl");
+    inline const StringID LudoAssetShaderGBuffer = WL_SID("../../../Assets/Shaders/GBuffer.hlsl");
+    inline const StringID LudoAssetShaderLighting = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
 
     // Compiled SPIR-V shader filepath
     inline const StringID AssetSPVVertexShaderGBuffer = WL_SID("Assets/Shaders/SPV/GBuffer.vert.spv");

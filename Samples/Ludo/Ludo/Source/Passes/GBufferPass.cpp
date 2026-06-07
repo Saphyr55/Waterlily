@@ -52,10 +52,10 @@ namespace Wl
             globalSRG->SetBuffer(writeRenderView);
             globalSRG->Update();
 
-            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipeline.SRGLayouts[DrawItemSRGIndex];
+            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipeline.SRGLayouts[RenderInstanceSRGIndex];
             RHIShaderResourceGroup* drawItemSRG = frame.SRGPool->AllocateSRG(drawItemSRGLayout);
 
-            RHIWriteBufferResource writeDrawItem(DrawItemSRGBinding,
+            RHIWriteBufferResource writeDrawItem(RenderInstanceSRGBinding,
                                                  data.MeshAllocation->Buffer,
                                                  data.MeshAllocation->Offset,
                                                  data.MeshAllocation->Size);
@@ -75,10 +75,8 @@ namespace Wl
                 commandBuffer->SetScissor(scissor);
 
                 commandBuffer->BindSRG(pipeline, {globalSRG}, GlobalSRGIndex);
-                commandBuffer->BindSRG(pipeline, {drawItemSRG}, DrawItemSRGIndex);
-                commandBuffer->BindSRG(pipeline,
-                                       {textureSRG},
-                                       LudoTextureGRGIndex);
+                commandBuffer->BindSRG(pipeline, {drawItemSRG}, RenderInstanceSRGIndex);
+                commandBuffer->BindSRG(pipeline, {textureSRG}, LudoTextureGRGIndex);
                 commandBuffer->BindSRG(pipeline, {materialSRG}, LudoMaterialsSRGIndex);
 
                 commandBuffer->BindVertexBuffers(data.Mesh->GetVertexBuffers());
@@ -86,7 +84,7 @@ namespace Wl
 
                 FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(data.Indirect);
 
-                RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand;
+                RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand = {};
                 drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalTexture.Handle;
                 drawIndexedIndirectCommand.Offset = 0;
                 drawIndexedIndirectCommand.DrawCount = data.DrawCount;

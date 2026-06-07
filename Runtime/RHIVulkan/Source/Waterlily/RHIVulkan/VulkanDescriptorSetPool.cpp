@@ -34,7 +34,7 @@ namespace Wl
         }
 
         VulkanShaderResourceGroup* newGroup = &m_allocatedGroups[groupIndex];
-        newGroup->Init(groupIndex, layout);
+        newGroup->Init(groupIndex);
 
         WL_VULKAN_CHECK(VulkanAPI::vkAllocateDescriptorSets(context.Device, &allocationInfo, &newGroup->GetHandle()));
 

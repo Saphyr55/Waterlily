@@ -72,6 +72,9 @@ namespace Wl
         FrameResult BeginFrame();
         void EndFrame();
 
+        RHISampler* GetDefaultSampler();
+
+        inline SharedPtr<RHIDevice> GetDevice();
         inline Frame& GetCurrentFrame();
         inline void NextFrame();
 
@@ -88,6 +91,7 @@ namespace Wl
 
     private:
         SharedPtr<RHIDevice> m_device;
+        RHISampler* m_defaultSampler = nullptr;
 
         SharedPtr<RHIShaderResourceGroupLayoutCache> m_srgLayoutCache;
 
@@ -100,6 +104,11 @@ namespace Wl
         uint64_t m_maxFrameInFlight = MaxFrameInFlight;
         uint64_t m_frameCount = 0;
     };
+
+    inline SharedPtr<RHIDevice> FrameContext::GetDevice()
+    {
+        return m_device;
+    }
 
     inline SharedPtr<RHIShaderResourceGroupLayoutCache> FrameContext::GetSRGLayoutCache()
     {

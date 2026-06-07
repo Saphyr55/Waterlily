@@ -1,5 +1,6 @@
-
 #include "Shared/Defines.hlsli"
+#include "Shared/DefaultRender.hlsli"
+#include "Shared/Lighting.hlsli"
 
 WLSL_BINDING(0, 0)  
 cbuffer ViewBuffer : register(b0, space0)
@@ -10,7 +11,7 @@ cbuffer ViewBuffer : register(b0, space0)
 WLSL_BINDING(1, 0)
 cbuffer PunctualLightBuffer : register(b1, space0)
 {
-    PunctualLight PunctualLight;
+    PunctualLight Light;
 }
 
 WLSL_BINDING(0, 1)
@@ -24,10 +25,25 @@ SamplerState Samplers : register(s0, space2);
 WLSL_BINDING(0, 3) 
 RWStructuredBuffer<Material> Materials : register(u0, space3);
 
-struct FSInput
+struct VSInput
 {
-    float4 Pos : SV_POSITION;
+    WLSL_LOCATION(0)     
     float3 Position : POSITION0;
+    
+    WLSL_LOCATION(1)     
+    float3 Normal : NORMAL0;
+    
+    WLSL_LOCATION(2)      
+    float2 UV : TEXCOORD0;
+    
+    WLSL_LOCATION(3)     
+    float4 Tangent : TANGENT0;
+};
+
+struct VSOutput
+{
+    float4 Position : SV_POSITION;
+    float3 WorldPosition : POSITION0;
     float3 Normal : NORMAL0;
     float2 UV : TEXCOORD0;
     float3 Tangent : TANGENT0;
@@ -41,12 +57,33 @@ struct FSOutput
     float4 FragColor : SV_TARGET;
 };
 
-float InverseSquareLightAttenuation(float lightDistance, float fixedDistance, float epsilon)
+VSOutput VSMain(VSInput input, uint InstanceIndex : SV_InstanceID)
 {
-    return (fixedDistance * fixedDistance) / ((lightDistance * lightDistance) + epsilon);
+    VSOutput output;
+    
+    RenderInstance instance = RenderInstanceBuffer[InstanceIndex];
+    
+    float4 worldPosition = mul(instance.Model, float4(input.Position, 1.0));
+    
+    float3x3 worldMatrix = (float3x3) instance.Model;
+    
+    float3 normal = normalize(mul(worldMatrix, input.Normal));
+    float3 tangent = normalize(mul(worldMatrix, (float3) input.Tangent));
+    tangent = normalize(tangent - dot(tangent, normal) * normal);
+    float3 bitangent = cross(normal, tangent) * input.Tangent.w;
+    
+    output.Position = mul(View.ViewProj, worldPosition);
+    output.WorldPosition = worldPosition.xyz;
+    output.Normal = normal;
+    output.UV = input.UV;
+    output.Tangent = tangent;
+    output.Bitangent = bitangent;
+    output.InstanceIndex = InstanceIndex;
+    
+    return output;
 }
 
-FSOutput main(FSInput input)
+FSOutput FSMain(VSOutput input)
 {
     FSOutput output;
     
@@ -71,14 +108,14 @@ FSOutput main(FSInput input)
         normal = normalize(mul(TBN, normal));
     }
     
-    float3 viewDirection = normalize(View.EyePosition - input.Position);
+    float3 viewDirection = normalize(View.EyePosition - input.WorldPosition);
     if (dot(viewDirection, normal) < 0.0f)
     {
         normal = -normal;
     }
     
-    float3 lightColor = PunctualLight.Color;
-    float3 lightDirection = PunctualLight.Position - input.Position;
+    float3 lightColor = Light.Color;
+    float3 lightDirection = Light.Position - input.WorldPosition;
     float lightDistance = length(lightDirection);
     lightDirection = normalize(lightDirection);
     

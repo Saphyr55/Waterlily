@@ -8,7 +8,10 @@
 namespace Wl
 {
 
-    bool SPIRVShaderCompiler::CompileHLSL(StringRef inputFilepath, StringRef outputFilepath, Stage stage)
+    bool SPIRVShaderCompiler::CompileHLSL(StringRef inputFilepath, 
+                                          StringRef outputFilepath, 
+                                          StringRef entryPoint, 
+                                          Stage stage)
     {
         std::filesystem::path outPath(outputFilepath.GetData());
         std::filesystem::path outDir = outPath.parent_path();
@@ -34,11 +37,14 @@ namespace Wl
         String cmd = "dxc";
         cmd.Append(" -spirv -T ");
         cmd.Append(stageFlag);
-        cmd.Append(" -E main ");
+        cmd.Append(" -E ");
+        cmd.Append(entryPoint);
+        cmd.Append(" ");
         cmd.Append(inputFilepath);
         cmd.Append(" -Fo ");
         cmd.Append(outputFilepath);
-        cmd.Append(" -Od ");
+        cmd.Append(" -fspv-preserve-bindings");
+        cmd.Append(" -fspv-preserve-interface");
         cmd.Append(" -fspv-target-env=vulkan1.3");
         cmd.Append(" -fspv-extension=SPV_EXT_descriptor_indexing");
 

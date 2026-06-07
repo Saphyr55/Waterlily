@@ -48,12 +48,14 @@ namespace Wl
     void PipelineManager::Destroy(const StringID& name)
     {
         RHIGraphicsPipeline* pipeline = GetPipeline(name);
+        WL_CHECK_MSG(pipeline, Wl::Format("Pipeline \"%s\" not found, maybe was already removed?", name.GetText().GetData()));
         m_cache.Remove(name);
         DestroyInternal(pipeline);
     }
 
     void PipelineManager::DestroyInternal(RHIGraphicsPipeline* pipeline)
     {
+        WL_CHECK(pipeline);
         m_device->DestroyGraphicsPipeline(pipeline);
     }
 
@@ -88,7 +90,7 @@ namespace Wl
         Array<uint32_t> groupIndices;
         groupIndices.Reserve(props.SRGLayouts.GetSize());
 
-        for (const auto& [group, _]: props.SRGLayouts)
+        for (auto [group, _]: props.SRGLayouts)
         {
             groupIndices.Append(group);
         }
@@ -97,13 +99,13 @@ namespace Wl
                 SPIRVPipelineReflector::BuildLayouts(reflection, m_srgLayoutCache, groupIndices);
 
         HashMap<uint32_t, RHIShaderResourceGroupLayout*> merged;
-        for (const auto& [group, layout]: srgLayoutsMap)
+        for (auto [group, layout]: srgLayoutsMap)
         {
             groupIndices.Append(group);
             merged.Put(group, layout);
         }
 
-        for (const auto& [group, layout]: props.SRGLayouts)
+        for (auto [group, layout]: props.SRGLayouts)
         {
             merged.Put(group, layout);
         }
@@ -132,8 +134,8 @@ namespace Wl
 
         RHIGraphicsPipelineDescriptionBuilder builder;
         builder.WithRenderPass(props.RenderPass)
-                .WithVertexShader(vertexShader, "main")
-                .WithFragmentShader(fragmentShader, "main")
+                .WithVertexShader(vertexShader, reflection.EntryPointNames[RHIShaderStage::Vertex])
+                .WithFragmentShader(fragmentShader, reflection.EntryPointNames[RHIShaderStage::Fragment])
                 .WithVertexBindings(bindings, attributes)
                 .WithViewport(props.Viewport, props.Scissor)
                 .WithSRGLayout(srgLayouts)

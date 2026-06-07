@@ -12,6 +12,7 @@ namespace Wl
     {
     public:
         void Read(FrameGraphTextureHandle handle);
+        void ReadStorage(FrameGraphTextureHandle handle);
         void Write(FrameGraphTextureHandle handle);
         void WriteStorage(FrameGraphTextureHandle handle);
 

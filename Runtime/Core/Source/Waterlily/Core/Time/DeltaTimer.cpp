@@ -6,7 +6,7 @@ namespace Wl
 
     double DeltaTimer::Tick()
     {
-        size_t currentCounter = PlatformGetPerformanceCounter();
+        uint64_t currentCounter = PlatformGetPerformanceCounter();
 
         if (m_isFirstCall)
         {
@@ -22,11 +22,11 @@ namespace Wl
         return m_deltaTime * m_timeScale;
     }
 
-    double DeltaTimer::LimitFrameRate(double deltaTime, double targetFrameRate)
+    double DeltaTimer::LimitFrameRate(double deltaTime, double targetFrameTime)
     {
-        if (deltaTime < targetFrameRate)
+        if (deltaTime < targetFrameTime)
         {
-            double sleepTime = targetFrameRate - deltaTime;
+            double sleepTime = targetFrameTime - deltaTime;
             PlatformDelay(sleepTime);
             return Tick();
         }

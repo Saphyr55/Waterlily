@@ -26,12 +26,14 @@ namespace Wl
             : m_stage(stage)
             , m_byteCode(code)
         {
+            WL_CHECK(stage != RHIShaderStage::None, "Shader stage cannot be None.");
+            WL_CHECK(stage != RHIShaderStage::AllGraphics, "Shader stage cannot be AllGraphics.");
         }
 
         ~SPIRVShader() = default;
 
     private:
-        RHIShaderStage m_stage;
+        RHIShaderStage m_stage = RHIShaderStage::None;
         Array<uint8_t> m_byteCode;
     };
 

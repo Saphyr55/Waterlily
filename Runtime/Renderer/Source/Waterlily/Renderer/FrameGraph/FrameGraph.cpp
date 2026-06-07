@@ -27,7 +27,7 @@ namespace Wl
         , m_frameContext(frameContext)
         , m_framebufferCache(device)
         , m_renderPassCache(device)
-        , m_texturePool(device)
+        , m_texturePool(device, frameContext)
     {
     }
 
@@ -121,12 +121,14 @@ namespace Wl
         m_buffers.Clear();
         m_outputs.Clear();
         m_sortedPasses.Clear();
+
+        uint64_t textureMaxFrameLifetime = 8;// TODO: Make it configurable
+        m_texturePool.BeginFrame(textureMaxFrameLifetime);
     }
 
     void FrameGraph::EndFrame()
     {
-        uint64_t textureMaxFrameLifetime = 8;// TODO: Make it configurable
-        m_texturePool.GarbageCollect(m_frameContext->GetFrameCount(), textureMaxFrameLifetime);
+
     }
 
     void FrameGraph::Compile()
@@ -207,7 +209,7 @@ namespace Wl
 
         using LastProducerIterator = HashMap<uint32_t, FrameGraphPass*>::iterator;
 
-        auto add_edge = [](FrameGraphPass* parent, FrameGraphPass* child)
+        auto addEdge = [](FrameGraphPass* parent, FrameGraphPass* child)
         {
             if (parent != child)
             {
@@ -227,7 +229,7 @@ namespace Wl
                 if (it != last_texture_producer.end())
                 {
                     FrameGraphPass* producer = (*it).Value;
-                    add_edge(producer, &current);
+                    addEdge(producer, &current);
                 }
             }
 
@@ -236,7 +238,7 @@ namespace Wl
                 LastProducerIterator it = last_buffer_producer.Find(read.GetIndex());
                 if (it != last_buffer_producer.end())
                 {
-                    add_edge((*it).Value, &current);
+                    addEdge((*it).Value, &current);
                 }
             }
 
@@ -259,7 +261,7 @@ namespace Wl
 
     void FrameGraph::TopoligicalSort()
     {
-        HashMap<FrameGraphPass*, size_t> parents_count(m_passes.GetSize());
+        HashMap<FrameGraphPass*, size_t> parentsCount(m_passes.GetSize());
 
         std::deque<size_t> deque;
 
@@ -268,7 +270,7 @@ namespace Wl
             FrameGraphPass& pass = m_passes[i];
             size_t count = pass.m_parents.GetSize();
 
-            parents_count[&pass] = count;
+            parentsCount[&pass] = count;
             if (count == 0)
             {
                 deque.push_back(i);
@@ -277,16 +279,16 @@ namespace Wl
 
         while (!deque.empty())
         {
-            size_t pass_index = deque.front();
-            FrameGraphPass& pass = m_passes[pass_index];
+            size_t passIndex = deque.front();
+            FrameGraphPass& pass = m_passes[passIndex];
             deque.pop_front();
 
-            m_sortedPasses.Append(pass_index);
+            m_sortedPasses.Append(passIndex);
 
             for (FrameGraphPass* child: pass.m_childrens)
             {
-                parents_count[child]--;
-                if (parents_count[child] == 0)
+                parentsCount[child]--;
+                if (parentsCount[child] == 0)
                 {
                     deque.push_back(child->m_index);
                 }
@@ -346,16 +348,7 @@ namespace Wl
             RHIAttachmentLoadOp loadOp =
                     isFirstUsage ? RHIAttachmentLoadOp::Clear : RHIAttachmentLoadOp::Load;
 
-            // TODO: Handle the case with external resource
             RHIAttachmentStoreOp outStoreOp = RHIAttachmentStoreOp::Store;
-            if (isLastUsage)
-            {
-                outStoreOp = RHIAttachmentStoreOp::DontCare;
-                if (!resource.IsTransient || isFrameGraphOutputResource)
-                {
-                    outStoreOp = RHIAttachmentStoreOp::Store;
-                }
-            }
 
             return {loadOp, outStoreOp};
         };
@@ -466,15 +459,16 @@ namespace Wl
 
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
 
-                FrameGraphTextureBarrier barrier;
-                barrier.Handle = handle;
-                barrier.OldLayout = resource.FinalLayout;
-                barrier.NewLayout = layoutNeeded;
+                if (resource.CurrentLayout != layoutNeeded)
+                {
+                    FrameGraphTextureBarrier barrier;
+                    barrier.Handle = handle;
+                    barrier.OldLayout = resource.CurrentLayout;
+                    barrier.NewLayout = layoutNeeded;
+                    pass.m_barriers.Append(barrier);
+                }
 
-                resource.InitialLayout = resource.FinalLayout;
-                resource.FinalLayout = layoutNeeded;
-
-                pass.m_barriers.Append(barrier);
+                resource.CurrentLayout = layoutNeeded;
             }
 
             for (size_t i = 0; i < pass.m_textureWrites.GetSize(); i++)
@@ -484,12 +478,16 @@ namespace Wl
 
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
 
-                FrameGraphTextureBarrier barrier;
-                barrier.Handle = handle;
-                barrier.OldLayout = resource.FinalLayout;
-                barrier.NewLayout = layoutNeeded;
+                if (resource.CurrentLayout != layoutNeeded)
+                {
+                    FrameGraphTextureBarrier barrier;
+                    barrier.Handle = handle;
+                    barrier.OldLayout = resource.CurrentLayout;
+                    barrier.NewLayout = layoutNeeded;
+                    pass.m_barriers.Append(barrier);
+                }
 
-                pass.m_barriers.Append(barrier);
+                resource.CurrentLayout = layoutNeeded;
             }
         }
     }
@@ -536,7 +534,7 @@ namespace Wl
         }
 
         FrameGraphPhysicalTextureKey key = FrameGraphPhysicalTextureKey::Create(resource);
-        PooledPhysicalTextureHandle pooledResource = m_texturePool.Obtain(key, m_frameContext->GetFrameCount());
+        PooledPhysicalTextureHandle pooledResource = m_texturePool.Obtain(key);
 
         resource.IsAllocated = true;
         resource.PooledResource = pooledResource;

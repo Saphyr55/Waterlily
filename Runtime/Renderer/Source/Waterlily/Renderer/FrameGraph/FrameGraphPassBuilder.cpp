@@ -14,6 +14,14 @@ namespace Wl
         m_framegraph.GetTexture(handle).Usage |= RHITextureUsageFlags::Sampler;
     }
 
+    void FrameGraphPassBuilder::ReadStorage(FrameGraphTextureHandle handle)
+    {
+        m_pass.m_textureReads.Append(handle);
+        m_pass.m_textureReadStates[handle] = RHITextureLayout::General;
+
+        m_framegraph.GetTexture(handle).Usage |= RHITextureUsageFlags::Storage;
+    }
+
     void FrameGraphPassBuilder::Write(FrameGraphTextureHandle handle)
     {
         m_pass.m_textureWrites.Append(handle);

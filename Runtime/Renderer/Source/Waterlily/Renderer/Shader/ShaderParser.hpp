@@ -32,6 +32,7 @@ namespace Wl
 
     struct SPIRVPipelineReflection
     {
+        HashMap<RHIShaderStage, String> EntryPointNames;
         HashMap<uint32_t, Array<SPIRVBinding>> Groups;
         Array<SPIRVVertexInput> VertexInputs;
     };

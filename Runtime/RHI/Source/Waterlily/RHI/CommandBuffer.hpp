@@ -13,15 +13,15 @@ namespace Wl
 {
 
     /**
- * @brief Base type for all RHI commands.
- */
+     * @brief Base type for all RHI commands.
+     */
     struct RHICommand
     {
     };
 
     /**
- * @brief Represents a draw command for rendering.
- */
+     * @brief Represents a draw command for rendering.
+     */
     struct RHIDrawCommand : RHICommand
     {
         uint32_t VertexCount;  // Number of vertices to draw.
@@ -109,8 +109,8 @@ namespace Wl
     };
 
     /**
- * @brief Information required to begin a render pass.
- */
+     * @brief Information required to begin a render pass.
+     */
     struct RHIRenderPassBeginInfo
     {
         RHIRenderPass* RenderPass = nullptr;
@@ -122,36 +122,36 @@ namespace Wl
     };
 
     /**
- * @brief Abstract interface representing a command buffer for recording GPU commands.
- */
+     * @brief Abstract interface representing a command buffer for recording GPU commands.
+     */
     class RHICommandBuffer
     {
     public:
         /**
-     * @brief Begin recording commands into this command buffer.
-     */
+         * @brief Begin recording commands into this command buffer.
+         */
         virtual void Begin(RHICommandBufferUsageFlags usage = RHICommandBufferUsageFlags::None) = 0;
 
         /**
-     * @brief End recording commands into this command buffer.
-     */
+         * @brief End recording commands into this command buffer.
+         */
         virtual void End() = 0;
 
         /**
-     * @brief Begin a render pass.
-     * @param render_pass_beginfo Information describing the render pass begin.
-     */
+         * @brief Begin a render pass.
+         * @param render_pass_beginfo Information describing the render pass begin.
+         */
         virtual void BeginRenderPass(const RHIRenderPassBeginInfo& render_pass_beginfo) = 0;
 
         /**
-     * @brief End the current render pass.
-     */
+         * @brief End the current render pass.
+         */
         virtual void EndRenderPass() = 0;
 
         /**
-     * @brief Bind a graphics pipeline for subsequent draw calls.
-     * @param pipeline Handle to the pipeline to bind.
-     */
+         * @brief Bind a graphics pipeline for subsequent draw calls.
+         * @param pipeline Handle to the pipeline to bind.
+         */
         virtual void BindPipeline(RHIPipeline* pipeline) = 0;
 
         virtual void BindSRG(RHIPipeline* pipeline, const Array<RHIShaderResourceGroup*>& groups, size_t groupIndex) = 0;
@@ -159,19 +159,19 @@ namespace Wl
         virtual void SetShaderConstants(RHIPipeline* pipeline, const RHIShaderConstants& constants) = 0;
 
         /**
-     * @brief Bind vertex buffers for rendering.
-     * @param buffers Array of buffer handles to bind.
-     */
+         * @brief Bind vertex buffers for rendering.
+         * @param buffers Array of buffer handles to bind.
+         */
         virtual void BindVertexBuffers(const Array<RHIBuffer*>& buffers) = 0;
 
         // TODO: Make the index type configurable
         virtual void BindIndexBuffer(RHIBuffer* buffer) = 0;
 
         /**
-     * @brief Set scissors for rendering.
-     * @param scissors Pointer to an array of scissor rectangles.
-     * @param count Number of scissor rectangles.
-     */
+         * @brief Set scissors for rendering.
+         * @param scissors Pointer to an array of scissor rectangles.
+         * @param count Number of scissor rectangles.
+         */
         virtual void SetScissors(const Rect2D* scissors, uint32_t count) = 0;
         virtual void SetScissor(const Rect2D& scissor)
         {
@@ -179,10 +179,10 @@ namespace Wl
         }
 
         /**
-     * @brief Set viewports for rendering.
-     * @param viewports Pointer to an array of viewports.
-     * @param count Number of viewports.
-     */
+         * @brief Set viewports for rendering.
+         * @param viewports Pointer to an array of viewports.
+         * @param count Number of viewports.
+         */
         virtual void SetViewports(const Viewport* viewports, uint32_t count) = 0;
         virtual void SetViewport(const Viewport& viewport)
         {
@@ -199,16 +199,16 @@ namespace Wl
         virtual void CopyBufferToTexture(const RHICopyBufferToTextureCommand& command) = 0;
 
         /**
-     * @brief Register a draw command.
-     * @param command Draw command parameters.
-     */
+         * @brief Register a draw command.
+         * @param command Draw command parameters.
+         */
         virtual void Draw(const RHIDrawCommand& command) = 0;
         virtual void Draw(const RHIDrawIndexedCommand& command) = 0;
         virtual void Draw(const RHIDrawIndexedIndirectCommand& command) = 0;
 
         /**
-     * @brief Destructor.
-     */
+         * @brief Destructor.
+         */
         virtual ~RHICommandBuffer() = default;
     };
 
@@ -219,27 +219,27 @@ namespace Wl
     };
 
     /**
- * @brief Abstract interface for allocating and managing command buffers.
- */
+     * @brief Abstract interface for allocating and managing command buffers.
+     */
     class RHICommandAllocator
     {
     public:
         /**
-     * @brief Open a command buffer for recording.
-     * @param index Index identifying which buffer to open.
-     * @return Handle to the opened command buffer.
-     */
+         * @brief Open a command buffer for recording.
+         * @param index Index identifying which buffer to open.
+         * @return Handle to the opened command buffer.
+         */
         virtual RHICommandBuffer* OpenCommandBuffer(uint32_t index = 0) = 0;
 
         /**
-     * @brief Reset a previously recorded command buffer for reuse.
-     * @param commandBuffer Handle to the command buffer to reset.
-     */
+         * @brief Reset a previously recorded command buffer for reuse.
+         * @param commandBuffer Handle to the command buffer to reset.
+         */
         virtual void ResetCommandBuffer(RHICommandBuffer* commandBuffer) = 0;
 
         /**
-     * @brief Destructor.
-     */
+         * @brief Destructor.
+         */
         virtual ~RHICommandAllocator() = default;
     };
 

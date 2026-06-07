@@ -20,8 +20,6 @@ namespace Wl
         FrameGraphTextureHandle DepthStencil;
         FrameGraphBufferHandle Indirect;
 
-        size_t DrawCount;
-        
         RenderAllocation* MeshAllocation;
         RenderMesh* Mesh;
 

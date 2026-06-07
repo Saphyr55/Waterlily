@@ -91,7 +91,6 @@ namespace Wl
         descriptorSetAllocationInfo.pSetLayouts = &m_layout.GetHandle();
 
         m_srg.GetIndexPool(0);
-        m_srg.SetLayout(&m_layout);
 
         WL_VULKAN_CHECK(
                 VulkanAPI::vkAllocateDescriptorSets(context.Device, &descriptorSetAllocationInfo, &m_srg.GetHandle()));

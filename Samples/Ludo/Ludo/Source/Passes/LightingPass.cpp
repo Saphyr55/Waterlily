@@ -1,5 +1,6 @@
 #include "Passes/LightingPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
+#include "LudoTypes.hpp"
 
 namespace Wl
 {
@@ -35,20 +36,56 @@ namespace Wl
 
             Vector4f color(0.01f, 0.01f, 0.01f, 1.0f);
 
-            RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipeline.SRGLayouts[4];
+            uint32_t gBufferSRGGroup = 4;
+
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipeline.SRGLayouts[GlobalSRGIndex];
+            RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
+
+            RHIWriteBufferResource writeRenderView(GlobalSRGRenderViewBinding,
+                                                   params.RenderViewAllocation->Buffer,
+                                                   params.RenderViewAllocation->Offset,
+                                                   params.RenderViewAllocation->Size);
+
+            RHIWriteBufferResource writeLight(GlobalSRGLightBinding,
+                                              params.LightAllocation->Buffer,
+                                              params.LightAllocation->Offset,
+                                              params.LightAllocation->Size);
+
+            globalSRG->SetBuffer(writeRenderView);
+            globalSRG->SetBuffer(writeLight);
+            globalSRG->Update();
+
+            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipeline.SRGLayouts[RenderInstanceSRGIndex];
+            RHIShaderResourceGroup* renderInstanceSRG = frame.SRGPool->AllocateSRG(renderInstanceSRGLayout);
+
+            RHIWriteBufferResource writeRenderInstance(RenderInstanceSRGBinding,
+                                                       params.MeshAllocation->Buffer,
+                                                       params.MeshAllocation->Offset,
+                                                       params.MeshAllocation->Size);
+
+            renderInstanceSRG->SetBuffer(writeRenderInstance);
+            renderInstanceSRG->Update();
+
+            RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipeline.SRGLayouts[gBufferSRGGroup];
             RHIShaderResourceGroup* gBufferTexturesSRG = frame.SRGPool->AllocateSRG(gBufferTexturesSRGLayout);
-            
+
             FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(params.Position);
             FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(params.Normal);
             FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(params.Albedo);
 
-            RHIWriteTextureResource writePosition(0, positionResource.View);
-            RHIWriteTextureResource writeNormal(1, normalResource.View);
-            RHIWriteTextureResource writeAlbedo(2, albedoResource.View);
+            RHISampler* pointSampler = context.FrameContext->GetDefaultSampler();
 
-            gBufferTexturesSRG->SetTexture(writePosition);
-            gBufferTexturesSRG->SetTexture(writeNormal);
-            gBufferTexturesSRG->SetTexture(writeAlbedo);
+            RHIWriteTextureSamplerResource writePosition(0, positionResource.View, pointSampler);
+            RHIWriteTextureSamplerResource writeNormal(1, normalResource.View, pointSampler);
+            RHIWriteTextureSamplerResource writeAlbedo(2, albedoResource.View, pointSampler);
+
+            gBufferTexturesSRG->SetTextureSampler(writePosition);
+            gBufferTexturesSRG->SetTextureSampler(writeNormal);
+            gBufferTexturesSRG->SetTextureSampler(writeAlbedo);
+            gBufferTexturesSRG->Update();
+
+            RHIShaderResourceGroup* textureSRG = passContext.TextureRegistry->GetSRG();
+            RHIShaderResourceGroup* materialSRG = passContext.MaterialRegistry->GetSRG();
 
             RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
 
@@ -59,6 +96,19 @@ namespace Wl
 
                 commandBuffer->SetViewport(viewport);
                 commandBuffer->SetScissor(scissor);
+
+                commandBuffer->BindSRG(pipeline, {globalSRG}, GlobalSRGIndex);
+                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, RenderInstanceSRGIndex);
+                commandBuffer->BindSRG(pipeline, {textureSRG}, LudoTextureGRGIndex);
+                commandBuffer->BindSRG(pipeline, {materialSRG}, LudoMaterialsSRGIndex);
+                commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, gBufferSRGGroup);
+
+                RHIDrawCommand drawCommand = {};
+                drawCommand.FirstInstance = 0;
+                drawCommand.FirstVertex = 0;
+                drawCommand.InstanceCount = 1;
+                drawCommand.VertexCount = 3;
+                commandBuffer->Draw(drawCommand);
             }
 
             commandBuffer->EndRenderPass();            

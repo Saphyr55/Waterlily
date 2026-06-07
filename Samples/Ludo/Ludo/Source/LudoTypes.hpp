@@ -14,8 +14,8 @@ namespace Wl
     inline constexpr uint32_t GlobalSRGRenderViewBinding = 0;
     inline constexpr uint32_t GlobalSRGLightBinding = 1;
 
-    inline constexpr uint32_t DrawItemSRGIndex = 1;
-    inline constexpr uint32_t DrawItemSRGBinding = 0;
+    inline constexpr uint32_t RenderInstanceSRGIndex = 1;
+    inline constexpr uint32_t RenderInstanceSRGBinding = 0;
 
     inline constexpr uint32_t LudoTextureGRGIndex = 2;
     inline constexpr uint32_t LudoTexturesSRGBinding = 0;

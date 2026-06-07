@@ -274,6 +274,8 @@ namespace Wl
         result = spvReflectEnumerateDescriptorBindings(&spvModule, &bindingCount, spvBindings.GetData());
         WL_LOG_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to enumerate descriptor bindings.");
 
+        outReflect.EntryPointNames[shader.GetStage()] = String(spvModule.entry_point_name);
+
         for (size_t i = 0; i < bindingCount; i++)
         {
             SpvReflectDescriptorBinding* spvBinding = spvBindings[i];

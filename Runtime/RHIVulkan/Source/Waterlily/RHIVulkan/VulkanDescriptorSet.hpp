@@ -32,10 +32,9 @@ namespace Wl
             return m_handle;
         }
 
-        inline void Init(size_t indexPool, RHIShaderResourceGroupLayout* layout)
+        inline void Init(size_t indexPool)
         {
             GetIndexPool(indexPool);
-            SetLayout(layout);
         }
 
         inline void GetIndexPool(size_t indexPool)
@@ -43,14 +42,9 @@ namespace Wl
             m_indexPool = indexPool;
         }
 
-        inline void SetLayout(RHIShaderResourceGroupLayout* layout)
-        {
-            m_layout = layout;
-        }
-
         inline void Reset()
         {
-            Init(0, nullptr);
+            Init(0);
             m_handle = VK_NULL_HANDLE;
         }
 
@@ -58,16 +52,29 @@ namespace Wl
         virtual ~VulkanShaderResourceGroup() override = default;
 
     private:
-        struct PendingDescriptorArray
+        struct PendingBufferWrite
         {
+            uint32_t Binding;
+            uint32_t ArrayElement;
+            VkBuffer Buffer;
+            VkDeviceSize Offset;
+            VkDeviceSize Range;
             VkDescriptorType Type;
-            Array<VkDescriptorBufferInfo> BufferInfos;
-            Array<VkDescriptorImageInfo> ImageInfos;
         };
 
-        HashMap<uint32_t, PendingDescriptorArray> m_pendings;
+        struct PendingImageWrite
+        {
+            uint32_t Binding;
+            uint32_t ArrayElement;
+            VkSampler Sampler;
+            VkImageView View;
+            VkImageLayout Layout;
+            VkDescriptorType Type;
+        };
 
-        RHIShaderResourceGroupLayout* m_layout = nullptr;
+        Array<PendingBufferWrite> m_pendingBufferWrites;
+        Array<PendingImageWrite> m_pendingImageWrites;
+
         VkDescriptorSet m_handle = VK_NULL_HANDLE;
         size_t m_indexPool = 0;
     };

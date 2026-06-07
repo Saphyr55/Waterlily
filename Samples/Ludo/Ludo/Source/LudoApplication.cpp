@@ -189,8 +189,8 @@ namespace Wl
             {
                 case VirtualKey::G: {
                     HashMap<StringID, GraphicsPipelineProperties*> propsMap = {
-                            {LudoForwardPassName, &gbufferPipelineProperties },
-                            {LudoUIPassName,      &lightingPipelineProperties}
+                            {GBufferPassName,  &gbufferPipelineProperties },
+                            {LightingPassName, &lightingPipelineProperties}
                     };
                     Wl::ReloadShaders(device, pipelineManager, propsMap);
                     break;
@@ -211,6 +211,25 @@ namespace Wl
         // Update handle
         application.OnTick.Connect([&](double deltaTime)
         {
+            WL_RETURN_WHEN(LudoState::IsPaused(state));
+
+            Display::GetDefault().HandleEvents();
+
+            if (Input::KeyIsPressed(VirtualKey::C))
+            {
+                camera = initialCamera;
+            }
+
+            if (Input::KeyIsPressed(VirtualKey::F1))
+            {
+                application.ToogleUnlimitedFrameRate(Application::DefaultTargetFrameRate);
+            }
+
+            if (Input::KeyIsPressed(VirtualKey::Escape))
+            {
+                application.Stop();
+            }
+
             Vector3f direction(0.0f, 0.0f, 0.0f);
 
             if (Input::KeyIsDown(VirtualKey::Z))
@@ -247,17 +266,15 @@ namespace Wl
             {
                 direction = Vector3f::Normalize(direction);
                 camera.Position += direction * camera.MovementSpeed * deltaTime;
-                camera.UpdateVectors();
             }
 
+            camera.UpdateVectors();
             camera.UpdateView();
         });
 
         // Render handle
         application.OnTick.Connect([&](double /* deltaTime */)
         {
-            WL_RETURN_WHEN(LudoState::IsPaused(state));
-
             FrameResult result = frameContext->BeginFrame();
             WL_CHECK(result == FrameResult::Success);
 
@@ -356,9 +373,12 @@ namespace Wl
             lightingParams.Albedo = albedo;
             lightingParams.Normal = normal;
             lightingParams.Position = position;
-            lightingParams.DepthStencil = depthStencil;
             lightingParams.Indirect = indirect;
+            lightingParams.DepthStencil = depthStencil;
+            lightingParams.RenderViewAllocation = &viewAllocation;
+            lightingParams.LightAllocation = &lightAllocation;
             lightingParams.Mesh = &uiMesh;
+            lightingParams.MeshAllocation = &sponzaAllocation;
 
             FrameGraphPass& lightingPass = LightingPassCreate(passContext, lightingPipelineProperties, lightingParams);
 
@@ -378,12 +398,13 @@ namespace Wl
             gbufferPipelineProperties.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
 
             lightingPipelineProperties.RenderPass = frameGraph->GetRenderPass(LightingPassName);
-            lightingPipelineProperties.CullMode = RHICullModeFlags::Back;
+            lightingPipelineProperties.CullMode = RHICullModeFlags::None;
             lightingPipelineProperties.VertexShaderPath = AssetSPVVertexShaderLighting;
             lightingPipelineProperties.FragmentShaderPath = AssetSPVFragmentShaderLigthing;
             lightingPipelineProperties.Scissor = scissor;
             lightingPipelineProperties.Viewport = viewport;
             lightingPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
+            lightingPipelineProperties.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
 
             pipelineManager->GetOrCreate(gBufferPass.GetName(), gbufferPipelineProperties);
             pipelineManager->GetOrCreate(lightingPass.GetName(), lightingPipelineProperties);
@@ -391,27 +412,6 @@ namespace Wl
             frameGraph->Execute(frame.CommandBuffer);
             frameGraph->EndFrame();
             frameContext->EndFrame();
-        });
-
-        // Input Handle
-        application.OnTick.Connect([&](double /* deltaTime */)
-        {
-            if (Input::KeyIsPressed(VirtualKey::C))
-            {
-                camera = initialCamera;
-            }
-
-            if (Input::KeyIsPressed(VirtualKey::F1))
-            {
-                application.ToogleUnlimitedFrameRate(Application::DefaultTargetFrameRate);
-            }
-
-            if (Input::KeyIsPressed(VirtualKey::Escape))
-            {
-                application.Stop();
-            }
-
-            Display::GetDefault().HandleEvents();
         });
 
         window->Show();

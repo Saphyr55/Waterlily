@@ -66,7 +66,7 @@ namespace Wl
         FrameGraphPhysicalTexture PersistantResource;
         RHITextureUsageFlags Usage = RHITextureUsageFlags::None;
         RHITextureLayout InitialLayout = RHITextureLayout::Undefined;
-        RHITextureLayout FinalLayout = RHITextureLayout::Undefined;
+        RHITextureLayout CurrentLayout = RHITextureLayout::Undefined;
         FrameGraphResourceLifetime Lifetime;
         bool IsTransient = false;
         bool IsAllocated = false;

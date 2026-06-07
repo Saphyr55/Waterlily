@@ -1,28 +1,46 @@
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResourcePool.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
+#include "Waterlily/Core/Trace/Trace.hpp"
 
 namespace Wl
 {
 
-    PooledPhysicalTextureHandle FrameGraphPhysicalTexturePool::Obtain(const FrameGraphPhysicalTextureKey& key, uint64_t currentFrame)
+    void FrameGraphPhysicalTexturePool::BeginFrame(uint64_t maxFrameLifetime)
+    {
+        if (maxFrameLifetime < m_frameContext->GetMaxFrameInFlight())
+        {
+            maxFrameLifetime = maxFrameLifetime + m_frameContext->GetMaxFrameInFlight();
+        }
+        
+        m_frameCount = m_frameContext->GetFrameCount();
+        GarbageCollect(maxFrameLifetime);
+         
+        for (const PendingRelease& pendingRelease: m_pendingReleases)
+        {
+            m_freeList[pendingRelease.Key].Append(pendingRelease.Handle);
+        }
+        m_pendingReleases.Clear();
+    }
+
+    PooledPhysicalTextureHandle FrameGraphPhysicalTexturePool::Obtain(const FrameGraphPhysicalTextureKey& key)
     {
         if (Array<PooledPhysicalTextureHandle>* pooledResources = m_freeList.GetPtr(key))
         {
             PooledPhysicalTextureHandle pooledResourceHandle = pooledResources->Back();
             pooledResources->PopBack();
-            m_resources[pooledResourceHandle].LastUsedFrame = currentFrame;
+            m_resources[pooledResourceHandle].LastUsedFrame = m_frameCount;
             return pooledResourceHandle;
         }
         
-        Allocate(key, currentFrame);
+        Allocate(key, m_frameCount);
         
         return m_resources.GetSize() - 1;
     }
 
     void FrameGraphPhysicalTexturePool::Release(const FrameGraphPhysicalTextureKey& key, PooledPhysicalTextureHandle pooledResource)
     {
-        m_freeList[key].Append(pooledResource);
+        m_pendingReleases.Emplace(key, pooledResource);
     }
 
     void FrameGraphPhysicalTexturePool::Dispose()
@@ -35,7 +53,7 @@ namespace Wl
         m_resources.Clear();
     }
 
-    void FrameGraphPhysicalTexturePool::GarbageCollect(uint64_t currentFrame, uint64_t maxFrameLifetime)
+    void FrameGraphPhysicalTexturePool::GarbageCollect(uint64_t maxFrameLifetime)
     {
         // TODO: 
     }

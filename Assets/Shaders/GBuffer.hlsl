@@ -1,5 +1,6 @@
 
 #include "Shared/Defines.hlsli"
+#include "Shared/DefaultRender.hlsli"
 
 WLSL_BINDING(0, 0)
 cbuffer ViewBuffer : register(b0, space0)
@@ -17,10 +18,25 @@ SamplerState Samplers : register(s0, space2);
 WLSL_BINDING(0, 3)
 RWStructuredBuffer<Material> Materials : register(u0, space3);
 
-struct FSInput
+struct VSInput
 {
-    float4 Pos : SV_POSITION;
+    WLSL_LOCATION(0)  
     float3 Position : POSITION0;
+    
+    WLSL_LOCATION(1)  
+    float3 Normal : NORMAL0;
+    
+    WLSL_LOCATION(2)   
+    float2 UV : TEXCOORD0;
+    
+    WLSL_LOCATION(3)  
+    float4 Tangent : TANGENT0;
+};
+
+struct VSOutput
+{
+    float4 Position : SV_POSITION;
+    float3 WorldPosition : POSITION0;
     float3 Normal : NORMAL0;
     float2 UV : TEXCOORD0;
     float3 Tangent : TANGENT0;
@@ -30,24 +46,50 @@ struct FSInput
 
 struct FSOutput
 {
-    WLSL_LOCATION(0)
+    WLSL_LOCATION(0)  
     float4 Position : SV_TARGET0;
     
-    WLSL_LOCATION(1)
+    WLSL_LOCATION(1)  
     float4 Normal : SV_TARGET1;
     
-    WLSL_LOCATION(2)
+    WLSL_LOCATION(2)  
     float4 Albedo : SV_TARGET2;
 };
 
-FSOutput main(FSInput input)
+VSOutput VSMain(VSInput input, uint InstanceIndex : SV_InstanceID)
+{
+    VSOutput output;
+    
+    RenderInstance instance = RenderInstanceBuffer[InstanceIndex];
+    
+    float4 worldPosition = mul(instance.Model, float4(input.Position, 1.0));
+    
+    float3x3 worldMatrix = (float3x3) instance.Model;
+    
+    float3 normal = normalize(mul(worldMatrix, input.Normal));
+    float3 tangent = normalize(mul(worldMatrix, (float3) input.Tangent));
+    tangent = normalize(tangent - dot(tangent, normal) * normal);
+    float3 bitangent = cross(normal, tangent) * input.Tangent.w;
+    
+    output.Position = mul(View.ViewProj, worldPosition);
+    output.WorldPosition = worldPosition.xyz;
+    output.Normal = normal;
+    output.UV = input.UV;
+    output.Tangent = tangent;
+    output.Bitangent = bitangent;
+    output.InstanceIndex = InstanceIndex;
+    
+    return output;
+}
+
+FSOutput FSMain(VSOutput input)
 {
     FSOutput output;
    
     RenderInstance instance = RenderInstanceBuffer[input.InstanceIndex];
     Material material = Materials[instance.MaterialIndex];
     
-    output.Position = float4(input.Position, 1.0f);
+    output.Position = float4(input.WorldPosition, 1.0f);
     
     float3 normal = input.Normal;
     if (material.NormalIndex != WLSL_INVALID_TEXTURE_INDEX)
@@ -58,6 +100,7 @@ FSOutput main(FSInput input)
     
         Texture2D normalTexture = Texture2DRegistry[NonUniformResourceIndex(material.NormalIndex)];
         normal = normalTexture.Sample(Samplers, input.UV).rgb;
+        normal = normal * 2.0f - 1.0f;
         normal = normalize(mul(TBN, normal));
     }
     output.Normal = float4(normal, 0.0f);
