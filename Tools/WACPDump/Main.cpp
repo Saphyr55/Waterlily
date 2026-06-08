@@ -15,32 +15,32 @@
 using namespace Wl;
 
 
-static std::string to_hex64(uint64_t v)
+static std::string ToHex64(uint64_t v)
 {
     std::ostringstream oss;
     oss << "0x" << std::hex << std::setw(16) << std::setfill('0') << v;
     return oss.str();
 }
 
-static std::string decode_filetype(uint64_t v)
+static std::string DecodeFiletype(uint64_t value)
 {
     std::string s(8, '\0');
     for (int i = 0; i < 8; i++)
     {
-        s[i] = char((v >> (i * 8)) & 0xFF);
+        s[i] = char((value >> (i * 8)) & 0xFF);
     }
     return s;
 }
 
-static void dump_header(auto& out, FileHandle& file)
+static void DumpWLARHeader(auto& out, FileHandle& file)
 {
-    LARHeader header;
+    WLARHeader header;
     file >> header;
 
-    std::string filetype = decode_filetype(header.Filetype);
-    std::string filetype_hex = to_hex64(header.Filetype);
+    std::string filetype = DecodeFiletype(header.Filetype);
+    std::string filetype_hex = ToHex64(header.Filetype);
 
-    out << "================ LAR DUMP ================\n";
+    out << "================ WLAR DUMP ================\n";
     out << "[HEADER]\n";
     out << "  Filetype     = ";
     out << filetype.data();
@@ -60,7 +60,7 @@ static void dump_header(auto& out, FileHandle& file)
     file.Seek(header.AssetOffset);
 }
 
-static void dump_registry(auto& out, const AssetRegistry& registry)
+static void DumpWLAR(auto& out, const AssetRegistry& registry)
 {
     out << StringRef("[ASSETS]\n");
 
@@ -111,19 +111,19 @@ static void dump_registry(auto& out, const AssetRegistry& registry)
     }
 }
 
-void dump_lar_file(auto& out, FileHandle& file)
+void DumpWLARFile(auto& out, FileHandle& file)
 {
     auto registry = AssetRegistry::LoadFromFile(file);
 
-    dump_header(out, file);
-    dump_registry(out, *registry);
+    DumpWLARHeader(out, file);
+    DumpWLAR(out, *registry);
 }
 
 int32_t main(int32_t argc, const char* argv[])
 {
     if (argc < 3)
     {
-        std::cout << "Usage: lichtacp-dump <file.lar> <output.txt>\n";
+        std::cout << "Usage: WACP.Dump <file.wlar> <output.txt>\n";
         return EXIT_FAILURE;
     }
 
@@ -132,19 +132,19 @@ int32_t main(int32_t argc, const char* argv[])
 
     FileSystem& fs = FileSystem::GetPlatform();
 
-    WL_LOG_INFO("[LARDump]", Wl::Format("Opening file: \"%s\"", filepath.data()));
+    WL_LOG_INFO("[WLARDump]", Wl::Format("Opening file: \"%s\"", filepath.data()));
 
-    FileResult file_result = fs.Open(filepath);
-    if (!file_result.HasValue())
+    FileResult fileResult = fs.Open(filepath);
+    if (!fileResult.HasValue())
     {
-        WL_LOG_ERROR("[LARDump]", "Failed to open the file.");
+        WL_LOG_ERROR("[WLARDump]", "Failed to open the file.");
         return EXIT_FAILURE;
     }
 
     std::ofstream output_file;
     output_file.open(output, std::ios::out | std::ios::trunc);
 
-    dump_lar_file(output_file, *file_result.GetValue());
+    DumpWLARFile(output_file, *fileResult.GetValue());
 
     return EXIT_SUCCESS;
 }

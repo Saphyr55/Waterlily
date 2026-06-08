@@ -19,15 +19,13 @@ namespace Wl
     {
         while (IsRunning())
         {
-            double deltaTime = m_timer.Tick();
-
-            // Frame rate limiting.
+            m_timer.Tick();
+            OnTick.Emit(m_timer);
+             
             if (!IsUnlimitedFrameRate())
             {
-                deltaTime = m_timer.LimitFrameRate(deltaTime, m_targetFrameRate);
+                m_timer.LimitFrameRate(m_targetFrameRate);
             }
-
-            OnTick.Emit(deltaTime);
         }
     }
 

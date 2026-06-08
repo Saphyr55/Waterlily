@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Timer.hpp"
 #include "Waterlily/Core/Signals/Signal.hpp"
-#include "Waterlily/Core/Time/DeltaTimer.hpp"
-#include "Waterlily/Engine/engineExports.hpp"
+#include "Waterlily/Engine/EngineExports.hpp"
+#include "Waterlily/Engine/Timer.hpp"
 
 namespace Wl
 {
@@ -11,25 +12,25 @@ namespace Wl
     {
     public:
         inline constexpr static double DefaultTargetFPS = 144.0;
-        inline constexpr static double DefaultTargetFrameRate = 1.0 / DefaultTargetFPS;
+        inline constexpr static double DefaultTargetFrameRate = 1000.0 / DefaultTargetFPS;
         inline constexpr static double UnlimtedFrameRate = 0.0;
 
     public:
-        WL_SIGNAL(OnTick, double /* deltaTime */);
+        WL_SIGNAL(OnTick, Timer& /* timer */);
 
     public:
         void Start();
         void Stop();
         void Run();
 
-        void ToogleUnlimitedFrameRate(double target_frame_rate);
+        void ToogleUnlimitedFrameRate(double targetFrameRate);
 
         inline bool IsRunning()
         {
             return m_isRunning;
         }
 
-        const DeltaTimer& GetTimer()
+        const Timer& GetTimer()
         {
             return m_timer;
         }
@@ -50,7 +51,7 @@ namespace Wl
         }
 
     private:
-        DeltaTimer m_timer;
+        Timer m_timer;
         double m_targetFrameRate = DefaultTargetFrameRate;
         bool m_isRunning;
     };

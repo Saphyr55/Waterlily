@@ -16,20 +16,20 @@
 
 namespace Wl
 {
-    inline constexpr StringRef LAR_EXTENSION = ".lar";
-    inline constexpr uint64_t LAR_FILETYPE = Wl::CStringPack64("LAR     ");
-    inline constexpr uint32_t LAR_VERSION = 1;
-    inline constexpr StringRef LAR_FILENAME = "Registry.lar";
+    inline constexpr StringRef WLAR_EXTENSION = ".wlar";
+    inline constexpr uint64_t WLAR_FILETYPE = Wl::CStringPack64("WLAR    ");
+    inline constexpr uint32_t WLAR_VERSION = 1;
+    inline constexpr StringRef WLAR_FILENAME = "Registry.wlar";
 
-    struct LARHeader
+    struct WLARHeader
     {
-        uint64_t Filetype = LAR_FILETYPE;
-        uint32_t Version = LAR_VERSION;
+        uint64_t Filetype = WLAR_FILETYPE;
+        uint32_t Version = WLAR_VERSION;
         uint64_t AssetCount = 0;
-        uint64_t AssetOffset = sizeof(LARHeader);
+        uint64_t AssetOffset = sizeof(WLARHeader);
     };
 
-    inline void operator<<(OutputStream& stream, const LARHeader& header)
+    inline void operator<<(OutputStream& stream, const WLARHeader& header)
     {
         stream << header.Filetype;
         stream << header.Version;
@@ -37,7 +37,7 @@ namespace Wl
         stream << header.AssetOffset;
     }
 
-    inline void operator>>(InputStream& stream, LARHeader& header)
+    inline void operator>>(InputStream& stream, WLARHeader& header)
     {
         stream >> header.Filetype;
         stream >> header.Version;

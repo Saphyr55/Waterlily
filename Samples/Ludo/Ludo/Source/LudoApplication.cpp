@@ -5,10 +5,8 @@
 #include "LudoShaders.hpp"
 #include "LudoState.hpp"
 #include "LudoTypes.hpp"
-#include "Passes/ForwardPass.hpp"
 #include "Passes/GBufferPass.hpp"
 #include "Passes/LightingPass.hpp"
-#include "Passes/UIPass.hpp"
 #include "Waterlily/Assets/AssetLoader.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Core/Defines.hpp"
@@ -102,7 +100,7 @@ namespace Wl
         SharedPtr<PipelineManager> pipelineManager = MakeShared<PipelineManager>(device, frameContext->GetSRGLayoutCache(), assetsFileSystem);
 
         Model* sponzaModelAsset = assetManager->GetAsset<Model>(LudoAssetModelSponza);
-        WL_CHECK(sponzaModelAsset);
+        WL_CHECK_MSG(sponzaModelAsset, Wl::Format("Impossible to load \"%s\" asset.", LudoAssetModelSponza.GetText().data()));
 
         Array<StaticMesh*> modelStaticMeshesAsset(sponzaModelAsset->Meshes.GetSize());
         for (const AssetHandle& meshAssetHandle: sponzaModelAsset->Meshes)
@@ -209,9 +207,10 @@ namespace Wl
         });
 
         // Update handle
-        application.OnTick.Connect([&](double deltaTime)
+        application.OnTick.Connect([&](Timer& timer)
         {
             WL_RETURN_WHEN(LudoState::IsPaused(state));
+            float deltaTime = static_cast<float>(timer.GetDeltaTimeSeconds());
 
             Display::GetDefault().HandleEvents();
 
@@ -266,15 +265,17 @@ namespace Wl
             {
                 direction = Vector3f::Normalize(direction);
                 camera.Position += direction * camera.MovementSpeed * deltaTime;
+                camera.UpdateVectors();
             }
 
-            camera.UpdateVectors();
             camera.UpdateView();
         });
 
         // Render handle
-        application.OnTick.Connect([&](double /* deltaTime */)
+        application.OnTick.Connect([&](Timer& /* timer */)
         {
+            WL_RETURN_WHEN(LudoState::IsPaused(state));
+
             FrameResult result = frameContext->BeginFrame();
             WL_CHECK(result == FrameResult::Success);
 

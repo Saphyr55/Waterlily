@@ -1,5 +1,5 @@
 #include "Waterlily/Assets/AssetLoader.hpp"
-#include "Waterlily/Assets/LCAFile.hpp"
+#include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Assets/assetMetadata.hpp"
 #include "Waterlily/Core/IO/FileHandle.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
@@ -16,7 +16,7 @@ namespace Wl
         }
 
         SharedPtr<FileHandle> file = fileResult.GetValue();
-        LCAHeader header;
+        WLCAHeader header;
         *file >> header;
 
         if (header.AssetType != metadata.GetAssetType())

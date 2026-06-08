@@ -8,7 +8,7 @@
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/AssetSerializer.hpp"
 #include "Waterlily/Assets/AssetSource.hpp"
-#include "Waterlily/Assets/LCAFile.hpp"
+#include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Assets/VFSAssetSource.hpp"
 #include "Waterlily/Core/IO/FileHandle.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
@@ -37,7 +37,7 @@ static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Ass
     {
         FileHandle& file = *result.GetValue();
 
-        LCAHeader header;
+        WLCAHeader header;
         header.AssetType = asset->AssetType;
         file << header;
 
@@ -71,7 +71,7 @@ int32_t main(int32_t argc, const char* argv[])
 
     std::filesystem::path larFilepath = WorkingDirectory.data();
     larFilepath /= VFSAssetsDirectory.data();
-    larFilepath /= LAR_FILENAME.data();
+    larFilepath /= WLAR_FILENAME.data();
 
     std::string larFilepathText = larFilepath.generic_string();
 

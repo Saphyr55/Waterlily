@@ -79,7 +79,8 @@ namespace Wl
     inline StringID CreateSID(const char* str, size_t length)
     {
         WL_CHECK(length > 0);
-        return StringID(Wl::fnv1a_cstr(str, length - 1));
+        StringID sid(Wl::fnv1a_cstr(str, length - 1));
+        return StringRegistry::GetInstance().RegisterSID(sid, str); 
     }
 
     inline StringID CreateSID(StringRef str)

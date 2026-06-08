@@ -11,9 +11,12 @@ target("WACP.Core", function()
 
     add_deps("Waterlily.Core", "Waterlily.Renderer", "Waterlily.Assets", "stb")
 
-    target_files_default({
+    add_includedirs("Source", {
         public = true
     })
 
-    add_defines("LTOOLS_ACP_EXPORTS")
+    add_headerfiles("Source/**.hpp")
+    add_files("Source/**.cpp")
+
+    add_defines("WL_TOOLS_ACP_EXPORTS")
 end)

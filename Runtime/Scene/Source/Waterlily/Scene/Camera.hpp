@@ -19,7 +19,7 @@ namespace Wl
 
         Matrix4f View = Matrix4f(1.0f);
 
-        float MovementSpeed = 1.0f;
+        float MovementSpeed = 0.0f;
         float MouseSensitivity = 0.15f;
 
     public:

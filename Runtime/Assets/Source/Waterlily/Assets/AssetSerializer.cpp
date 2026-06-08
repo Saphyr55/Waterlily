@@ -1,5 +1,4 @@
 #include "Waterlily/Assets/AssetSerializer.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 
 namespace Wl
 {

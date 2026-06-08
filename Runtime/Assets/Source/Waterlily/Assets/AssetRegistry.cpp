@@ -81,7 +81,7 @@ namespace Wl
 
         file.Seek(0);
 
-        LARHeader header;
+        WLARHeader header;
         file << header;
 
         return registry;
@@ -93,10 +93,10 @@ namespace Wl
 
         file.Seek(0);
 
-        LARHeader header;
+        WLARHeader header;
         file >> header;
 
-        if (header.Filetype != LAR_FILETYPE)
+        if (header.Filetype != WLAR_FILETYPE)
         {
             return nullptr;
         }
@@ -118,7 +118,7 @@ namespace Wl
     {
         file.Seek(0);
 
-        LARHeader header;
+        WLARHeader header;
         header.AssetCount = registry->m_registry.GetSize();
         file << header;
 

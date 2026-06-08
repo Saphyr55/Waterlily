@@ -12,7 +12,7 @@ namespace Wl
     static SDLDisplay g_display = []
     {
         SDLDisplay display;
-        display.SetEventHandler(MakeShared<DefaultDisplayEventHandler>());
+        display.SetEventHandler(Wl::MakeShared<DefaultDisplayEventHandler>());
         return display;
     }();
 

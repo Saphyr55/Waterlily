@@ -5,7 +5,6 @@
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/Format.hpp"
@@ -186,7 +185,7 @@ namespace Wl
             SharedPtr<MaterialAsset> materialAsset = MakeShared<MaterialAsset>();
 
             String filename = Wl::Format(format, materialAsset->AssetType.GetText(), uuidValue, materialIndex);
-            filename.Append(LCA_EXTENSION);
+            filename.Append(WLCA_EXTENSION);
 
             std::filesystem::path pathURI = context.OutputURI.data();
             pathURI /= filename.GetData();
@@ -235,7 +234,7 @@ namespace Wl
             SharedPtr<StaticMesh> meshAsset = MakeShared<StaticMesh>();
 
             String filename = Wl::Format(format, meshAsset->AssetType.GetText(), uuidValue, m);
-            filename.Append(LCA_EXTENSION);
+            filename.Append(WLCA_EXTENSION);
 
             std::filesystem::path pathURI = context.OutputURI.data();
             pathURI /= filename.GetData();

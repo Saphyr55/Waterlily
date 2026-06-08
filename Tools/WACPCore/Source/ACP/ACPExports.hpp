@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef LTOOLS_ACP_EXPORTS
+#ifdef WL_TOOLS_ACP_EXPORTS
 #ifdef _MSC_VER
 #define WL_TOOLS_ACP_API __declspec(dllexport)
 #else

@@ -5,10 +5,10 @@
 namespace Wl
 {
     // Asset Registry
-    inline const StringID LudoAssetRegistry = WL_SID("Assets/Registry.lar");
+    inline const StringID LudoAssetRegistry = WL_SID("Assets/Registry.wlar");
 
     // Sponza
-    inline const StringID LudoAssetModelSponza = WL_SID("Assets/Models/Sponza.lca");
+    inline const StringID LudoAssetModelSponza = WL_SID("Assets/Models/Sponza.wlca");
 
     // Source Shader filepath
     // TODO: Remove HLSL path, we shouln't compile this in the game.
