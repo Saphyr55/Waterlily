@@ -9,8 +9,9 @@ SceneModule.Deps = {
     "Waterlily.Entity"
 }
 
-SceneModule.PrivateDefines = {
+SceneModule.Defines = {
     "WL_SCENE_EXPORTS"
 }
 
 BuildTool.RegisterTargets(SceneModule)
+BuildTool.RegisterModules(SceneModule)

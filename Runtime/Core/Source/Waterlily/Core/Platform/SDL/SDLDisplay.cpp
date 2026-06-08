@@ -225,6 +225,8 @@ namespace Wl
 #ifdef _WIN32
         SDL_PropertiesID propertiesID = SDL_GetWindowProperties(sdlWindow);
         void* hwnd = SDL_GetPointerProperty(propertiesID, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+        WL_CHECK(hwnd);
+        m_nativeWindowMap[window] = hwnd;
         return hwnd;
 #endif
 

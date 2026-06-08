@@ -93,8 +93,8 @@ namespace Wl
                 physicalDevice, surface, &swapchainSupportDetails.Capabilities));
 
         uint32_t formatCount = 0;
-        WL_VULKAN_CHECK(
-                VulkanAPI::vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr));
+        WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfaceFormatsKHR(
+            physicalDevice, surface, &formatCount, nullptr));
 
         if (formatCount != 0)
         {
@@ -104,8 +104,8 @@ namespace Wl
         }
 
         uint32_t presentModeCount = 0;
-        WL_VULKAN_CHECK(
-                VulkanAPI::vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr));
+        WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfacePresentModesKHR(
+            physicalDevice, surface, &presentModeCount, nullptr));
 
         if (presentModeCount != 0)
         {

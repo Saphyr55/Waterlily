@@ -9,7 +9,6 @@
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 
 #include <cstddef>
-#include <limits>
 #include <type_traits>
 
 namespace Wl

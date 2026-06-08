@@ -76,7 +76,7 @@ namespace Wl
         FileSystem& assetsFileSystem = FileSystem::GetPlatform();
 
         FileResult assetRegistryFileResult = assetsFileSystem.OpenRead(LudoAssetRegistry.GetText());
-        WL_CHECK(assetRegistryFileResult.HasValue());
+        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), Wl::Format("Impossible to read \"%s\"", LudoAssetRegistry.GetText().GetData()));
         FileHandle& fileAssetRegistry = *assetRegistryFileResult.GetValue();
 
         SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadFromFile(fileAssetRegistry);

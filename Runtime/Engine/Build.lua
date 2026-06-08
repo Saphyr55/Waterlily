@@ -8,8 +8,9 @@ EngineModule.Deps = {
     "Waterlily.Core"
 }
 
-EngineModule.PrivateDefines = {
+EngineModule.Defines = {
     "WL_ENGINE_EXPORTS"
 }
 
 BuildTool.RegisterTargets(EngineModule)
+BuildTool.RegisterModules(EngineModule)

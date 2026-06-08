@@ -11,7 +11,7 @@ EntityModule.Deps = {
     "Waterlily.Core"
 }
 
-EntityModule.PrivateDefines = {
+EntityModule.Defines = {
     "WL_ENTITY_EXPORTS"
 }
 
@@ -37,3 +37,4 @@ EntityTestTarget.Deps = {
 }
 
 BuildTool.RegisterTargets(EntityModule, EntityTestTarget)
+BuildTool.RegisterModules(EntityModule)

@@ -9,7 +9,7 @@ LauncherModule.Deps = {
     "Waterlily.Engine"
 }
 
-LauncherModule.PrivateDefines = {
+LauncherModule.Defines = {
     "WL_LAUNCHER_EXPORTS"
 }
 
@@ -20,3 +20,4 @@ LauncherModule.Callback = function()
 end
 
 BuildTool.RegisterTargets(LauncherModule)
+BuildTool.RegisterModules(LauncherModule)

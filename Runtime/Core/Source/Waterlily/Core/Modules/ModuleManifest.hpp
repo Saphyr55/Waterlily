@@ -6,44 +6,47 @@
 namespace Wl
 {
 
-    struct ModuleManifestInformation
+    class ModuleManifestKeyNames
+    {
+    public:
+        inline static constexpr StringRef Name = "Name";
+        inline static constexpr StringRef Version = "Version";
+        inline static constexpr StringRef Deps = "Deps";
+    };
+
+    struct ModuleInformation
     {
         Array<String> Dependencies;
         String Name = "";
         String Version = "";
     };
 
-    class ManifestKeyNames
-    {
-    public:
-        inline static constexpr StringRef Modules = "modules";
-    };
-
-    class ModuleManifestKeyNames
-    {
-    public:
-        inline static constexpr StringRef Name = "name";
-        inline static constexpr StringRef Version = "version";
-        inline static constexpr StringRef Dependencies = "dependencies";
-    };
-
     class WL_CORE_API ModuleManifest
     {
     public:
-        bool LoadLua(StringRef filepath);
-
-        bool Merge(const ModuleManifest& other);
+        bool LoadJSON(StringRef filepath);
 
     public:
-        Array<ModuleManifestInformation>& GetManifestInformations();
-        const Array<ModuleManifestInformation>& GetManifestInformations() const;
+        Array<ModuleInformation>& GetModules();
+
+        const Array<ModuleInformation>& GetModules() const;
+
+        size_t GetModuleCount() const
+        {
+            return m_manifestInformations.GetSize();
+        }
+        
+        void Clear()
+        {
+            m_manifestInformations.Clear();
+        }
 
     private:
-        Array<ModuleManifestInformation> m_manifestInformations;
+        Array<ModuleInformation> m_manifestInformations;
     };
 
     WL_CORE_API bool ModuleManifestResolveDependencies(const ModuleManifest& manifest,
-                                                       Array<const ModuleManifestInformation*>& out_order);
+                                                       Array<const ModuleInformation*>& out_order);
     WL_CORE_API void ModuleManifestLog(const ModuleManifest& manifest);
 
 }// namespace Wl

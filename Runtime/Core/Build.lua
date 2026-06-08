@@ -1,4 +1,4 @@
--- Core Target --
+-- Core Module Target --
 local CoreModule = BuildTool.DefaultTargetTemplate()
 
 CoreModule.Name = "Waterlily.Core"
@@ -7,10 +7,14 @@ CoreModule.Group = "Engine"
 
 CoreModule.XMakePackages = {
     "libsdl3",
-    "lua"
+    "lua",
 }
 
-CoreModule.PrivateDefines = {
+CoreModule.Deps = {
+    "nlohmann-json"
+}
+
+CoreModule.Defines = {
     "WL_CORE_EXPORTS"
 }
 
@@ -53,3 +57,4 @@ CoreBenchmarkTarget.Sources = {
 }
 
 BuildTool.RegisterTargets(CoreModule, CoreTestTarget, CoreBenchmarkTarget)
+BuildTool.RegisterModules(CoreModule)

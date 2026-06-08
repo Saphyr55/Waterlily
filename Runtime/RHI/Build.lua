@@ -8,8 +8,9 @@ RHIModule.Deps = {
     "Waterlily.Core"
 }
 
-RHIModule.PrivateDefines = {
+RHIModule.Defines = {
     "WL_RHI_EXPORTS"
 }
 
 BuildTool.RegisterTargets(RHIModule)
+BuildTool.RegisterModules(RHIModule)

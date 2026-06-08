@@ -1,6 +1,5 @@
 #include "Waterlily/Launcher/Launcher.hpp"
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Platform.hpp"
@@ -8,8 +7,6 @@
 #include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/Engine/Application.hpp"
 #include "Waterlily/Engine/Engine.hpp"
-#include "Waterlily/Engine/ProjectSettings.hpp"
-#include "Waterlily/Launcher/CommandParser.hpp"
 
 namespace Wl
 {
@@ -19,30 +16,17 @@ namespace Wl
         Engine& engine = Engine::GetInstance();
         ModuleManifest& engineManifest = engine.GetManifest();
 
-        StringRef engineDirectory = engine.GetEngineDirectory();
-        StringRef projectDirectory = engine.GetProjectDirectory();
+        StringRef manifestFilepath = "ModuleManifest.json";
 
-        ModuleManifest applicationManifest;
-        String applicationManifestFilepath = Wl::Format("%s/manifest.lua", projectDirectory.data());
-        String engineManifestFilepath = Wl::Format("%s/manifest.lua", engineDirectory.data());
-
-        if (!applicationManifest.LoadLua(applicationManifestFilepath))
+        if (!engineManifest.LoadJSON(manifestFilepath))
         {
-            WL_LOG_ERROR("[Launcher]", Wl::Format("Cannot load the manifest '%s'", applicationManifestFilepath.GetData()));
+            WL_LOG_ERROR("[Launcher]", Wl::Format("Cannot load the manifest '%s'", manifestFilepath.data()))
             return false;
         }
-
-        if (!engine.GetManifest().LoadLua(engineManifestFilepath))
-        {
-            WL_LOG_ERROR("[Launcher]", Wl::Format("Cannot load the manifest '%s'", engineManifestFilepath.GetData()))
-            return false;
-        }
-
-        engineManifest.Merge(applicationManifest);
 
         ModuleManifestLog(engineManifest);
 
-        Array<const ModuleManifestInformation*>& order = engine.GetOrderedModuleInformations();
+        Array<const ModuleInformation*>& order = engine.GetOrderedModuleInformations();
 
         if (!ModuleManifestResolveDependencies(engineManifest, order))
         {
@@ -50,7 +34,7 @@ namespace Wl
             return false;
         }
 
-        for (const ModuleManifestInformation* info: engine.GetOrderedModuleInformations())
+        for (const ModuleInformation* info: engine.GetOrderedModuleInformations())
         {
             if (!ModuleRegistry::GetInstance().LoadModule(info->Name))
             {
@@ -67,7 +51,7 @@ namespace Wl
         Engine& engine = Engine::GetInstance();
         for (int32_t i = engine.GetOrderedModuleInformations().GetSize() - 1; i >= 0; i--)
         {
-            const ModuleManifestInformation* info = engine.GetOrderedModuleInformations()[i];
+            const ModuleInformation* info = engine.GetOrderedModuleInformations()[i];
             ModuleRegistry::GetInstance().UnloadModule(info->Name);
             WL_LOG_INFO("[Launcher]", Wl::Format("Unloaded module: %s", info->Name.GetData()));
         }
@@ -76,14 +60,6 @@ namespace Wl
     bool MainPreLaunch(int32_t argc, const char** argv)
     {
         WL_LOG_INFO("[Launcher]", "Pre init Engine.");
-
-        HashMap<StringRef, StringRef> commands = CommandLineParse(argc, argv);
-        StringRef projectdir = commands["projectdir"];
-        StringRef enginedir = commands["enginedir"];
-
-        ProjectSettings& settings = ProjectSettings::GetInstance();
-        settings.Put("projectdir", projectdir);
-        settings.Put("enginedir", enginedir);
 
         if (!MainLoadManifest())
         {

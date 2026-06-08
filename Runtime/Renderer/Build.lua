@@ -20,8 +20,9 @@ RendererModule.Deps = {
     "Waterlily.Scene"
 }
 
-RendererModule.PrivateDefines = {
+RendererModule.Defines = {
     "WL_RENDERER_EXPORTS"
 }
 
 BuildTool.RegisterTargets(RendererModule)
+BuildTool.RegisterModules(RendererModule)

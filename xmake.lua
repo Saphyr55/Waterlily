@@ -3,7 +3,8 @@ set_version("0.0.1-dev")
 
 set_languages("c++20")
 
-set_targetdir("Build/Bin/$(plat)_$(arch)_$(mode)")
+local targetdir = "Build/Bin/$(plat)_$(arch)_$(mode)"
+set_targetdir(targetdir)
 
 add_rules("mode.debug", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")
@@ -21,33 +22,37 @@ target("Assets")
 do
     set_kind("phony")
     set_group("Assets")
-
-    add_headerfiles("Assets/**")
+    add_extrafiles("Assets/**")
 end
 
+add_moduledirs("Tools")
+
 includes("Tools/BuildTool/BuildTool.lua")
-
-BuildTool.IncludeModule("Runtime/Core")
-BuildTool.IncludeModule("Runtime/Scene")
-BuildTool.IncludeModule("Runtime/RHIVulkan")
-BuildTool.IncludeModule("Runtime/RHI")
-BuildTool.IncludeModule("Runtime/Renderer")
-BuildTool.IncludeModule("Runtime/Messaging")
-BuildTool.IncludeModule("Runtime/Launcher")
-BuildTool.IncludeModule("Runtime/Entity")
-BuildTool.IncludeModule("Runtime/Engine")
-BuildTool.IncludeModule("Runtime/Assets")
-
--- Sample sources --
-BuildTool.IncludeModule("Samples/Ludo/App")
-BuildTool.IncludeModule("Samples/Ludo/Ludo")
-
--- Tools sources --
-includes("Tools/WACP")
-includes("Tools/WACPCore")
-includes("Tools/WACPDump")
+includes("Tools/BuildTool/Tasks.lua")
 
 -- Third Party -- 
-includes("ThirdParty")
+BuildTool.IncludeTargets("ThirdParty/stb")
+BuildTool.IncludeTargets("ThirdParty/nlohmann")
 
+-- Runtime -- 
+BuildTool.IncludeTargets("Runtime/Assets")
+BuildTool.IncludeTargets("Runtime/Core")
+BuildTool.IncludeTargets("Runtime/Scene")
+BuildTool.IncludeTargets("Runtime/RHIVulkan")
+BuildTool.IncludeTargets("Runtime/RHI")
+BuildTool.IncludeTargets("Runtime/Renderer")
+BuildTool.IncludeTargets("Runtime/Messaging")
+BuildTool.IncludeTargets("Runtime/Launcher")
+BuildTool.IncludeTargets("Runtime/Entity")
+BuildTool.IncludeTargets("Runtime/Engine")
+
+-- Sample sources --
+BuildTool.IncludeTargets("Samples/Ludo/App")
+BuildTool.IncludeTargets("Samples/Ludo/Ludo")
+
+-- Tools sources --
+BuildTool.IncludeTargets("Tools/WACP")
+BuildTool.IncludeTargets("Tools/WACPCore")
+
+-- Setup Targets --
 BuildTool.SetupTargets();

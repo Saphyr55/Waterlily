@@ -1,6 +1,5 @@
 #include "ACP/Mesh/MeshProcessor.hpp"
 #include "Waterlily/Core/Memory/Cast.hpp"
-#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Renderer/Mesh/StaticMesh.hpp"
 
 namespace Wl

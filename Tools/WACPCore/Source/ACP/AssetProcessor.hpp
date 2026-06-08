@@ -5,7 +5,7 @@
 namespace Wl
 {
 
-    class Asset;
+    struct Asset;
     class MemoryStream;
 
     class AssetProcessor

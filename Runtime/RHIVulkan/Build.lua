@@ -23,7 +23,7 @@ RHIVulkanModule.PrivateIncludes = {
 
 RHIVulkanModule.XMakePackages = XMakePackages
 
-RHIVulkanModule.PrivateDefines = {
+RHIVulkanModule.Defines = {
     "WL_RHI_VULKAN_EXPORTS"
 }
 
@@ -35,3 +35,4 @@ RHIVulkanModule.Callback = function()
 end
 
 BuildTool.RegisterTargets(RHIVulkanModule)
+BuildTool.RegisterModules(RHIVulkanModule)

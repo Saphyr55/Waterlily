@@ -8,8 +8,8 @@
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/AssetSerializer.hpp"
 #include "Waterlily/Assets/AssetSource.hpp"
-#include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Assets/VFSAssetSource.hpp"
+#include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Core/IO/FileHandle.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
@@ -110,7 +110,7 @@ int32_t main(int32_t argc, const char* argv[])
     SharedPtr<AssetSource> source = MakeShared<VFSAssetSource>(FileSystem::GetPlatform());
 
     WL_LOG_INFO("[WACP]",
-              Wl::Format("Importing, URI: \"%s\", Type: \"%s\"", assetFilepath.data(), AssetType_Model.GetText().data()));
+                Wl::Format("Importing, URI: \"%s\", Type: \"%s\"", assetFilepath.data(), AssetType_Model.GetText().data()));
 
     AssetStorage storage;
 

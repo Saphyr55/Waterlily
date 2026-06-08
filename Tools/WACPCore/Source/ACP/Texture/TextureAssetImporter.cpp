@@ -3,7 +3,6 @@
 #include "ACP/PathConvertion.hpp"
 #include "Waterlily/Assets/Asset.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/MemoryStream.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Renderer/Texture/TextureAsset.hpp"

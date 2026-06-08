@@ -6,154 +6,82 @@
 #include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/Core/Trace/Trace.hpp"
 
-#include <lua.hpp>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 namespace Wl
 {
 
-    static ModuleManifestInformation ModuleManifestInformationLuaParse(lua_State* L, int32_t tableIndex)
+    bool ModuleManifest::LoadJSON(StringRef filepath)
     {
-        ModuleManifestInformation description;
-
-        lua_getfield(L, -1, ModuleManifestKeyNames::Name);
-        if (lua_isstring(L, -1))
+        std::ifstream stream(filepath.data());
+        if (!stream.is_open())
         {
-            description.Name = lua_tostring(L, -1);
-        }
-        else
-        {
-            WL_LOG_ERROR("[ModuleManifest]", "Module is missing a valid 'name' field.");
-        }
-        lua_pop(L, 1);
-
-        lua_getfield(L, -1, ModuleManifestKeyNames::Version);
-        if (lua_isstring(L, -1))
-        {
-            description.Version = lua_tostring(L, -1);
-        }
-        else
-        {
-            WL_LOG_ERROR("[ModuleManifest]",
-                       Wl::Format("Module '%s' is missing a valid 'version' field.", description.Name.GetData()));
-        }
-        lua_pop(L, 1);
-
-        lua_getfield(L, -1, ModuleManifestKeyNames::Dependencies);
-        if (lua_istable(L, -1))
-        {
-            size_t len = lua_rawlen(L, -1);
-            for (size_t i = 1; i <= len; i++)
-            {
-                lua_rawgeti(L, -1, i);
-                if (lua_isstring(L, -1))
-                {
-                    description.Dependencies.Append(lua_tostring(L, -1));
-                }
-                else
-                {
-                    WL_LOG_ERROR(
-                            "[ModuleManifest]",
-                            Wl::Format("Module '%s' has a non-string dependency at index %zu.", description.Name.GetData(), i));
-                }
-                lua_pop(L, 1);
-            }
-        }
-        else
-        {
-            WL_LOG_ERROR("[ModuleManifest]",
-                       Wl::Format("Module '%s' ' has invalid 'dependencies', must be a table.", description.Name.GetData()))
-        }
-
-        lua_pop(L, 1);
-
-        return description;
-    }
-
-    bool ModuleManifest::Merge(const ModuleManifest& other)
-    {
-        for (const ModuleManifestInformation& info: other.m_manifestInformations)
-        {
-            bool found = false;
-            for (const ModuleManifestInformation& existingInfo: m_manifestInformations)
-            {
-                if (existingInfo.Name == info.Name)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                m_manifestInformations.Append(info);
-            }
-        }
-        return true;
-    }
-
-    bool ModuleManifest::LoadLua(StringRef filepath)
-    {
-        lua_State* L = luaL_newstate();
-        luaL_openlibs(L);
-
-        if (luaL_dofile(L, filepath.data()) != LUA_OK)
-        {
-            lua_close(L);
-            WL_LOG_ERROR("[ModuleManifest]", Wl::Format("Failed to load Lua file: ", filepath));
+            WL_LOG_ERROR("[ModuleManifest]", Wl::Format(" Cannot open \"%s\"", filepath.data()));
             return false;
         }
 
-        if (!lua_istable(L, -1))
+        nlohmann::json json;
+
+        try
         {
-            lua_close(L);
-            WL_LOG_ERROR("[ModuleManifest]", "Lua manifest must return a table.");
+            stream >> json;
+        }
+        catch (const nlohmann::json::parse_error& e)
+        {
+            WL_LOG_ERROR("[ModuleManifest]", Wl::Format("JSON parse error in \"%s\": \"%s\"", filepath.data(), e.what()));
             return false;
         }
 
-        lua_getfield(L, -1, ManifestKeyNames::Modules);
-        if (lua_istable(L, -1))
-        {
-            int32_t tableIndex = lua_gettop(L);
-            lua_pushnil(L);
+        m_manifestInformations.Reserve(json.size());
 
-            while (lua_next(L, tableIndex) != 0)
+        for (auto& entry: json)
+        {
+            if (!entry.is_object())
             {
-                if (lua_istable(L, -1))
-                {
-                    m_manifestInformations.Append(ModuleManifestInformationLuaParse(L, tableIndex));
-                }
-                lua_pop(L, 1);
+                WL_LOG_WARN("[ModuleManifest]", "Skipping non-object entry in the module manifest");
+                continue;
             }
 
-            lua_pop(L, 1);
-        }
-        else
-        {
-            WL_LOG_ERROR("[ModuleManifest]", Wl::Format("Missing modules field in '%s' file.", filepath));
-        }
+            ModuleInformation info;
+            info.Name = entry.value(ModuleManifestKeyNames::Name.data(), "").c_str();
+            info.Version = entry.value(ModuleManifestKeyNames::Version.data(), "").c_str();
 
-        lua_pop(L, 1);
-        lua_close(L);
+            if (const auto depsIt = entry.find(ModuleManifestKeyNames::Deps.data()); depsIt != entry.end() && depsIt->is_array())
+            {
+                info.Dependencies.Reserve(depsIt->size());
+                for (const auto& dep: *depsIt)
+                {
+                    if (dep.is_string())
+                    {
+                        info.Dependencies.Append(dep.get<std::string>().c_str());
+                    }
+                }
+            }
+
+            m_manifestInformations.Append(info);
+        }
 
         return true;
     }
 
     void ModuleManifestLog(const ModuleManifest& manifest)
     {
-        const Array<ModuleManifestInformation>& moduleInformations = manifest.GetManifestInformations();
+        const Array<ModuleInformation>& moduleInformations = manifest.GetModules();
         WL_LOG_INFO("[ModuleManifest]", Wl::Format("Module Manifest Informations (%d modules):", moduleInformations.GetSize()));
 
-        for (size_t i = 0; i < manifest.GetManifestInformations().GetSize(); i++)
+        for (size_t i = 0; i < manifest.GetModules().GetSize(); i++)
         {
-            const ModuleManifestInformation& moduleInformation = moduleInformations[i];
-            WL_LOG_INFO("[ModuleManifest]", Wl::Format("Module:"));
+            const ModuleInformation& moduleInformation = moduleInformations[i];
+            WL_LOG_INFO("[ModuleManifest]", "Module:");
             WL_LOG_INFO("[ModuleManifest]",
-                      Wl::Format("  %s: %s", ModuleManifestKeyNames::Name, moduleInformation.Name.GetData()));
+                        Wl::Format("  %s: %s", ModuleManifestKeyNames::Name, moduleInformation.Name.GetData()));
             WL_LOG_INFO("[ModuleManifest]",
-                      Wl::Format("  %s: %s", ModuleManifestKeyNames::Version, moduleInformation.Version.GetData()));
+                        Wl::Format("  %s: %s", ModuleManifestKeyNames::Version, moduleInformation.Version.GetData()));
 
             if (moduleInformation.Dependencies.IsEmpty())
             {
-                WL_LOG_INFO("[ModuleManifest]", Wl::Format("  %s: []", ModuleManifestKeyNames::Dependencies));
+                WL_LOG_INFO("[ModuleManifest]", Wl::Format("  %s: []", ModuleManifestKeyNames::Deps));
                 continue;
             }
 
@@ -169,38 +97,38 @@ namespace Wl
             }
 
             WL_LOG_INFO("[ModuleManifest]",
-                      Wl::Format("  %s: [%s]", ModuleManifestKeyNames::Dependencies, dependencyNames.GetData()));
+                        Wl::Format("  %s: [%s]", ModuleManifestKeyNames::Deps, dependencyNames.GetData()));
         }
     }
 
-    Array<ModuleManifestInformation>& ModuleManifest::GetManifestInformations()
+    Array<ModuleInformation>& ModuleManifest::GetModules()
     {
         return m_manifestInformations;
     }
 
-    const Array<ModuleManifestInformation>& ModuleManifest::GetManifestInformations() const
+    const Array<ModuleInformation>& ModuleManifest::GetModules() const
     {
         return m_manifestInformations;
     }
 
     bool ModuleManifestResolveDependencies(const ModuleManifest& manifest,
-                                           Array<const ModuleManifestInformation*>& outOrder)
+                                           Array<const ModuleInformation*>& outOrder)
     {
-        const size_t size = manifest.GetManifestInformations().GetSize();
+        const size_t size = manifest.GetModules().GetSize();
         outOrder.Reserve(size);
 
-        HashMap<StringRef, const ModuleManifestInformation*> moduleMap(size);
+        HashMap<StringRef, const ModuleInformation*> moduleMap(size);
         HashMap<StringRef, size_t> indegree(size);
         HashMap<StringRef, Array<String>> graph(size);
 
-        for (const ModuleManifestInformation& info: manifest.GetManifestInformations())
+        for (const ModuleInformation& info: manifest.GetModules())
         {
             moduleMap[info.Name] = &info;
             indegree[info.Name] = 0;
             graph[info.Name] = Array<String>(size);
         }
 
-        for (const ModuleManifestInformation& info: manifest.GetManifestInformations())
+        for (const ModuleInformation& info: manifest.GetModules())
         {
             for (const StringRef& dependency: info.Dependencies)
             {
@@ -212,7 +140,7 @@ namespace Wl
                 else
                 {
                     WL_LOG_ERROR("[ModuleManifest]",
-                               Wl::Format("Module '%s' has an unknown dependency '%s'.", info.Name.GetData(), dependency.data()));
+                                 Wl::Format("Module '%s' has an unknown dependency '%s'.", info.Name.GetData(), dependency.data()));
                 }
             }
         }

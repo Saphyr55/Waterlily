@@ -20,6 +20,11 @@ namespace Wl
         static ModuleRegistry& GetInstance();
 
         Module* LoadModule(StringRef name);
+        template<typename ModuleType>
+        ModuleType* LoadModule(StringRef name)
+        {
+            return static_cast<ModuleType*>(LoadModule(name));
+        }
 
         void UnloadModule(StringRef name);
 

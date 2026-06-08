@@ -1,5 +1,7 @@
 #include "Waterlily/Renderer/RendererModule.hpp"
+
 #include "Waterlily/Assets/AssetSerializer.hpp"
+
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/Renderer/Material/Material.hpp"

@@ -1,4 +1,5 @@
 #include "Waterlily/Launcher/LauncherModule.hpp"
+#include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Trace/Trace.hpp"
 
 namespace Wl

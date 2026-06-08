@@ -1,4 +1,4 @@
-local LudoModule = {}
+local LudoModule = BuildTool.DefaultTargetTemplate()
 
 LudoModule.Name = "Ludo"
 LudoModule.Kind = "shared"
@@ -15,18 +15,9 @@ LudoModule.Deps = {
     "Waterlily.Assets"
 }
 
-LudoModule.PublicIncludes = {
-    "Source"
-}
-LudoModule.Sources = {
-    "Source/**.cpp"
-}
-LudoModule.Headers = {
-    "Source/**.hpp"
-}
-
-LudoModule.PrivateDefines = {
+LudoModule.Defines = {
     "WL_LUDO_EXPORTS"
 }
 
 BuildTool.RegisterTargets(LudoModule)
+BuildTool.RegisterModules(LudoModule)

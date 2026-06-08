@@ -7,8 +7,8 @@
 #include "Waterlily/Core/Signals/Connection.hpp"
 
 #define WL_SIGNAL_DETAILS(keyword, name, ...)            \
-    using name##_signal_t = ::Wl::Signal<__VA_ARGS__>; \
-    keyword name##_signal_t name
+    using name##SignalType = ::Wl::Signal<__VA_ARGS__>; \
+    keyword name##SignalType name
 
 #define WL_SIGNAL_STATIC(name, ...) WL_SIGNAL_DETAILS(inline static, name, __VA_ARGS__)
 #define WL_SIGNAL_MEMBER(name, ...) WL_SIGNAL_DETAILS(mutable, name, __VA_ARGS__)

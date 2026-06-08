@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Modules/Module.hpp"
-#include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Launcher/LauncherExports.hpp"
 
 namespace Wl

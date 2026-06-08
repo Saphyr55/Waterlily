@@ -16,10 +16,7 @@ namespace Wl
         void Startup();
         void Shutdown();
 
-        StringRef GetProjectDirectory();
-        StringRef GetEngineDirectory();
-
-        Array<const ModuleManifestInformation*>& GetOrderedModuleInformations();
+        Array<const ModuleInformation*>& GetOrderedModuleInformations();
 
         ModuleManifest& GetManifest();
 
@@ -34,7 +31,7 @@ namespace Wl
         Engine& operator=(Engine&&) = delete;
 
     private:
-        Array<const ModuleManifestInformation*> m_orderedModuleInformations;
+        Array<const ModuleInformation*> m_orderedModuleInformations;
         ModuleManifest m_manifest;
         StringRef m_projectDirectory;
     };

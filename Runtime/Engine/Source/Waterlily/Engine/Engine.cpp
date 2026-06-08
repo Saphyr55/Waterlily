@@ -21,7 +21,7 @@ namespace Wl
     {
         ModuleRegistry& module_registry = ModuleRegistry::GetInstance();
 
-        for (const ModuleManifestInformation* info: GetOrderedModuleInformations())
+        for (const ModuleInformation* info: GetOrderedModuleInformations())
         {
             Module* module = module_registry.GetModuleInterface(info->Name);
             module->OnStartup();
@@ -34,23 +34,13 @@ namespace Wl
 
         for (size_t i = m_orderedModuleInformations.GetSize() - 1; i-- > 0;)
         {
-            const ModuleManifestInformation* info = m_orderedModuleInformations[i];
+            const ModuleInformation* info = m_orderedModuleInformations[i];
             Module* module = module_registry.GetModuleInterface(info->Name);
             module->OnShutdown();
         }
     }
 
-    StringRef Engine::GetProjectDirectory()
-    {
-        return ProjectSettings::GetInstance().Get("projectdir");
-    }
-
-    StringRef Engine::GetEngineDirectory()
-    {
-        return ProjectSettings::GetInstance().Get("enginedir");
-    }
-
-    Array<const ModuleManifestInformation*>& Engine::GetOrderedModuleInformations()
+    Array<const ModuleInformation*>& Engine::GetOrderedModuleInformations()
     {
         return m_orderedModuleInformations;
     }

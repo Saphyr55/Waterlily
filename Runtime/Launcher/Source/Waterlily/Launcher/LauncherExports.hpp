@@ -1,15 +1,15 @@
 #pragma once
 
 #ifdef WL_LAUNCHER_EXPORTS
-#ifdef _MSC_VER
-#define WL_LAUNCHER_API __declspec(dllexport)
+    #ifdef _MSC_VER
+        #define WL_LAUNCHER_API __declspec(dllexport)
+    #else
+        #define WL_LAUNCHER_API __attribute__((visibility("default")))
+    #endif
 #else
-#define WL_LAUNCHER_API __attribute__((visibility("default")))
-#endif
-#else
-#ifdef _MSC_VER
-#define WL_LAUNCHER_API __declspec(dllimport)
-#else
-#define WL_LAUNCHER_API
-#endif
+    #ifdef _MSC_VER
+        #define WL_LAUNCHER_API __declspec(dllimport)
+    #else
+        #define WL_LAUNCHER_API
+    #endif
 #endif
