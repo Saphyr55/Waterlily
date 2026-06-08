@@ -1,4 +1,4 @@
-local EntityModule = {}
+local EntityModule = BuildTool.DefaultTargetTemplate()
 
 EntityModule.Name = "Waterlily.Entity"
 EntityModule.Kind = "shared"
@@ -10,18 +10,11 @@ EntityModule.XMakePackages = {
 EntityModule.Deps = {
     "Waterlily.Core"
 }
-EntityModule.PublicIncludes = {
-    "Source"
-}
-EntityModule.Headers = {
-    "Source/**.hpp"
-}
-EntityModule.Sources = {
-    "Source/**.cpp"
-}
+
 EntityModule.PrivateDefines = {
     "WL_ENTITY_EXPORTS"
 }
+
 EntityModule.Callback = function()
 end
 

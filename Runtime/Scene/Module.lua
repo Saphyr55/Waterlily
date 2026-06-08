@@ -1,4 +1,4 @@
-local SceneModule = {}
+local SceneModule = BuildTool.DefaultTargetTemplate()
 
 SceneModule.Name = "Waterlily.Scene"
 SceneModule.Kind = "shared"
@@ -8,15 +8,7 @@ SceneModule.Deps = {
     "Waterlily.Assets",
     "Waterlily.Entity"
 }
-SceneModule.PublicIncludes = {
-    "Source"
-}
-SceneModule.Sources = {
-    "Source/**.cpp"
-}
-SceneModule.Headers = {
-    "Source/**.hpp"
-}
+
 SceneModule.PrivateDefines = {
     "WL_SCENE_EXPORTS"
 }

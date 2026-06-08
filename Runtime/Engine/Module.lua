@@ -1,4 +1,4 @@
-local EngineModule = {}
+local EngineModule = BuildTool.DefaultTargetTemplate()
 
 EngineModule.Name = "Waterlily.Engine"
 EngineModule.Kind = "shared"
@@ -8,15 +8,6 @@ EngineModule.Deps = {
     "Waterlily.Core"
 }
 
-EngineModule.PublicIncludes = {
-    "Source"
-}
-EngineModule.Headers = {
-    "Source/**.hpp"
-}
-EngineModule.Sources = {
-    "Source/**.cpp"
-}
 EngineModule.PrivateDefines = {
     "WL_ENGINE_EXPORTS"
 }

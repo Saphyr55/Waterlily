@@ -1,11 +1,11 @@
+local RHIVulkanModule = BuildTool.DefaultTargetTemplate()
+
 local XMakePackages = {
     "vulkan-headers",
     "vulkan-memory-allocator"
 }
 
 add_requires(unpack(XMakePackages))
-
-local RHIVulkanModule = {}
 
 RHIVulkanModule.Name = "Waterlily.RHI.Vulkan"
 RHIVulkanModule.Kind = "shared"
@@ -16,14 +16,9 @@ RHIVulkanModule.Deps = {
     "Waterlily.RHI"
 }
 
+RHIVulkanModule.PublicIncludes = {}
 RHIVulkanModule.PrivateIncludes = {
     "Source/"
-}
-RHIVulkanModule.Sources = {
-    "Source/**.cpp"
-}
-RHIVulkanModule.Headers = {
-    "Source/**.hpp"
 }
 
 RHIVulkanModule.XMakePackages = XMakePackages

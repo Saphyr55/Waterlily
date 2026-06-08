@@ -8,16 +8,6 @@ MessagingModule.Deps = {
     "Waterlily.Core"
 }
 
-MessagingModule.PublicIncludes = {
-    "Source"
-}
-MessagingModule.Headers = {
-    "Source/**.hpp"
-}
-MessagingModule.Sources = {
-    "Source/**.cpp"
-}
-
 MessagingModule.PrivateDefines = {
     "WL_MESSAGING_EXPORTS"
 }

@@ -1,23 +1,15 @@
 -- Core Target --
-local CoreModule = {}
+local CoreModule = BuildTool.DefaultTargetTemplate()
 
 CoreModule.Name = "Waterlily.Core"
 CoreModule.Kind = "shared"
 CoreModule.Group = "Engine"
+
 CoreModule.XMakePackages = {
     "libsdl3",
     "lua"
 }
-CoreModule.Deps = {}
-CoreModule.PublicIncludes = {
-    "Source"
-}
-CoreModule.Headers = {
-    "Source/**.hpp"
-}
-CoreModule.Sources = {
-    "Source/**.cpp"
-}
+
 CoreModule.PrivateDefines = {
     "WL_CORE_EXPORTS"
 }

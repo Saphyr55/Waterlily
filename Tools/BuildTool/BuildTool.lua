@@ -17,16 +17,23 @@ local function ApplyDefaultTarget(t)
         Deps = t.Deps or {},
         PrivateDefines = t.PrivateDefines or {},
         PublicDefines = t.PublicDefines or {},
-        Callback = t.Callback or function() 
+        ExtraFiles = t.ExtraFiles or {},
+        Callback = t.Callback or function()
         end
     }
 end
 
 function BuildTool.DefaultTargetTemplate()
     return ApplyDefaultTarget({
-        Sources = {"Source/**.cpp"},
-        Headers = {"Source/**.hpp"},
-        PublicIncludes = {"Source"}
+        Sources = {
+            "Source/**.cpp"
+        },
+        Headers = {
+            "Source/**.hpp"
+        },
+        PublicIncludes = {
+            "Source"
+        }
     })
 end
 
@@ -34,7 +41,7 @@ function BuildTool.IsCompilableTarget(t)
     return t.Kind == "shared" or t.Kind == "static" or t.Kind == "binary"
 end
 
-function BuildTool.Include(dirModule)
+function BuildTool.IncludeModule(dirModule)
     local p = path.join(dirModule, "Module.lua")
     if not os.exists(p) then
         os.raise(format("The Module file '%s' does not exists", p))
@@ -45,23 +52,27 @@ end
 
 function BuildTool.RegisterTargets(...)
 
+    local args = {
+        ...
+    }
+
     local pathsAppendPrefix = function(ps, prefix)
         for k, v in pairs(ps) do
             ps[k] = path.join(prefix, v)
         end
     end
 
-    local args = {
-        ...
-    }
     for i = 1, #args do
         local t = ApplyDefaultTarget(args[i])
-        pathsAppendPrefix(t.PrivateIncludes, CurrentPath)
-        pathsAppendPrefix(t.PublicIncludes, CurrentPath)
-        pathsAppendPrefix(t.Sources, CurrentPath)
-        pathsAppendPrefix(t.Headers, CurrentPath)
+        t.InternalPath = CurrentPath;
+        pathsAppendPrefix(t.PrivateIncludes, t.InternalPath)
+        pathsAppendPrefix(t.PublicIncludes, t.InternalPath)
+        pathsAppendPrefix(t.Sources, t.InternalPath)
+        pathsAppendPrefix(t.Headers, t.InternalPath)
         table.insert(Targets, t)
     end
+
+    CurrentPath = ""
 end
 
 function BuildTool.SetupTarget(t)
@@ -72,7 +83,10 @@ function BuildTool.SetupTarget(t)
     target(t.Name)
     do
         set_kind(t.Kind)
-
+        add_filegroups("", {
+            rootdir = t.InternalPath
+        })
+        
         if t.Group then
             set_group(t.Group)
         end
@@ -90,6 +104,7 @@ function BuildTool.SetupTarget(t)
         end
 
         if t.Sources ~= {} then
+
             add_files(unpack(t.Sources))
         end
 
@@ -106,11 +121,19 @@ function BuildTool.SetupTarget(t)
         end
 
         if t.PublicDefines ~= {} then
-            add_defines(unpack(t.PublicDefines), { public = true })
-        end        
-        
+            add_defines(unpack(t.PublicDefines), {
+                public = true
+            })
+        end
+
         if t.PrivateDefines ~= {} then
-            add_defines(unpack(t.PrivateDefines), { public = false })
+            add_defines(unpack(t.PrivateDefines), {
+                public = false
+            })
+        end
+
+        if t.ExtraFiles ~= {} then
+            add_extrafiles(unpack(t.ExtraFiles))
         end
 
         t.Callback()

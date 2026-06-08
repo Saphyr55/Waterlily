@@ -1,4 +1,4 @@
-local LauncherModule = {}
+local LauncherModule = BuildTool.DefaultTargetTemplate()
 
 LauncherModule.Name = "Waterlily.Launcher"
 LauncherModule.Kind = "shared"
@@ -7,16 +7,6 @@ LauncherModule.Group = "Engine"
 LauncherModule.Deps = {
     "Waterlily.Core",
     "Waterlily.Engine"
-}
-
-LauncherModule.PublicIncludes = {
-    "Source/"
-}
-LauncherModule.Sources = {
-    "Source/**.cpp"
-}
-LauncherModule.Headers = {
-    "Source/**.hpp"
 }
 
 LauncherModule.PrivateDefines = {

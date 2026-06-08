@@ -27,20 +27,20 @@ end
 
 includes("Tools/BuildTool/BuildTool.lua")
 
-BuildTool.Include("Runtime/Core")
-BuildTool.Include("Runtime/Scene")
-BuildTool.Include("Runtime/RHIVulkan")
-BuildTool.Include("Runtime/RHI")
-BuildTool.Include("Runtime/Renderer")
-BuildTool.Include("Runtime/Messaging")
-BuildTool.Include("Runtime/Launcher")
-BuildTool.Include("Runtime/Entity")
-BuildTool.Include("Runtime/Engine")
-BuildTool.Include("Runtime/Assets")
+BuildTool.IncludeModule("Runtime/Core")
+BuildTool.IncludeModule("Runtime/Scene")
+BuildTool.IncludeModule("Runtime/RHIVulkan")
+BuildTool.IncludeModule("Runtime/RHI")
+BuildTool.IncludeModule("Runtime/Renderer")
+BuildTool.IncludeModule("Runtime/Messaging")
+BuildTool.IncludeModule("Runtime/Launcher")
+BuildTool.IncludeModule("Runtime/Entity")
+BuildTool.IncludeModule("Runtime/Engine")
+BuildTool.IncludeModule("Runtime/Assets")
 
 -- Sample sources --
-BuildTool.Include("Samples/Ludo/App")
-BuildTool.Include("Samples/Ludo/Ludo")
+BuildTool.IncludeModule("Samples/Ludo/App")
+BuildTool.IncludeModule("Samples/Ludo/Ludo")
 
 -- Tools sources --
 includes("Tools/WACP")
