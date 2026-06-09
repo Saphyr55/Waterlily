@@ -3,7 +3,7 @@
 #include "Waterlily/Assets/assetMetadata.hpp"
 #include "Waterlily/Core/Containers/HashSet.hpp"
 #include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/IO/FileHandle.hpp"
+#include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 
 namespace Wl
@@ -75,7 +75,7 @@ namespace Wl
         parentMetadata.GetDependencies().Add(childMetadata.GetUUID());
     }
 
-    SharedPtr<AssetRegistry> AssetRegistry::CreateFromFile(FileHandle& file)
+    SharedPtr<AssetRegistry> AssetRegistry::CreateFromFile(File& file)
     {
         SharedPtr<AssetRegistry> registry = MakeShared<AssetRegistry>();
 
@@ -87,7 +87,7 @@ namespace Wl
         return registry;
     }
 
-    SharedPtr<AssetRegistry> AssetRegistry::LoadFromFile(FileHandle& file)
+    SharedPtr<AssetRegistry> AssetRegistry::LoadFromFile(File& file)
     {
         SharedPtr<AssetRegistry> assetRegistry = MakeShared<AssetRegistry>();
 
@@ -114,7 +114,7 @@ namespace Wl
         return assetRegistry;
     }
 
-    void AssetRegistry::PersistFile(SharedPtr<AssetRegistry>& registry, FileHandle& file)
+    void AssetRegistry::PersistFile(SharedPtr<AssetRegistry>& registry, File& file)
     {
         file.Seek(0);
 

@@ -6,7 +6,7 @@
 namespace Wl
 {
 
-    class FileHandle : public Stream
+    class File : public Stream
     {
     public:
         virtual int64_t Tell() = 0;
@@ -26,7 +26,7 @@ namespace Wl
 
         virtual bool Close() = 0;
 
-        virtual ~FileHandle() = default;
+        virtual ~File() = default;
     };
 
 }// namespace Wl

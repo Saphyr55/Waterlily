@@ -7,8 +7,8 @@ namespace Wl
 
     struct PunctualLight
     {
-        Vector3f Position;
-        Vector3f Color;
+        alignas(16) Vector3f Position;
+        alignas(16) Vector3f Color;
     };
 
 }// namespace Wl

@@ -97,7 +97,7 @@ namespace Wl
         m_device->RecreateSwapchain(m_swapchain, width, height);
     }
 
-    void FrameContext::Shutdown()
+    void FrameContext::Destroy()
     {
         m_device->WaitIdle();
         m_device->DestroySampler(m_defaultSampler);

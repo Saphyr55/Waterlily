@@ -1,4 +1,5 @@
 #include "Waterlily/Engine/Application.hpp"
+#include "Waterlily/Core/Platform/Display.hpp"
 
 namespace Wl
 {
@@ -19,9 +20,12 @@ namespace Wl
     {
         while (IsRunning())
         {
+            Display::GetDefault().HandleEvents();
+
             m_timer.Tick();
+
             OnTick.Emit(m_timer);
-             
+
             if (!IsUnlimitedFrameRate())
             {
                 m_timer.LimitFrameRate(m_targetFrameRate);

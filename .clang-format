@@ -21,7 +21,7 @@ AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: MultiLine
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterCaseLabel: false
+  AfterCaseLabel: true
   AfterClass: true
   AfterStruct: true
   AfterControlStatement: Always

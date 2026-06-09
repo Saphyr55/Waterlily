@@ -59,7 +59,8 @@ namespace Wl
         void Compile();
         void Execute(RHICommandBuffer* command_buffer);
 
-        void Dispose();
+        void Resize();
+        void Destroy();
 
         FrameGraphPhysicalTexture& ResolvePhysicalTexture(const FrameGraphTextureHandle& handle);
 

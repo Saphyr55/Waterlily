@@ -150,7 +150,7 @@ namespace Wl
         RightAlt = 0xA5,
     };
 
-    WL_CORE_API StringRef key_to_string(VirtualKey key);
+    WL_CORE_API StringRef ToString(VirtualKey key);
 
     class WL_CORE_API Input
     {

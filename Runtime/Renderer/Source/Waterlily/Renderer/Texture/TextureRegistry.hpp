@@ -28,7 +28,7 @@ namespace Wl
 
         void CompileSRG();
 
-        void Dispose();
+        void Destroy();
 
         inline const HashMap<TextureHandle, Texture>& GetRegistry() const
         {

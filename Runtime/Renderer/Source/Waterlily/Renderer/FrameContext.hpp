@@ -59,7 +59,7 @@ namespace Wl
 
     public:
         void Init(const SharedPtr<RHIDevice>& device, const FrameContextInitInfo& info);
-        void Shutdown();
+        void Destroy();
 
         // TODO: This is a temporary solution, we should have a better way to handle shader resource group pool in the
         // future.

@@ -8,7 +8,7 @@
 namespace Wl
 {
 
-    class FileHandle;
+    class File;
 
     enum class FileError
     {
@@ -59,7 +59,7 @@ namespace Wl
         Append,
     };
 
-    using FileResult = Result<SharedPtr<FileHandle>, FileError>;
+    using FileResult = Result<SharedPtr<File>, FileError>;
 
     class WL_CORE_API FileSystem
     {

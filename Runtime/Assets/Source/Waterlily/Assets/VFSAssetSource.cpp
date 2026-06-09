@@ -1,5 +1,5 @@
 #include "Waterlily/Assets/VFSAssetSource.hpp"
-#include "Waterlily/Core/IO/FileHandle.hpp"
+#include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 
@@ -14,7 +14,7 @@ namespace Wl
             return nullptr;
         }
 
-        SharedPtr<FileHandle> handle = result.GetValue();
+        SharedPtr<File> handle = result.GetValue();
 
         return handle;
     }

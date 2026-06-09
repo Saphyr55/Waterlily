@@ -1,7 +1,7 @@
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/IO/FileHandle.hpp"
+#include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/String/Format.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
@@ -70,14 +70,14 @@ namespace Wl
         FileResult vertexFileOpenError = m_fileSystem.OpenRead(props.VertexShaderPath.GetText());
         WL_RETURN_OBJECT_WHEN(!vertexFileOpenError.HasValue(), nullptr);
 
-        SharedPtr<FileHandle> vertexFileHandle = vertexFileOpenError.GetValue();
+        SharedPtr<File> vertexFileHandle = vertexFileOpenError.GetValue();
         SPIRVShader vertexShader(RHIShaderStage::Vertex, vertexFileHandle->ReadAllBytes());
         vertexFileHandle->Close();
 
         FileResult fragmentFileOpenError = m_fileSystem.OpenRead(props.FragmentShaderPath.GetText());
         WL_RETURN_OBJECT_WHEN(!fragmentFileOpenError.HasValue(), nullptr);
 
-        SharedPtr<FileHandle> FragmentFileHandle = fragmentFileOpenError.GetValue();
+        SharedPtr<File> FragmentFileHandle = fragmentFileOpenError.GetValue();
         SPIRVShader fragmentShader(RHIShaderStage::Fragment, FragmentFileHandle->ReadAllBytes());
         FragmentFileHandle->Close();
 

@@ -90,7 +90,7 @@ namespace Wl
         m_group->Update();
     }
 
-    void TextureRegistry::Dispose()
+    void TextureRegistry::Destroy()
     {
         for (auto [handle, data]: GetRegistry())
         {

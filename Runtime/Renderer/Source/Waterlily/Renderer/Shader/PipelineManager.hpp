@@ -44,7 +44,7 @@ namespace Wl
             return m_cache;
         }
 
-        void Dispose()
+        void Destroy()
         {
             for (auto [name, pipeline]: GetPipelines())
             {

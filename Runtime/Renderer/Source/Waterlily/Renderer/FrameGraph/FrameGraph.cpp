@@ -195,7 +195,14 @@ namespace Wl
         }
     }
 
-    void FrameGraph::Dispose()
+    void FrameGraph::Resize()
+    {
+        m_device->WaitIdle();
+        m_texturePool.Dispose();
+        DestroyPasses();
+    }
+
+    void FrameGraph::Destroy()
     {
         m_device->WaitIdle();
         m_texturePool.Dispose();

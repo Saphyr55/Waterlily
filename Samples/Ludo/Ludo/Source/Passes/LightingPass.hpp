@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
-#include "Waterlily/Renderer/RenderAllocator.hpp"
-#include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Passes/PassContext.hpp"
+#include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
+#include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
+#include "Waterlily/Renderer/RenderAllocator.hpp"
+
 
 namespace Wl
 {
@@ -24,9 +25,10 @@ namespace Wl
         RenderMesh* Mesh;
 
         RenderAllocation* LightAllocation;
+        RenderAllocation* CountersAllocation;
         RenderAllocation* RenderViewAllocation;
     };
 
     FrameGraphPass& LightingPassCreate(PassContext& passContext, GraphicsPipelineProperties& pipeline, LightingPassParameters& params);
 
-}
+}// namespace Wl

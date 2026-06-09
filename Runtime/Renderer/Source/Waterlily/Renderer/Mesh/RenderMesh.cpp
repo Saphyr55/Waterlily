@@ -4,6 +4,7 @@
 #include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
+#include "Waterlily/Core/Object/Field.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/Types.hpp"
@@ -12,6 +13,8 @@
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
 #include "Waterlily/Renderer/UploadScheduler.hpp"
+#include <cstdint>
+
 
 namespace Wl
 {
@@ -25,30 +28,23 @@ namespace Wl
     {
     }
 
+    void RenderSubMeshDataLayout::UpdateData(uint8_t* dst, const RenderSubMesh& src)
+    {
+        Memory::Copy(dst + ModelOffset, &src.Model, sizeof(decltype(src.Model)));
+        Memory::Copy(dst + MaterialOffset, &src.Material, sizeof(decltype(src.Material)));
+    }
+
     RenderSubMeshDataLayout RenderSubMeshData::CreateLayout(size_t alignment)
     {
         size_t offset = 0;
         RenderSubMeshDataLayout layout;
 
-        offset = Memory::AlignUp(offset, alignment);
-        layout.ModelOffset = offset;
-        offset += sizeof(Matrix4f);
-
-        offset = Memory::AlignUp(offset, alignment);
-        layout.MaterialOffset = offset;
-        offset += sizeof(MaterialHandle);
+        offset = FieldOffsetAlignUp<Matrix4f>(offset, alignment, layout.ModelOffset);
+        offset = FieldOffsetAlignUp<MaterialHandle>(offset, alignment, layout.MaterialOffset);
 
         layout.Stride = Memory::AlignUp(offset, alignment);
 
         return layout;
-    }
-
-    RenderSubMeshData RenderSubMeshData::Create(const RenderSubMesh& submesh)
-    {
-        return RenderSubMeshData{
-                .Model = submesh.Model,
-                .Material = submesh.Material,
-        };
     }
 
     const Array<RHIBuffer*>& RenderMesh::GetVertexBuffers() const
@@ -170,7 +166,7 @@ namespace Wl
         {
             RenderSubMesh& submesh = m_subMeshes[itemIndex];
 
-            commands.Append(RHIDrawIndexedCommand{
+            commands.Append(RHIDrawIndexedCommand {
                     .IndexCount = submesh.IndexCount,
                     .InstanceCount = 1,
                     .FirstIndex = submesh.IndexOffset,

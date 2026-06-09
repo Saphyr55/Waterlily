@@ -9,16 +9,16 @@
 #include "Waterlily/Assets/AssetLoader.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Core/Asserts.hpp"
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Containers/FixedArray.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Matrix4.hpp"
+#include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
-#include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
 #include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
-#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Engine/Application.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
@@ -39,6 +39,37 @@
 
 namespace Wl
 {
+    static FixedArray<PunctualLight, 5> MakeLights()
+    {
+        FixedArray<PunctualLight, 5> lights;
+
+        lights[0] = {
+                {3.49f, 3.49f, -2.34f},
+                {0.1f, 0.6f, 0.9f},
+        };
+
+        lights[1] = {
+                {-5.76f, 1.22f, -0.82f},
+                {1.0f, 0.6f, 0.1f},
+        };
+
+        lights[2] = {
+                {-0.46f, 3.63f, 1.88f},
+                {0.4f,  1.0f, 0.2f},
+        };
+
+        lights[3] = {
+                {-2.07f, 1.94f, 0.04f},
+                {0.0f, 0.5f, 1.0f},
+        };
+
+        lights[4] = {
+                {-6.5f, 0.75f, 0.5f},
+                {0.4f, 0.8f, 0.8f},
+        };
+
+        return lights;
+    }
 
     static Camera InitCamera()
     {
@@ -79,7 +110,7 @@ namespace Wl
 
         FileResult assetRegistryFileResult = assetsFileSystem.OpenRead(LudoAssetRegistry.GetText());
         WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", LudoAssetRegistry.GetText().GetData());
-        FileHandle& fileAssetRegistry = *assetRegistryFileResult.GetValue();
+        File& fileAssetRegistry = *assetRegistryFileResult.GetValue();
 
         SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadFromFile(fileAssetRegistry);
         WL_CHECK(assetRegistry);
@@ -151,6 +182,9 @@ namespace Wl
 
         frameContext->InitializeSRGPools();
 
+        FixedArray<PunctualLight, 5> originalsPunctualLights = MakeLights();
+        FixedArray<PunctualLight, 5> punctualLights = MakeLights();
+
         SharedPtr<FrameGraph> frameGraph = MakeShared<FrameGraph>(device, frameContext);
 
         LudoState::Type state = LudoState::Type::Running;
@@ -165,7 +199,7 @@ namespace Wl
         {
             WL_LOG_INFO("Ludo", "Window resized to %dx%d", width, height);
             frameContext->Resize(width, height);
-            frameGraph->Dispose();
+            frameGraph->Resize();
         });
 
         window->GetEventHandler().OnMinimized.Connect([&]()
@@ -185,19 +219,22 @@ namespace Wl
         {
             switch (key)
             {
-                case VirtualKey::G: {
+                case VirtualKey::G:
+                {
                     HashMap<StringID, GraphicsPipelineProperties*> propsMap = {
                             {GBufferPassName,  &gbufferPipelineProperties },
                             {LightingPassName, &lightingPipelineProperties}
                     };
                     Wl::ReloadShaders(device, pipelineManager, propsMap);
                     break;
-                };
-                case VirtualKey::P: {
+                }
+                case VirtualKey::P:
+                {
                     state = LudoState::TooglePause(state);
                     break;
-                };
-                case VirtualKey::F: {
+                }
+                case VirtualKey::F:
+                {
                     camera.LogDebug();
                     break;
                 }
@@ -206,13 +243,31 @@ namespace Wl
             }
         });
 
+        float lightVelocity = 1.0f;
+        float lightThresholdPosition = 5.0f; 
+
         // Update handle
         application.OnTick.Connect([&](Timer& timer)
         {
-            WL_RETURN_WHEN(LudoState::IsPaused(state));
             float deltaTime = static_cast<float>(timer.GetDeltaTimeSeconds());
 
-            Display::GetDefault().HandleEvents();
+            if (LudoState::IsPaused(state))
+            {
+                return;
+            }
+
+            for (size_t i = 0; i < punctualLights.GetSize(); i++)
+            {
+                PunctualLight& light = punctualLights[i];
+                PunctualLight& originalLight = originalsPunctualLights[i];
+
+                light.Position.x += lightVelocity * deltaTime;
+
+                if (Math::Abs(light.Position.x) > originalLight.Position.x + lightThresholdPosition)
+                {
+                    lightVelocity = -lightVelocity;
+                }
+            }
 
             if (Input::KeyIsPressed(VirtualKey::C))
             {
@@ -274,14 +329,16 @@ namespace Wl
         // Render handle
         application.OnTick.Connect([&](Timer& /* timer */)
         {
-            WL_RETURN_WHEN(LudoState::IsPaused(state));
+            if (LudoState::IsPaused(state))
+            {
+                return;
+            }
 
             FrameResult result = frameContext->BeginFrame();
             WL_CHECK(result == FrameResult::Success);
 
-            frameGraph->BeginFrame();
-
             Frame& frame = frameContext->GetCurrentFrame();
+            frameGraph->BeginFrame();
 
             uint32_t width = frameContext->GetSwapchain()->GetWidth();
             uint32_t height = frameContext->GetSwapchain()->GetHeight();
@@ -297,25 +354,22 @@ namespace Wl
             frame.UniformAllocator.UpdateData(viewAllocation, *view);
 
             // Light allocation
-            RenderAllocation lightAllocation = frame.UniformAllocator.Allocate<PunctualLight>();
-            PunctualLight* light = lightAllocation.Get<PunctualLight>();
-            light->Position = Vector3f(0.0f, 2.0f, 0.5f);
-            light->Color = Vector3f(1.0f, 0.3f, 0.0f);
-            frame.UniformAllocator.UpdateData(lightAllocation, *light);
+            RenderAllocation punctualLightBufferAllocation = frame.UniformAllocator.AllocateArray<PunctualLight>(punctualLights.GetSize());
+            for (size_t i = 0; i < punctualLights.GetSize(); i++)
+            {
+                punctualLightBufferAllocation.Get<PunctualLight>()[i] = punctualLights[i];
+            }
+
+            RenderAllocation countersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
+            uint32_t* punctualLightCount = countersAllocation.Get<uint32_t>();
+            *punctualLightCount = punctualLights.GetSize();
 
             // Sponza allocation
             RenderAllocation sponzaAllocation = frame.StorageAllocator.AllocateArray<RenderSubMeshData>(sponzaMesh.GetSubMeshCount());
             RenderSubMeshDataLayout layout = RenderSubMeshData::CreateLayout(frame.StorageAllocator.GetMinAligment());
-            uint8_t* subMeshes = sponzaAllocation.Get<uint8_t>();
-
             for (size_t i = 0; i < sponzaMesh.GetSubMeshCount(); i++)
             {
-                const RenderSubMesh& subMesh = sponzaMesh.GetSubMeshes()[i];
-                const RenderSubMeshData data = RenderSubMeshData::Create(subMesh);
-                uint8_t* dest = subMeshes + i * layout.Stride;
-                // TODO: Flexible way to handle the layout
-                Memory::Copy(dest + layout.ModelOffset, &data.Model, sizeof(Matrix4f));
-                Memory::Copy(dest + layout.MaterialOffset, &data.Material, sizeof(MaterialHandle));
+                layout.UpdateData(sponzaAllocation.Get<uint8_t>() + i * layout.Stride, sponzaMesh.GetSubMeshes()[i]);
             }
 
             FrameGraphBufferHandle indirect = frameGraph->ImportBuffer(indirectBuffer, indirectBuffer->GetSize(), 0);
@@ -377,9 +431,10 @@ namespace Wl
             lightingParams.Indirect = indirect;
             lightingParams.DepthStencil = depthStencil;
             lightingParams.RenderViewAllocation = &viewAllocation;
-            lightingParams.LightAllocation = &lightAllocation;
+            lightingParams.LightAllocation = &punctualLightBufferAllocation;
             lightingParams.Mesh = &uiMesh;
             lightingParams.MeshAllocation = &sponzaAllocation;
+            lightingParams.CountersAllocation = &countersAllocation;
 
             FrameGraphPass& lightingPass = LightingPassCreate(passContext, lightingPipelineProperties, lightingParams);
 
@@ -420,25 +475,24 @@ namespace Wl
         application.Start();
         application.Run();
 
-        frameGraph->Dispose();
+        frameGraph->Destroy();
 
         sponzaMesh.Destroy();
         uiMesh.Destroy();
 
         device->DestroyBuffer(indirectBuffer);
 
-        pipelineManager->Dispose();
+        pipelineManager->Destroy();
 
         materialRegistry->Destroy();
-        textureRegistry->Dispose();
-        frameContext->Shutdown();
+        textureRegistry->Destroy();
 
-        device->Shutdown();
+        frameContext->Destroy();
+        device->Destroy();
 
         window->Close();
 
         application.Stop();
-
 
         return EXIT_SUCCESS;
     }

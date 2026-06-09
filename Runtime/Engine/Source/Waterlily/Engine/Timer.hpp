@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Waterlily/Engine/EngineExports.hpp"
+#include "Waterlily/Core/Platform/PlatformTime.hpp"
 
 namespace Wl
 {
@@ -10,7 +11,12 @@ namespace Wl
     public:
         void Tick();
 
-        void LimitFrameRate( double targetFrameRate);
+        void LimitFrameRate(double targetFrameRate);
+
+        inline double GetTime()
+        {
+            return PlatformGetHighResolutionTime();
+        }
 
         inline double GetDeltaTime() const
         {

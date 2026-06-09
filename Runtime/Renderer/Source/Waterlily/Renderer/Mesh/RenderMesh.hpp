@@ -3,7 +3,6 @@
 #include "Waterlily/Assets/AssetManager.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Math/Matrix4.hpp"
-#include "Waterlily/Core/Math/Vector4.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
@@ -18,12 +17,15 @@ namespace Wl
 {
 
     struct RenderSubMesh;
+    struct RenderSubMeshData;
 
     struct RenderSubMeshDataLayout
     {
         size_t ModelOffset;
         size_t MaterialOffset;
         size_t Stride;
+
+        WL_RENDERER_API void UpdateData(uint8_t* dst, const RenderSubMesh& src);
     };
 
     struct RenderSubMeshData
@@ -32,7 +34,6 @@ namespace Wl
         MaterialHandle Material = MaterialRegistry::InvalidHandle;
 
         WL_RENDERER_API static RenderSubMeshDataLayout CreateLayout(size_t minAlignment);
-        WL_RENDERER_API static RenderSubMeshData Create(const RenderSubMesh& item);
     };
 
     struct RenderSubMesh

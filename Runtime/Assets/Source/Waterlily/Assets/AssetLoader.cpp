@@ -1,7 +1,7 @@
 #include "Waterlily/Assets/AssetLoader.hpp"
 #include "Waterlily/Assets/WLCAFile.hpp"
-#include "Waterlily/Assets/assetMetadata.hpp"
-#include "Waterlily/Core/IO/FileHandle.hpp"
+#include "Waterlily/Assets/AssetMetadata.hpp"
+#include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 
 namespace Wl
@@ -15,7 +15,7 @@ namespace Wl
             return nullptr;
         }
 
-        SharedPtr<FileHandle> file = fileResult.GetValue();
+        SharedPtr<File> file = fileResult.GetValue();
         WLCAHeader header;
         *file >> header;
 

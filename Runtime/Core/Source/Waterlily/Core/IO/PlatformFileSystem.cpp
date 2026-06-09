@@ -1,5 +1,5 @@
 #include "Waterlily/Core/IO/PlatformFileSystem.hpp"
-#include "Waterlily/Core/IO/PlatformFileHandle.hpp"
+#include "Waterlily/Core/IO/PlatformFile.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/PlatformFileSystem.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
@@ -105,7 +105,7 @@ namespace Wl
             return FileResult::Failure(FileError::Unknown);
         }
 
-        SharedPtr<FileHandle> file = MakeShared<PlatformFileHandle>(stream);
+        SharedPtr<File> file = MakeShared<PlatformFile>(stream);
 
         return FileResult::Success(file);
     }

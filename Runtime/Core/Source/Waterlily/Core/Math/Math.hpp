@@ -106,7 +106,12 @@ namespace Wl
         {
             return std::log2(value);
         }
-
+            
+        static constexpr inline auto Exp(const Real auto& value) -> auto
+        {
+            return std::exp(value);
+        }
+            
         template<Real RealType>
         static constexpr inline auto Min(const RealType& value, const RealType& min) -> RealType
         {

@@ -1,10 +1,12 @@
 #include "Passes/LightingPass.hpp"
-#include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 #include "LudoTypes.hpp"
+#include "Waterlily/RHI/ShaderResource.hpp"
+#include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
+
 
 namespace Wl
 {
-    
+
     FrameGraphPass& LightingPassCreate(PassContext& passContext, GraphicsPipelineProperties& pipeline, LightingPassParameters& params)
     {
         FrameGraphPass& lightingPass = passContext.FrameGraph->AddPass(LightingPassName);
@@ -20,7 +22,7 @@ namespace Wl
             builder.ReadStorage(params.Indirect);
             builder.SetDepthStencil(params.DepthStencil);
         });
-        
+
         lightingPassDelegate.SetOnExecute([&](FrameGraphPassExecutionContext& context)
         {
             RHISwapchain* swapchain = context.FrameContext->GetSwapchain();
@@ -46,13 +48,19 @@ namespace Wl
                                                    params.RenderViewAllocation->Offset,
                                                    params.RenderViewAllocation->Size);
 
-            RHIWriteBufferResource writeLight(GlobalSRGLightBinding,
-                                              params.LightAllocation->Buffer,
-                                              params.LightAllocation->Offset,
-                                              params.LightAllocation->Size);
+            RHIWriteBufferResource writeLights(GlobalSRGLightBinding,
+                                               params.LightAllocation->Buffer,
+                                               params.LightAllocation->Offset,
+                                               params.LightAllocation->Size);
+
+            RHIWriteBufferResource writeCounters(2,
+                                                 params.CountersAllocation->Buffer,
+                                                 params.CountersAllocation->Offset,
+                                                 params.CountersAllocation->Size);
 
             globalSRG->SetBuffer(writeRenderView);
-            globalSRG->SetBuffer(writeLight);
+            globalSRG->SetBuffer(writeLights);
+            globalSRG->SetBuffer(writeCounters);
             globalSRG->Update();
 
             RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipeline.SRGLayouts[RenderInstanceSRGIndex];
@@ -111,7 +119,7 @@ namespace Wl
                 commandBuffer->Draw(drawCommand);
             }
 
-            commandBuffer->EndRenderPass();            
+            commandBuffer->EndRenderPass();
         });
 
         return lightingPass;

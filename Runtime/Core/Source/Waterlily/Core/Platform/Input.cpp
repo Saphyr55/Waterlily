@@ -53,7 +53,7 @@ namespace Wl
         return s_ButtonsRelease.Contains(button);
     }
 
-    StringRef key_to_string(VirtualKey key)
+    StringRef ToString(VirtualKey key)
     {
         switch (key)
         {

@@ -12,12 +12,6 @@ struct Material
     uint NormalIndex;
 };
 
-struct PunctualLight
-{
-    float3 Position;
-    float3 Color;
-};
-
 struct ViewInstance
 {
     float4x4 View;

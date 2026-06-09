@@ -8,7 +8,7 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
-#include "Waterlily/Core/IO/FileHandle.hpp"
+#include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/String.hpp"
@@ -48,9 +48,9 @@ namespace Wl
     class WL_ASSETS_API AssetRegistry
     {
     public:
-        static SharedPtr<AssetRegistry> CreateFromFile(FileHandle& file);
-        static SharedPtr<AssetRegistry> LoadFromFile(FileHandle& file);
-        static void PersistFile(SharedPtr<AssetRegistry>& registry, FileHandle& file);
+        static SharedPtr<AssetRegistry> CreateFromFile(File& file);
+        static SharedPtr<AssetRegistry> LoadFromFile(File& file);
+        static void PersistFile(SharedPtr<AssetRegistry>& registry, File& file);
 
     public:
         AssetHandle CreateAsset(StringID assetType, StringID uri);

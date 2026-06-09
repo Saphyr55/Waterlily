@@ -10,7 +10,7 @@
 #include "Waterlily/Assets/AssetSource.hpp"
 #include "Waterlily/Assets/VFSAssetSource.hpp"
 #include "Waterlily/Assets/WLCAFile.hpp"
-#include "Waterlily/Core/IO/FileHandle.hpp"
+#include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
@@ -36,7 +36,7 @@ static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Ass
 
     if (result.HasValue())
     {
-        FileHandle& file = *result.GetValue();
+        File& file = *result.GetValue();
 
         WLCAHeader header;
         header.AssetType = asset->AssetType;
@@ -84,7 +84,7 @@ int32_t main(int32_t argc, const char* argv[])
         return EXIT_FAILURE;
     }
 
-    FileHandle& larFile = *larFileResult.GetValue();
+    File& larFile = *larFileResult.GetValue();
 
     SharedPtr<AssetRegistry> registry =
             larFile.GetSize() == 0 ? AssetRegistry::CreateFromFile(larFile) : AssetRegistry::LoadFromFile(larFile);

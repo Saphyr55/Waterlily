@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Waterlily/Core/IO/FileHandle.hpp"
+#include "Waterlily/Core/IO/File.hpp"
 
 namespace Wl
 {
 
-    class WL_CORE_API PlatformFileHandle : public FileHandle
+    class WL_CORE_API PlatformFile : public File
     {
     public:
         virtual int64_t Tell() override;
@@ -26,8 +26,8 @@ namespace Wl
         virtual bool Close() override;
 
     public:
-        explicit PlatformFileHandle(FILE* stream);
-        virtual ~PlatformFileHandle() override;
+        explicit PlatformFile(FILE* stream);
+        virtual ~PlatformFile() override;
 
     private:
         FILE* m_stream;

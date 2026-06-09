@@ -37,7 +37,7 @@ namespace Wl
         virtual size_t GetCountTextureAllocation() = 0;
 
         virtual void Init(void* nativeWindow) = 0;
-        virtual void Shutdown() = 0;
+        virtual void Destroy() = 0;
 
         virtual void WaitIdle() = 0;
 

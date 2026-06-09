@@ -34,7 +34,7 @@ namespace Wl
         }
 
         virtual void Init(void* nativeWindow) override;
-        virtual void Shutdown() override;
+        virtual void Destroy() override;
 
         virtual void WaitIdle() override;
 

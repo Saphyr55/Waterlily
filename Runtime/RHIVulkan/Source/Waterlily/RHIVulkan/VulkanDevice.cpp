@@ -1,7 +1,6 @@
 #include "Waterlily/RHIVulkan/vulkanDevice.hpp"
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
@@ -61,19 +60,14 @@ namespace Wl
         m_properties = InitializeDeviceProperties();
     }
 
-    void VulkanDevice::Shutdown()
+    void VulkanDevice::Destroy()
     {
-        for (size_t bufferID : s_bufferIdentifiers)
-        {
-            std::cout << "The Buffer " << bufferID << " was not destroyed" << "\n";
-        }
-
         VulkanContext& context = VulkanContextGet();
         char* stats = nullptr;
 
         vmaBuildStatsString(context.VmaAllocator, &stats, VK_TRUE);
 
-        std::cout << stats;
+        // std::cout << stats;
 
         vmaFreeStatsString(context.VmaAllocator, stats);
 

@@ -1,4 +1,4 @@
-#include "Waterlily/Core/IO/PlatformFileHandle.hpp"
+#include "Waterlily/Core/IO/PlatformFile.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
@@ -6,12 +6,12 @@
 namespace Wl
 {
 
-    int64_t PlatformFileHandle::Tell()
+    int64_t PlatformFile::Tell()
     {
         return ftell(m_stream);
     }
 
-    bool PlatformFileHandle::Seek(int64_t position)
+    bool PlatformFile::Seek(int64_t position)
     {
         if (fseek(m_stream, position, SEEK_SET))
         {
@@ -22,13 +22,13 @@ namespace Wl
         return false;
     }
 
-    bool PlatformFileHandle::Flush()
+    bool PlatformFile::Flush()
     {
         fflush(m_stream);
         return true;
     }
 
-    size_t PlatformFileHandle::GetSize()
+    size_t PlatformFile::GetSize()
     {
         int64_t current = Tell();
         fseek(m_stream, 0, SEEK_END);
@@ -37,7 +37,7 @@ namespace Wl
         return static_cast<size_t>(end);
     }
 
-    bool PlatformFileHandle::Write(const uint8_t* buffer, size_t nbytes)
+    bool PlatformFile::Write(const uint8_t* buffer, size_t nbytes)
     {
         if (!m_stream)
         {
@@ -55,7 +55,7 @@ namespace Wl
         return true;
     }
 
-    bool PlatformFileHandle::Read(uint8_t* destination, size_t nbytes)
+    bool PlatformFile::Read(uint8_t* destination, size_t nbytes)
     {
         if (!destination || nbytes == 0)
         {
@@ -73,7 +73,7 @@ namespace Wl
         return true;
     }
 
-    bool PlatformFileHandle::ReadAllBytes(Allocator* allocator, uint8_t** outDestination, size_t* outSize)
+    bool PlatformFile::ReadAllBytes(Allocator* allocator, uint8_t** outDestination, size_t* outSize)
     {
         *outSize = 0;
         *outDestination = nullptr;
@@ -126,7 +126,7 @@ namespace Wl
         return true;
     }
 
-    Array<uint8_t> PlatformFileHandle::ReadAllBytes()
+    Array<uint8_t> PlatformFile::ReadAllBytes()
     {
         if (!m_stream)
         {
@@ -173,7 +173,7 @@ namespace Wl
         return buffer;
     }
 
-    bool PlatformFileHandle::Close()
+    bool PlatformFile::Close()
     {
         if (m_stream)
         {
@@ -185,13 +185,13 @@ namespace Wl
         return false;
     }
 
-    PlatformFileHandle::PlatformFileHandle(FILE* stream)
+    PlatformFile::PlatformFile(FILE* stream)
         : m_stream(stream)
         , m_head(0)
     {
     }
 
-    PlatformFileHandle::~PlatformFileHandle()
+    PlatformFile::~PlatformFile()
     {
         Close();
     }
