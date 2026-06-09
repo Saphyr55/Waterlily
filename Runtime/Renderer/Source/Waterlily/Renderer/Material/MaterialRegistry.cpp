@@ -13,11 +13,6 @@
 namespace Wl
 {
 
-    MaterialRegistry::~MaterialRegistry()
-    {
-        Destroy();
-    }
-
     MaterialRegistry::MaterialRegistry(const SharedPtr<RHIDevice>& device, uint32_t binding)
         : m_device(device)
         , m_shaderBinding(binding)
@@ -34,12 +29,12 @@ namespace Wl
         size_t minAlignment = m_device->GetDeviceProperties().MinStorageBufferOffsetAlignment;
         m_materialStride = Memory::AlignUp(sizeof(MaterialData), minAlignment);
 
-        RHIBufferDescription buffer_storage_description = {};
-        buffer_storage_description.MemoryUsage = RHIMemoryUsage::Device;
-        buffer_storage_description.SharingMode = RHISharingMode::Private;
-        buffer_storage_description.Usage = RHIBufferUsageFlags::Storage | RHIBufferUsageFlags::TransferDst;
-        buffer_storage_description.Size = m_materialStride * MaxResources;
-        m_bufferStorage = m_device->CreateBuffer(buffer_storage_description);
+        RHIBufferDescription bufferStorageDescription = {};
+        bufferStorageDescription.MemoryUsage = RHIMemoryUsage::Device;
+        bufferStorageDescription.SharingMode = RHISharingMode::Private;
+        bufferStorageDescription.Usage = RHIBufferUsageFlags::Storage | RHIBufferUsageFlags::TransferDst;
+        bufferStorageDescription.Size = m_materialStride * MaxResources;
+        m_bufferStorage = m_device->CreateBuffer(bufferStorageDescription);
     }
 
     void MaterialRegistry::Destroy()
@@ -120,6 +115,8 @@ namespace Wl
                     "[MaterialRegistry]",
                     Wl::Format("Flushed global upload scheduler, total uploaded: %.2lfKB", totalUploadedMegaBytes));
         }, queue);
+
+        uploader.Shutdown();
     }
 
     void MaterialRegistry::CompileShaderResource()

@@ -46,7 +46,7 @@ namespace Wl
     };
 
     WL_CORE_API bool ModuleManifestResolveDependencies(const ModuleManifest& manifest,
-                                                       Array<const ModuleInformation*>& out_order);
+                                                       Array<const ModuleInformation*>& outOrder);
     WL_CORE_API void ModuleManifestLog(const ModuleManifest& manifest);
 
 }// namespace Wl

@@ -2,13 +2,10 @@
 
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Core/Platform/Display.hpp"
-#include "Waterlily/Core/Platform/WindowHandle.hpp"
-#include "Waterlily/RHI/BindlessShaderResources.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
+#include "Waterlily/RHI/DeviceFactory.hpp"
 #include "Waterlily/RHI/Fence.hpp"
 #include "Waterlily/RHI/Semaphore.hpp"
 #include "Waterlily/RHI/ShaderResourceCache.hpp"
@@ -16,10 +13,11 @@
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
 #include "Waterlily/Renderer/UploadScheduler.hpp"
-#include <cstdint>
 
 namespace Wl
 {
+
+    class RHIDevice;
 
     enum class FrameResult
     {
@@ -60,7 +58,7 @@ namespace Wl
         static constexpr uint32_t MaxFrameInFlight = 3;
 
     public:
-        void Init(const FrameContextInitInfo& info);
+        void Init(const SharedPtr<RHIDevice>& device, const FrameContextInitInfo& info);
         void Shutdown();
 
         // TODO: This is a temporary solution, we should have a better way to handle shader resource group pool in the

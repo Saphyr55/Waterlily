@@ -3,7 +3,6 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
-#include "Waterlily/Core/Memory/Deleter.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
@@ -13,7 +12,7 @@
 #include "Waterlily/RHI/RenderPass.hpp"
 #include "Waterlily/RHI/Semaphore.hpp"
 #include "Waterlily/RHI/Swapchain.hpp"
-#include "Waterlily/RHIVulkan/VulkanBufferPool.hpp"
+#include "Waterlily/RHIVulkan/VulkanBuffer.hpp"
 #include "Waterlily/RHIVulkan/VulkanCommandBuffer.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanDescriptorSetLayout.hpp"
@@ -27,12 +26,14 @@
 #include "Waterlily/RHIVulkan/VulkanSwapchain.hpp"
 #include "Waterlily/RHIVulkan/VulkanSync.hpp"
 #include "Waterlily/RHIVulkan/VulkanTexture.hpp"
-#include "Waterlily/RHIVulkan/VulkanTexturePool.hpp"
 #include "Waterlily/RHIVulkan/VulkanTextureView.hpp"
 #include "Waterlily/RHIVulkan/vulkanBindlessShaderResources.hpp"
 
 namespace Wl
 {
+
+    static HashSet<size_t> s_bufferIdentifiers;
+    static size_t bufferAllocationCount = 0;
 
     static RHIDeviceProperties InitializeDeviceProperties()
     {
@@ -54,13 +55,31 @@ namespace Wl
         return deviceProperties;
     }
 
-    void VulkanDevice::Init()
+    void VulkanDevice::Init(void* nativeWindow)
     {
+        VulkanContextCreate(VulkanContextGet(), nativeWindow);
         m_properties = InitializeDeviceProperties();
     }
 
     void VulkanDevice::Shutdown()
     {
+        for (size_t bufferID : s_bufferIdentifiers)
+        {
+            std::cout << "The Buffer " << bufferID << " was not destroyed" << "\n";
+        }
+
+        VulkanContext& context = VulkanContextGet();
+        char* stats = nullptr;
+
+        vmaBuildStatsString(context.VmaAllocator, &stats, VK_TRUE);
+
+        std::cout << stats;
+
+        vmaFreeStatsString(context.VmaAllocator, stats);
+
+        vmaDestroyAllocator(context.VmaAllocator);
+
+        VulkanContextDestroy(context);
     }
 
     const RHIDeviceProperties& VulkanDevice::GetDeviceProperties() const
@@ -105,8 +124,7 @@ namespace Wl
         vulkanFence->SetSignaled(false);
     }
 
-    RHIShaderResourceGroupLayout* VulkanDevice::CreateSRGLayout(
-            const Array<RHIShaderResourceBinding>& bindings)
+    RHIShaderResourceGroupLayout* VulkanDevice::CreateSRGLayout(const Array<RHIShaderResourceBinding>& bindings)
     {
         VulkanShaderResourceGroupLayout* vulkanSRGLayout = Wl::New(m_allocator, VulkanShaderResourceGroupLayout());
         vulkanSRGLayout->Create(bindings);
@@ -116,14 +134,12 @@ namespace Wl
     void VulkanDevice::DestroySRGLayout(RHIShaderResourceGroupLayout* layout)
     {
         VulkanShaderResourceGroupLayout* vulkanSRGLayout = static_cast<VulkanShaderResourceGroupLayout*>(layout);
-        WL_CHECK(vulkanSRGLayout && vulkanSRGLayout->GetHandle());
+        WL_CHECK(vulkanSRGLayout);
         vulkanSRGLayout->Destroy();
         Wl::Delete(m_allocator, vulkanSRGLayout);
     }
 
-    RHIShaderResourceGroupPool* VulkanDevice::CreateSRGPool(
-            size_t maxGroupsCount,
-            const Array<RHIShaderResourceBinding>& totalBindings)
+    RHIShaderResourceGroupPool* VulkanDevice::CreateSRGPool(size_t maxGroupsCount, const Array<RHIShaderResourceBinding>& totalBindings)
     {
         VulkanShaderResourceGroupPool* vulkanSRGPool = Wl::New(m_allocator, VulkanShaderResourceGroupPool());
         vulkanSRGPool->Create(maxGroupsCount, totalBindings);
@@ -162,21 +178,7 @@ namespace Wl
         Wl::Delete(m_allocator, vulkanCommandAllocator);
     }
 
-    SharedPtr<RHIBufferPool> VulkanDevice::CreateBufferPool()
-    {
-        return SharedPtr<VulkanBufferPool>(Wl::New(m_allocator, VulkanBufferPool()),
-                                           CreateDeleter<VulkanBufferPool>(m_allocator));
-    }
-
-    SharedPtr<RHITexturePool> VulkanDevice::CreateTexturePool()
-    {
-        return SharedPtr<VulkanTexturePool>(Wl::New(m_allocator, VulkanTexturePool()),
-                                            CreateDeleter<RHITexturePool>(m_allocator));
-    }
-
-    RHIBindlessShaderResources* VulkanDevice::CreateBindlessShaderResources(
-            uint32_t maxResources,
-            const Array<RHIShaderResourceBinding>& bindings)
+    RHIBindlessShaderResources* VulkanDevice::CreateBindlessShaderResources(uint32_t maxResources, const Array<RHIShaderResourceBinding>& bindings)
     {
         VulkanBindlessShaderResources* vulkanBindlessShaderResources = Wl::New(m_allocator, VulkanBindlessShaderResources());
         vulkanBindlessShaderResources->Create(maxResources, bindings);
@@ -197,6 +199,7 @@ namespace Wl
     {
         VulkanTexture* vulkanTexture = Wl::New(m_allocator, VulkanTexture());
         vulkanTexture->Create(description);
+        m_countTextureAllocation++;
         return vulkanTexture;
     }
 
@@ -205,25 +208,36 @@ namespace Wl
         VulkanTexture* vulkanTexture = static_cast<VulkanTexture*>(texture);
         vulkanTexture->Destroy();
         Wl::Delete(m_allocator, vulkanTexture);
+        m_countTextureAllocation--;
     }
 
     RHIBuffer* VulkanDevice::CreateBuffer(const RHIBufferDescription& description)
     {
         VulkanBuffer* vulkanBuffer = Wl::New(m_allocator, VulkanBuffer());
         vulkanBuffer->Create(description);
+        vulkanBuffer->SetID(bufferAllocationCount++);
+           
+        size_t id = vulkanBuffer->GetID();
+
+        s_bufferIdentifiers.Add(vulkanBuffer->GetID());
+
+        m_countBufferAllocation++;
+
         return vulkanBuffer;
     }
 
     void VulkanDevice::DestroyBuffer(RHIBuffer* buffer)
     {
         VulkanBuffer* vulkanBuffer = static_cast<VulkanBuffer*>(buffer);
+        s_bufferIdentifiers.Remove(vulkanBuffer->GetID());
         vulkanBuffer->Destroy();
         Wl::Delete(m_allocator, vulkanBuffer);
+        m_countBufferAllocation--;
     }
 
     RHITextureView* VulkanDevice::CreateTextureView(const RHITextureViewDescription& description)
     {
-        VulkanTextureView* vulkanTextureView = New(m_allocator, VulkanTextureView());
+        VulkanTextureView* vulkanTextureView = Wl::New(m_allocator, VulkanTextureView());
         vulkanTextureView->Create(description);
         return vulkanTextureView;
     }

@@ -61,7 +61,7 @@ namespace Wl
 
             m_manifestInformations.Append(info);
         }
-
+        
         return true;
     }
 

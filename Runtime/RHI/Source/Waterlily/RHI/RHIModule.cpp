@@ -7,23 +7,6 @@ namespace Wl
 
     WL_REGISTER_MODULE(RHIModule, "Waterlily.RHI");
 
-    StringRef GetGraphicsAPIName(const GraphicsAPI graphicsAPI)
-    {
-        switch (graphicsAPI)
-        {
-            case GraphicsAPI::Vulkan: {
-                return "Waterlily.RHI.Vulkan";
-            }
-        }
-        return "Waterlily.RHI.Vulkan";
-    }
-
-    RHIModule::RHIModule()
-        : m_nativeWindow(nullptr)
-        , m_graphicsAPI(GraphicsAPI::Vulkan)
-    {
-    }
-
     void RHIModule::OnLoad()
     {
         WL_LOG_INFO("[RHIModule]", "Loading RHI Module.");

@@ -3,8 +3,7 @@ set_version("0.0.1-dev")
 
 set_languages("c++20")
 
-local targetdir = "Build/Bin/$(plat)_$(arch)_$(mode)"
-set_targetdir(targetdir)
+set_targetdir("Build/Bin/$(plat)_$(arch)_$(mode)")
 
 add_rules("mode.debug", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")

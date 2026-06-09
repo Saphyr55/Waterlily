@@ -1,11 +1,11 @@
 #include "Waterlily/Renderer/FrameContext.hpp"
+
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/RHIModule.hpp"
+#include "Waterlily/RHI/Sampler.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/RHI/ShaderResourceCache.hpp"
 #include "Waterlily/RHI/ShaderResourcePool.hpp"
@@ -15,16 +15,13 @@
 namespace Wl
 {
 
-    void FrameContext::Init(const FrameContextInitInfo& info)
+    void FrameContext::Init(const SharedPtr<RHIDevice>& device, const FrameContextInitInfo& info)
     {
         WL_CHECK_MSG(info.GraphicsCommandBufferCount > 0, "Must have at least 1 graphics command buffer.");
+        m_device = device;
 
-        ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
         Display& display = Display::GetDefault();
 
-        RHIModule* rhiModule = moduleRegistry.GetModule<RHIModule>("Waterlily.RHI");
-
-        m_device = rhiModule->GetDevice();
         m_defaultSampler = m_device->CreateSampler(RHISamplerDescription());
 
         m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_maxFrameInFlight);
@@ -104,7 +101,7 @@ namespace Wl
     void FrameContext::Shutdown()
     {
         m_device->WaitIdle();
-        m_device->DestroySampler(m_defaultSampler);    
+        m_device->DestroySampler(m_defaultSampler);
 
         for (Frame& frame: m_frames)
         {

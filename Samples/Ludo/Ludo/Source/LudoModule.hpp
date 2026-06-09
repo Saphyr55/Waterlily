@@ -18,12 +18,4 @@ public:
     virtual void OnShutdown() override;
 
     virtual void OnUnload() override;
-
-    inline SharedPtr<Window> GetWindow()
-    {
-        return m_window;
-    }
-
-private:
-    SharedPtr<Window> m_window;
 };

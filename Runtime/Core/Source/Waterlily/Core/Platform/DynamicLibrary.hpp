@@ -22,7 +22,13 @@ namespace Wl
 
         WL_CORE_API static void Unload(SharedPtr<DynamicLibrary> library);
 
-        WL_CORE_API static void* LoadFunction(SharedPtr<DynamicLibrary> library, StringRef functionNsame);
+        WL_CORE_API static void* LoadFunction(SharedPtr<DynamicLibrary> library, StringRef functionName);
+
+        template<typename FuncType>
+        static FuncType LoadFunction(SharedPtr<DynamicLibrary> library, StringRef functionName)
+        {
+            return reinterpret_cast<FuncType>(LoadFunction(library, functionName));
+        }
     };
 
 }// namespace Wl

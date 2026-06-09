@@ -16,20 +16,6 @@ void LudoModule::OnLoad()
 
 void LudoModule::OnStartup()
 {
-    // Create a window. WindowHandle behave like a reference.
-    WindowProperties windowProperties("Demo Window", 1080, 720, 100, 100);
-    m_window = Window::Create(windowProperties);
-
-    // Module Registry manages the module.
-    ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
-    RHIModule* rhiModule = moduleRegistry.GetModule<RHIModule>("Waterlily.RHI");
-
-    // Need to know the window for creating the surface.
-    rhiModule->SetNativeWindow(m_window->GetNativeWindow());
-
-    // Vulkan API is already the default option.
-    rhiModule->SetGraphicsAPI(GraphicsAPI::Vulkan);
-
     WL_LOG_INFO("[LudoModule]", "Starting Ludo application.");
 }
 

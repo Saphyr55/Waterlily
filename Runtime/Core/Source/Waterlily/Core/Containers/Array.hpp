@@ -64,8 +64,7 @@ namespace Wl
                 Reserve(m_capacity == 0 ? 1 : m_capacity * s_GrowFactor);
             }
 
-            WL_PLACEMENT_NEW(m_data + m_size)
-            ElementType(element);
+            new (m_data + m_size) ElementType(element);
 
             m_size++;
         }

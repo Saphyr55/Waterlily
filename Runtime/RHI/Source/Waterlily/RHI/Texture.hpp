@@ -8,6 +8,7 @@
 
 namespace Wl
 {
+    inline static size_t s_countTextureAllocation = 0;
 
     struct RHITextureLayoutTransition
     {

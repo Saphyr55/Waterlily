@@ -99,6 +99,11 @@ namespace Wl
         return nullptr;
     }
 
+    ModuleRegistry::LoadedModule* ModuleRegistry::GetLoadedModule(StringRef name)
+    {
+        return m_loadedModules.GetPtr(name);
+    }
+
     void ModuleRegistry::RegisterModule(const StringRef name, const ModuleInitializerFunc& initializer)
     {
         if (!m_pendingModules.Contains(name))

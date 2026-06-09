@@ -33,16 +33,18 @@ namespace Wl
     class RHIDevice
     {
     public:
+        virtual size_t GetCountBufferAllocation() = 0;
+        virtual size_t GetCountTextureAllocation() = 0;
+
+        virtual void Init(void* nativeWindow) = 0;
+        virtual void Shutdown() = 0;
+
         virtual void WaitIdle() = 0;
 
         virtual void WaitFence(RHIFence* fence) = 0;
         virtual void ResetFence(RHIFence* fence) = 0;
 
         virtual const RHIDeviceProperties& GetDeviceProperties() const = 0;
-
-        // TODO: BufferPool and TexturePool are not implemented yet.
-        virtual SharedPtr<RHIBufferPool> CreateBufferPool() = 0;
-        virtual SharedPtr<RHITexturePool> CreateTexturePool() = 0;
 
         virtual RHIBindlessShaderResources* CreateBindlessShaderResources(
                 uint32_t maxResources,
@@ -67,7 +69,7 @@ namespace Wl
         virtual RHIBuffer* CreateBuffer(const RHIBufferDescription& description) = 0;
         inline RHIBuffer* CreateIndirectBuffer(ArrayView<RHIDrawIndexedCommand> commands)
         {
-            return CreateBuffer(RHIBufferDescription{
+            return CreateBuffer(RHIBufferDescription {
                     .Size = sizeof(RHIDrawIndexedCommand) * commands.GetSize(),
                     .Usage = RHIBufferUsageFlags::Indirect | RHIBufferUsageFlags::Storage | RHIBufferUsageFlags::TransferDst,
                     .MemoryUsage = RHIMemoryUsage::Device,

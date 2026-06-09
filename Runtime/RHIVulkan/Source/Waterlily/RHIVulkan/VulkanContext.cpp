@@ -16,11 +16,10 @@
 namespace Wl
 {
 
-    static VulkanContext g_context;
-
     VulkanContext& VulkanContextGet()
     {
-        return g_context;
+        static VulkanContext s_context;
+        return s_context;
     }
 
     void VulkanDeviceCreate(VulkanContext& context, VulkanPhysicalDeviceSelector& physicalDeviceSelector)
@@ -75,8 +74,7 @@ namespace Wl
         }
 
         VkPhysicalDeviceFeatures physicalDeviceFeatures = physicalDeviceSelector.GetInfo().Features;
-        VkPhysicalDeviceVulkan12Features physicalDevice12Features =
-                physicalDeviceSelector.GetInfo().VulkanFeatures12;
+        VkPhysicalDeviceVulkan12Features physicalDevice12Features = physicalDeviceSelector.GetInfo().VulkanFeatures12;
 
         Array<const char*> physicalDeviceExtensions;
         physicalDeviceExtensions.Resize(s_PhysicalDeviceExtensions.size());
@@ -101,8 +99,8 @@ namespace Wl
             WL_LOG_INFO("[Vulkan]", Wl::Format("Extension: %s", physicalDeviceExtensions[i]));
         }
 
-        WL_VULKAN_CHECK(
-                VulkanAPI::vkCreateDevice(context.PhysicalDevice, &deviceCreateInfo, context.Allocator, &context.Device));
+        WL_VULKAN_CHECK(VulkanAPI::vkCreateDevice(
+            context.PhysicalDevice, &deviceCreateInfo, context.Allocator, &context.Device));
 
         VulkanDeviceAPILoad(context.Device);
 
@@ -133,38 +131,38 @@ namespace Wl
         WL_LOG_INFO("[Vulkan]", "Vulkan logical device destroyed.");
     }
 
-    void VulkanContextCreate(VulkanContext& context, void* native_window)
+    void VulkanContextCreate(VulkanContext& context, void* nativeWindow)
     {
+        WL_CHECK_MSG(nativeWindow, "Impossible to create the Vulkan Context if the native window is null.");
+     
         WL_LOG_INFO("[Vulkan]", "Initializing Vulkan RHI context...");
+        context.Library = VulkanLibraryLoad();
+        WL_LOG_FATAL_WHEN(!context.Library, "[Vulkan]", "Failed to load Vulkan RHI library.");
+
+        bool isCoreFunctionsLoaded = VulkanCoreAPILoad(context.Library);
+        WL_LOG_FATAL_WHEN(!isCoreFunctionsLoaded, "[Vulkan]", "Failed to load Vulkan RHI core functions.");
+
+        VulkanInstanceCreate(context);
+
+        VulkanDebugMessengerCreate(context);
+
+        context.Surface = VulkanRenderSurface::Create(context, nativeWindow);
+        context.Surface->Create();
+
+        WL_CHECK(context.Surface->GetHandle());
+
+        VulkanPhysicalDeviceSelector selector(context, s_PhysicalDeviceExtensions);
+        VulkanDeviceCreate(context, selector);
+
+        size_t familyQueueSize = context.PhysicalDeviceInfo.QueueFamilies.size();
+        context.CommandQueues.Resize(familyQueueSize);
+
+        for (size_t i = 0; i < familyQueueSize; i++)
         {
-            context.Library = VulkanLibraryLoad();
-            WL_LOG_FATAL_WHEN(!context.Library, "[Vulkan]", "Failed to load Vulkan RHI library.");
-
-            bool isCoreFunctionsLoaded = VulkanCoreAPILoad(context.Library);
-            WL_LOG_FATAL_WHEN(!isCoreFunctionsLoaded, "[Vulkan]", "Failed to load Vulkan RHI core functions.");
-
-            VulkanInstanceCreate(context);
-
-            VulkanDebugMessengerCreate(context);
-
-            context.Surface = VulkanRenderSurface::Create(context, native_window);
-            context.Surface->Create();
-
-            WL_CHECK(context.Surface->GetHandle());
-
-            VulkanPhysicalDeviceSelector selector(context, s_PhysicalDeviceExtensions);
-            VulkanDeviceCreate(context, selector);
-
-            size_t familyQueueSize = context.PhysicalDeviceInfo.QueueFamilies.size();
-            context.CommandQueues.Resize(familyQueueSize);
-
-            for (size_t i = 0; i < familyQueueSize; i++)
-            {
-                VkQueue queue = VulkanQueryQueue(context, i, 0);
-                RHIQueueType type = VulkanQueueType(context, i);
-                bool isPresentMode = VulkanQueuePresentModeIsSupported(context, i);
-                context.CommandQueues[i] = MakeShared<VulkanCommandQueue>(context, queue, type, i, isPresentMode);
-            }
+            VkQueue queue = VulkanQueryQueue(context, i, 0);
+            RHIQueueType type = VulkanQueueType(context, i);
+            bool isPresentMode = VulkanQueuePresentModeIsSupported(context, i);
+            context.CommandQueues[i] = MakeShared<VulkanCommandQueue>(context, queue, type, i, isPresentMode);
         }
     }
 

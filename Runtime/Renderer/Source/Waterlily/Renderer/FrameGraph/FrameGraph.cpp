@@ -199,6 +199,7 @@ namespace Wl
     {
         m_device->WaitIdle();
         m_texturePool.Dispose();
+        m_framebufferCache.Dispose();
         DestroyPasses();
     }
 

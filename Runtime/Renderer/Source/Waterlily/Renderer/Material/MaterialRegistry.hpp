@@ -29,6 +29,8 @@ namespace Wl
         void Upload(SharedPtr<RHICommandQueue> queue);
         void CompileShaderResource();
 
+        void Destroy();
+
         inline uint32_t GetShaderBinding()
         {
             return m_shaderBinding;
@@ -46,10 +48,7 @@ namespace Wl
 
     public:
         MaterialRegistry(const SharedPtr<RHIDevice>& device, uint32_t binding);
-        ~MaterialRegistry();
-
-    private:
-        void Destroy();
+        ~MaterialRegistry() = default;
 
     private:
         SharedPtr<RHIDevice> m_device;

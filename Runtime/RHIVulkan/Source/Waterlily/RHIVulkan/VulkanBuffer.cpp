@@ -11,6 +11,7 @@
 namespace Wl
 {
 
+
     VkMemoryRequirements VulkanBuffer::GetMemoryRequirements()
     {
         VulkanContext& context = VulkanContextGet();

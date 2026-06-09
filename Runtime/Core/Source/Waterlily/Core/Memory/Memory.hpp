@@ -121,8 +121,7 @@ namespace Wl
         {
             return nullptr;
         }
-        WL_PLACEMENT_NEW(memory)
-        ResourceType(std::move(resource));
+        WL_PLACEMENT_NEW (memory) ResourceType(std::move(resource));
         return static_cast<ResourceType*>(memory);
     }
 
@@ -135,8 +134,7 @@ namespace Wl
         {
             return nullptr;
         }
-        WL_PLACEMENT_NEW(memory)
-        ResourceType(std::forward<Args>(args)...);
+        WL_PLACEMENT_NEW (memory) ResourceType(std::forward<Args>(args)...);
         return static_cast<ResourceType*>(memory);
     }
 

@@ -35,6 +35,16 @@ namespace Wl
         void Create(const RHIBufferDescription& description);
         void Destroy();
 
+        inline size_t GetID() const
+        {
+            return m_id;
+        }
+
+        inline void SetID(size_t id)
+        {
+            m_id = id;
+        }
+
         VkBuffer GetHandle();
 
     public:
@@ -47,6 +57,7 @@ namespace Wl
         VkBuffer m_buffer = VK_NULL_HANDLE;
         VmaAllocation m_allocation = VK_NULL_HANDLE;
         void* m_mapped = nullptr;
+        size_t m_id = 0;
     };
 
 }// namespace Wl

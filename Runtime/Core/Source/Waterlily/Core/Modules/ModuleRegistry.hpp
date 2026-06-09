@@ -17,8 +17,25 @@ namespace Wl
     public:
         using ModuleInitializerFunc = Function<Module*()>;
 
+        struct LoadedModule
+        {
+            StringRef Name = "";
+            Module* ModulePtr = nullptr;
+            SharedPtr<DynamicLibrary> Library;
+
+            LoadedModule() = default;
+            LoadedModule(const StringRef name, Module* module_ref, const SharedPtr<DynamicLibrary> library)
+                : Name(name)
+                , ModulePtr(module_ref)
+                , Library(library)
+            {
+            }
+        };
+
+    public:
         static ModuleRegistry& GetInstance();
 
+    public:
         Module* LoadModule(StringRef name);
         template<typename ModuleType>
         ModuleType* LoadModule(StringRef name)
@@ -40,25 +57,12 @@ namespace Wl
             return static_cast<ModuleType*>(GetModuleInterface(name));
         }
 
+        LoadedModule* GetLoadedModule(StringRef name);
+
         void RegisterModule(StringRef name, const ModuleInitializerFunc& initializer);
         void UnregisterModule(StringRef name);
 
     private:
-        struct LoadedModule
-        {
-            StringRef Name = "";
-            Module* ModulePtr = nullptr;
-            SharedPtr<DynamicLibrary> Library;
-
-            LoadedModule() = default;
-            LoadedModule(const StringRef name, Module* module_ref, const SharedPtr<DynamicLibrary> library)
-                : Name(name)
-                , ModulePtr(module_ref)
-                , Library(library)
-            {
-            }
-        };
-
         HashMap<StringRef, LoadedModule> m_loadedModules;
         HashMap<StringRef, ModuleInitializerFunc> m_pendingModules;
     };
@@ -83,5 +87,5 @@ namespace Wl
         return ::Wl::AutoModuleRegistrant<ModuleType>(ModuleName);                    \
     }()
 
-#define WL_REGISTER_MODULE(ModuleType, ModuleName) \
+#define WL_REGISTER_MODULE(ModuleType, ModuleName)                                                               \
     WL_REGISTER_MODULE_WITH_CUSTOM_VARIABLE(ModuleType, ModuleName, WL_CONCAT(s_moduleRegistrant_, __COUNTER__))

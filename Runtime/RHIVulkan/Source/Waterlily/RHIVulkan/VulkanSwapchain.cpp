@@ -69,11 +69,11 @@ namespace Wl
         return availableSurfaceFormats[0];
     }
 
-    VulkanSwapchain::VulkanSwapchain(VulkanContext& context, uint32_t width, uint32_t height, uint32_t image_count)
+    VulkanSwapchain::VulkanSwapchain(VulkanContext& context, uint32_t width, uint32_t height, uint32_t imageCount)
         : m_context(context)
         , m_extent({width, height})
         , m_format(VK_FORMAT_B8G8R8A8_SRGB)
-        , m_imageCount(image_count)
+        , m_imageCount(imageCount)
     {
     }
 
@@ -163,8 +163,8 @@ namespace Wl
         swapchainCreateInfo.clipped = VK_TRUE;
         swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        WL_VULKAN_CHECK(
-                VulkanAPI::vkCreateSwapchainKHR(m_context.Device, &swapchainCreateInfo, m_context.Allocator, &m_handle));
+        WL_VULKAN_CHECK(VulkanAPI::vkCreateSwapchainKHR(
+            m_context.Device, &swapchainCreateInfo, m_context.Allocator, &m_handle));
 
         uint32_t imageCount = 0;
         VulkanAPI::vkGetSwapchainImagesKHR(m_context.Device, m_handle, &imageCount, nullptr);

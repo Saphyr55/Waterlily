@@ -1,7 +1,6 @@
 #include "LudoApplication.hpp"
 
 #include "LudoAssets.hpp"
-#include "LudoModule.hpp"
 #include "LudoShaders.hpp"
 #include "LudoState.hpp"
 #include "LudoTypes.hpp"
@@ -14,14 +13,15 @@
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
+#include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
+#include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
 #include "Waterlily/Core/String/Format.hpp"
 #include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/Engine/Application.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/RHIModule.hpp"
 #include "Waterlily/RHI/Swapchain.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
@@ -40,7 +40,7 @@
 namespace Wl
 {
 
-    Camera InitCamera()
+    static Camera InitCamera()
     {
         Camera camera(Vector3f(-6.5f, 0.75f, 0.5f));
         camera.MovementSpeed = 10.0f;
@@ -52,13 +52,15 @@ namespace Wl
 
     int32_t LudoApplication(Application& application)
     {
+        // Create a window. WindowHandle behave like a reference.
+        WindowProperties windowProperties("Demo Window", 1080, 720, 100, 100);
+        SharedPtr<Window> window = Window::Create(windowProperties);
+
+        // Need to know the window for creating the surface. Vulkan API is already the default option.
+        SharedPtr<RHIDevice> device = RHIDeviceFactory::Create(RHIGraphicsAPI::Vulkan);
+        device->Init(window->GetNativeWindow());
+
         ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
-
-        LudoModule* ludoModule = moduleRegistry.GetModule<LudoModule>("Ludo");
-        RHIModule* rhiModule = moduleRegistry.GetModule<RHIModule>("Waterlily.RHI");
-
-        SharedPtr<Window> window = ludoModule->GetWindow();
-        SharedPtr<RHIDevice> device = rhiModule->GetDevice();
 
         Camera initialCamera = InitCamera();
         Camera camera = initialCamera;
@@ -93,7 +95,7 @@ namespace Wl
         frameContextInitInfo.UniformBufferSize = 16 * WL_MB;
         frameContextInitInfo.FrameWidth = window->GetProperties().Width;
         frameContextInitInfo.FrameHeight = window->GetProperties().Height;
-        frameContext->Init(frameContextInitInfo);
+        frameContext->Init(device, frameContextInitInfo);
 
         SharedPtr<TextureRegistry> textureRegistry = MakeShared<TextureRegistry>(device, *assetManager, LudoTexturesSRGBinding);
         SharedPtr<MaterialRegistry> materialRegistry = MakeShared<MaterialRegistry>(device, LudoMaterialsSRGBinding);
@@ -429,12 +431,16 @@ namespace Wl
 
         pipelineManager->Dispose();
 
+        materialRegistry->Destroy();
         textureRegistry->Dispose();
         frameContext->Shutdown();
 
+        device->Shutdown();
+        
         window->Close();
 
         application.Stop();
+
 
         return EXIT_SUCCESS;
     }

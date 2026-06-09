@@ -23,8 +23,18 @@ namespace Wl
     class VulkanDevice : public RHIDevice
     {
     public:
-        void Init();
-        void Shutdown();
+        virtual size_t GetCountBufferAllocation() override
+        {
+            return m_countBufferAllocation;
+        }
+
+        virtual size_t GetCountTextureAllocation() override
+        {
+            return m_countTextureAllocation;
+        }
+
+        virtual void Init(void* nativeWindow) override;
+        virtual void Shutdown() override;
 
         virtual void WaitIdle() override;
 
@@ -32,9 +42,6 @@ namespace Wl
         virtual void ResetFence(RHIFence* fence) override;
 
         virtual const RHIDeviceProperties& GetDeviceProperties() const override;
-
-        virtual SharedPtr<RHIBufferPool> CreateBufferPool() override;
-        virtual SharedPtr<RHITexturePool> CreateTexturePool() override;
 
         virtual RHIBindlessShaderResources* CreateBindlessShaderResources(
                 uint32_t max_resources,
@@ -96,6 +103,8 @@ namespace Wl
         RHIDeviceProperties m_properties;
         HeapAllocator& m_allocator;
         VulkanContext& m_context;
+        size_t m_countTextureAllocation = 0;
+        size_t m_countBufferAllocation = 0;
     };
 
 }// namespace Wl

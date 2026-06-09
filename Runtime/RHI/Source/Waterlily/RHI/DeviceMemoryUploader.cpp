@@ -41,6 +41,7 @@ namespace Wl
                                                      RHITextureDescription& description)
     {
         RHIBufferDescription bufferDesc = CreateStagingBufferDescription(context);
+
         RHIBuffer* staging = m_device->CreateBuffer(bufferDesc);
         m_stangings.Append(staging);
 
@@ -58,6 +59,7 @@ namespace Wl
     RHIBuffer* RHIDeviceMemoryUploader::SendBuffer(const RHIStagingBufferContext& context)
     {
         RHIBufferDescription stagingDescription = CreateStagingBufferDescription(context);
+
         RHIBuffer* staging = m_device->CreateBuffer(stagingDescription);
         m_stangings.Append(staging);
 
