@@ -113,7 +113,11 @@ namespace Wl
         VulkanContext& context = VulkanContextGet();
 
         void* destination = Map(offset, size);
-        WL_LOG_ERROR_AND_RETURN_WHEN(!destination, "[Vulkan]", "Failed to map buffer memory for update.");
+        if (!destination)
+        {
+            WL_LOG_ERROR("[Vulkan]", "Failed to map buffer memory for update.");
+            return;
+        }
 
         Memory::Copy(destination, source, size);
         FlushWhenIsHost(offset, size);

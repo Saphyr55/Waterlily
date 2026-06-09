@@ -1,12 +1,11 @@
 #pragma once
 
-#include <ostream>
-
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
+
+#include <ostream>
 
 namespace Wl
 {
@@ -70,7 +69,7 @@ namespace Wl
 
         StringBase& Append(const CharType* str)
         {
-            WL_CHECK_MSG(str, "Appempt to append a c-string null in a String.");
+            WL_CHECK(str);
 
             size_t len = StringLength(str);
             if (!m_buffer.IsEmpty())
@@ -151,7 +150,7 @@ namespace Wl
         StringBase(const CharType* c_str)
             : m_buffer()
         {
-            WL_CHECK_MSG(c_str, "Appempt to append a c-string null in a String.");
+            WL_CHECK(c_str);
             Append(c_str);
         }
 
@@ -171,14 +170,14 @@ namespace Wl
 
         StringBase& operator=(const CharType* c_str)
         {
-            WL_CHECK_MSG(c_str, "Appempt to append a c-string null in a String.");
+            WL_CHECK(c_str);
             *this = StringBase<CharType>(c_str);
             return *this;
         }
 
         StringBase& operator+=(const CharType* c_str)
         {
-            WL_CHECK_MSG(c_str, "Appempt to append a c-string null in a String.");
+            WL_CHECK(c_str);
             return Append(c_str);
         }
 

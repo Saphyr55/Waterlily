@@ -12,15 +12,16 @@
 #include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Core/IO/FileHandle.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/String/String.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/Renderer/Mesh/StaticMesh.hpp"
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Texture/TextureAsset.hpp"
+
 
 #include <filesystem>
 
@@ -50,7 +51,7 @@ static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Ass
 
 int32_t main(int32_t argc, const char* argv[])
 {
-    WL_LOG_INFO("[WACP]", "Build started");
+    WL_LOG_INFO("WACP", "Build started");
 
     ModuleRegistry& modules = ModuleRegistry::GetInstance();
     Module* rendererModule = modules.LoadModule("Waterlily.Renderer");
@@ -65,7 +66,7 @@ int32_t main(int32_t argc, const char* argv[])
 
     if (!fileSystem.CreateDirectory(outputAssetDirText.data()))
     {
-        WL_LOG_ERROR("[WACP]", Wl::Format("Failed to create the directory \"%s\"", VFSOutputAssetDirectory.GetData()));
+        WL_LOG_ERROR("WACP", "Failed to create the directory \"%s\"", VFSOutputAssetDirectory.GetData());
         return EXIT_FAILURE;
     }
 
@@ -79,7 +80,7 @@ int32_t main(int32_t argc, const char* argv[])
             fileSystem.Open(larFilepathText.data(), FileAccess::ReadWrite, FileMode::OpenOrCreate);
     if (!larFileResult.HasValue())
     {
-        WL_LOG_ERROR("[WACP]", Wl::Format("Failed to open \"%s\"", larFilepathText.data()));
+        WL_LOG_ERROR("WACP", "Failed to open \"%s\"", larFilepathText.data());
         return EXIT_FAILURE;
     }
 
@@ -92,7 +93,7 @@ int32_t main(int32_t argc, const char* argv[])
 
     if (!registry)
     {
-        WL_LOG_ERROR("[WACP]", Wl::Format("Failed to load \"%s\"", larFilepathText.data()));
+        WL_LOG_ERROR("WACP", "Failed to load \"%s\"", larFilepathText.data());
         return EXIT_FAILURE;
     }
 
@@ -109,15 +110,14 @@ int32_t main(int32_t argc, const char* argv[])
     SharedPtr<AssetImporter> importer = importers.GetImporter(assetType);
     SharedPtr<AssetSource> source = MakeShared<VFSAssetSource>(FileSystem::GetPlatform());
 
-    WL_LOG_INFO("[WACP]",
-                Wl::Format("Importing, URI: \"%s\", Type: \"%s\"", assetFilepath.data(), AssetType_Model.GetText().data()));
+    WL_LOG_INFO("WACP", "Importing, URI: \"%s\", Type: \"%s\"", assetFilepath.data(), AssetType_Model.GetText().data());
 
     AssetStorage storage;
 
     ImportContext mainImportContext(source, registry, storage, assetType.GetText(), assetFilepath, VFSOutputAssetDirectory);
     if (SharedPtr<Asset> mainAsset = importer->ImportAsset(mainImportContext))
     {
-        WL_LOG_INFO("[WACP]", "Importing succeeded");
+        WL_LOG_INFO("WACP", "Importing succeeded");
 
         for (auto [handle, asset]: storage)
         {
@@ -147,10 +147,10 @@ int32_t main(int32_t argc, const char* argv[])
     }
     else
     {
-        WL_LOG_ERROR("[WACP]", "Importing failed");
+        WL_LOG_ERROR("WACP", "Importing failed");
     }
 
-    WL_LOG_INFO("[WACP]", "Build finish");
+    WL_LOG_INFO("WACP", "Build finish");
 
     rendererModule->OnShutdown();
 

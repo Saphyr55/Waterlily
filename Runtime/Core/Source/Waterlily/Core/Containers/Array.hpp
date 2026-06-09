@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Math/Math.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
@@ -30,25 +30,25 @@ namespace Wl
     public:
         const_reference Front() const
         {
-            WL_CHECK_MSG(!IsEmpty(), "Call front with an empty array.");
+            WL_CHECK(!IsEmpty());
             return m_data[0];
         }
 
         reference Front()
         {
-            WL_CHECK_MSG(!IsEmpty(), "Call front with an empty array.");
+            WL_CHECK(!IsEmpty());
             return m_data[0];
         }
 
         const_reference Back() const
         {
-            WL_CHECK_MSG(!IsEmpty(), "Call back with an empty array.");
+            WL_CHECK(!IsEmpty());
             return m_data[m_size - 1];
         }
 
         reference Back()
         {
-            WL_CHECK_MSG(!IsEmpty(), "Call back with an empty array.");
+            WL_CHECK(!IsEmpty());
             return m_data[m_size - 1];
         }
 
@@ -166,13 +166,13 @@ namespace Wl
 
         inline ElementType& operator[](size_type index)
         {
-            WL_CHECK_MSG(index < m_size, "Index out of bounds.");
+            WL_CHECK(index < m_size);
             return m_data[index];
         }
 
         inline const ElementType& operator[](size_type index) const
         {
-            WL_CHECK_MSG(index < m_size, "Index out of bounds.");
+            WL_CHECK(index < m_size);
             return m_data[index];
         }
 
@@ -487,25 +487,25 @@ namespace Wl
 
         const_reference front() const
         {
-            WL_CHECK_MSG(!IsEmpty(), "Call front with an empty array.");
+            WL_CHECK(!IsEmpty());
             return m_data[0];
         }
 
         reference front()
         {
-            WL_CHECK_MSG(!IsEmpty(), "Call front with an empty array.");
+            WL_CHECK(!IsEmpty());
             return m_data[0];
         }
 
         const_reference back() const
         {
-            WL_CHECK_MSG(!IsEmpty(), "Call back with an empty array.");
+            WL_CHECK(!IsEmpty());
             return m_data[m_size - 1];
         }
 
         reference back()
         {
-            WL_CHECK_MSG(!IsEmpty(), "Call back with an empty array.");
+            WL_CHECK(!IsEmpty());
             return m_data[m_size - 1];
         }
 

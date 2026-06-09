@@ -1,5 +1,5 @@
 #include "Waterlily/Core/Memory/Memory.hpp"
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/MemoryTrace.hpp"
 
 #include <cstdlib>

@@ -2,13 +2,14 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
 #include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/RHI/CompiledShader.hpp"
 #include "Waterlily/RHI/ShaderResourceCache.hpp"
 #include "Waterlily/RHI/Types.hpp"
+
 
 #include <algorithm>
 #include <spirv_reflect.h>
@@ -257,7 +258,11 @@ namespace Wl
         SpvReflectShaderModule spvModule;
 
         result = spvReflectCreateShaderModule(shader.GetByteCode().GetSize(), shader.GetByteCode().GetData(), &spvModule);
-        WL_LOG_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to parse the SPIRV shader.");
+        if (!isSuccess())
+        {
+            WL_LOG_ERROR("SPIRVReflection", "Impossible to parse the SPIRV shader.");
+            return false;
+        }
 
         SharedPtr<SpvReflectShaderModule> spvModuleGuard(&spvModule, [](SpvReflectShaderModule* m) -> void
         {
@@ -266,14 +271,22 @@ namespace Wl
 
         uint32_t bindingCount = 0;
         result = spvReflectEnumerateDescriptorBindings(&spvModule, &bindingCount, nullptr);
-        WL_LOG_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to enumerate descriptor bindings.");
+        if (!isSuccess())
+        {
+            WL_LOG_ERROR("SPIRVReflection", "Impossible to enumerate descriptor bindings.");
+            return false;
+        }
 
         Array<SpvReflectDescriptorBinding*> spvBindings;
         spvBindings.Resize(bindingCount);
 
         result = spvReflectEnumerateDescriptorBindings(&spvModule, &bindingCount, spvBindings.GetData());
-        WL_LOG_ERROR_AND_RETURN_FALSE_WHEN(!isSuccess(), "[SPIRV]", "Impossible to enumerate descriptor bindings.");
-
+        if (!isSuccess())
+        {
+            WL_LOG_ERROR("SPIRVReflection", "Impossible to enumerate descriptor bindings.");
+            return false;
+        }
+        
         outReflect.EntryPointNames[shader.GetStage()] = String(spvModule.entry_point_name);
 
         for (size_t i = 0; i < bindingCount; i++)

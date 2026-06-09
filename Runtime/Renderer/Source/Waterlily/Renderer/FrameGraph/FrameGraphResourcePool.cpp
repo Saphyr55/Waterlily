@@ -1,7 +1,7 @@
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResourcePool.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {

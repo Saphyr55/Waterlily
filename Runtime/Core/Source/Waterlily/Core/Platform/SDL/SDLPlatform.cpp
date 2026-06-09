@@ -1,10 +1,9 @@
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Platform/DefaultDisplayEventHandler.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/Core/Platform/Platform.hpp"
 #include "Waterlily/Core/Platform/PlatformTime.hpp"
 #include "Waterlily/Core/Platform/SDL/SDLDisplay.hpp"
-#include "Waterlily/Core/String/Format.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 
 namespace Wl
 {
@@ -20,7 +19,7 @@ namespace Wl
     {
         if (!SDL_Init(SDL_INIT_VIDEO))
         {
-            WL_LOG_ERROR("[Platform]", Wl::Format("Failed to initialize SDL: %s", SDL_GetError()));
+            WL_LOG_ERROR("[Platform]", "Failed to initialize SDL: %s", SDL_GetError());
             return;
         }
 

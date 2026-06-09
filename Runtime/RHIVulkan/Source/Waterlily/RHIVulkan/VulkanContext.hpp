@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Function/FunctionRef.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/DynamicLibrary.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
@@ -13,13 +12,12 @@
 
 #include <vk_mem_alloc.h>
 
-#define WL_VULKAN_CHECK(Expr)                                                                               \
-    do                                                                                                      \
-    {                                                                                                       \
-        VkResult __WL_vulkan_result__ = (Expr);                                                             \
-        WL_LOG_FATAL_WHEN(__WL_vulkan_result__ != VK_SUCCESS,                                                 \
-                        "[Vulkan]",                                                                         \
-                        Wl::Format("Failed with the result '%s'", VulkanStringOfResult(__WL_vulkan_result__))) \
+#define WL_VULKAN_CHECK(Expr)                                                                                   \
+    do                                                                                                          \
+    {                                                                                                           \
+        VkResult __WL_vulkan_result__ = (Expr);                                                                 \
+        WL_LOG_FATAL_WHEN(__WL_vulkan_result__ != VK_SUCCESS,                                                   \
+                          "Vulkan", "Failed with the result '%s'", VulkanStringOfResult(__WL_vulkan_result__)); \
     } while (false)
 
 namespace Wl

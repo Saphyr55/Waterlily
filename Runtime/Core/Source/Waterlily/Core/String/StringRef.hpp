@@ -4,9 +4,9 @@
 #include <functional>
 #include <ostream>
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/String/String.hpp"
+#include "Waterlily/Core/Asserts.hpp"
 
 namespace Wl
 {
@@ -23,14 +23,14 @@ namespace Wl
         constexpr StringRefBase(const CharType* data)
             : m_data(data)
         {
-            WL_CHECK_MSG(data, "StringRefBase is not nullable.");
+            WL_CHECK(data);
         }
 
         constexpr StringRefBase(const String& str)
             requires std::same_as<CharType, char>
             : m_data(str.GetData())
         {
-            WL_CHECK_MSG(str.GetData(), "StringRefBase is not nullable.");
+            WL_CHECK(str.GetData());
         }
 
         constexpr ~StringRefBase() = default;

@@ -3,6 +3,7 @@
 #include "Types.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {

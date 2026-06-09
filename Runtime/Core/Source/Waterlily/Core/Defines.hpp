@@ -33,9 +33,9 @@ inline TypeIndex GetTypeIndex()
  *
  */
 #if defined(_MSC_VER)
-    #define LW_DEBUGBREAK() __debugbreak()
+    #define WL_DEBUGBREAK() __debugbreak()
 #else
-    #define LW_DEBUGBREAK() __builtin_trap()
+    #define WL_DEBUGBREAK() __builtin_trap()
 #endif
 
 #ifdef _WIN32
@@ -51,45 +51,11 @@ inline TypeIndex GetTypeIndex()
     #define NOGDI
 #endif
 
-/**
- *
- */
-#ifdef WL_DEBUG
-    #define WL_CHECK(expr)       \
-        do                       \
-        {                        \
-            if (!(expr))         \
-            {                    \
-                LW_DEBUGBREAK(); \
-            }                    \
-        } while (false)
-#else
-    #define WL_CHECK(expr) ((void)(expr))
-#endif
-
-/**
- *
- */
-// TODO: Remove std::cout ...
-#ifdef WL_DEBUG
-    #define WL_CHECK_MSG(expr, msg)         \
-        do                                  \
-        {                                   \
-            if (!(expr))                    \
-            {                               \
-                ::std::cout << msg << "\n"; \
-                LW_DEBUGBREAK();            \
-            }                               \
-        } while (false)
-#else
-    #define WL_CHECK_MSG(expr, msg) ((void)(expr))
-#endif
-
 #define WL_DEPRECATED(version, msg)
 
-#define WL_CRASH(msg)         \
-    WL_CHECK_MSG(false, msg); \
-    abort()
+#define WL_TOSTRING(value) #value
+
+#define WL_ABORT(...) abort(##__VA_ARGS__)
 
 #define WL_CONCAT_INNER(a, b) a##b
 #define WL_CONCAT(a, b) WL_CONCAT_INNER(a, b)
@@ -116,17 +82,30 @@ inline TypeIndex GetTypeIndex()
 
 #define WL_ENUM_FLAGS(EnumClassName) WL_ENUM_FLAGS_CUSTOM_DERIVED(EnumClassName, uint32_t)
 
+#define WL_ENCAPULSE_BEGIN \
+    do                     \
+    {
+
+#define WL_ENCAPULSE_END \
+    }                    \
+    while (false)
+
 #define WL_RETURN_WHEN(expr) \
+    WL_ENCAPULSE_BEGIN       \
     if ((expr))              \
     {                        \
         return;              \
-    }
+    }                        \
+    WL_ENCAPULSE_END
 
 #define WL_RETURN_OBJECT_WHEN(expr, object) \
+    WL_ENCAPULSE_BEGIN                      \
     if ((expr))                             \
     {                                       \
         return object;                      \
-    }
+    }                                       \
+    WL_ENCAPULSE_END
+
 
 #define WL_RETURN_FALSE_WHEN(expr) WL_RETURN_OBJECT_WHEN(expr, false)
 

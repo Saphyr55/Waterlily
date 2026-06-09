@@ -1,14 +1,10 @@
 #include "Waterlily/Renderer/Material/MaterialRegistry.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
-#include "Waterlily/Core/String/Format.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/UploadScheduler.hpp"
-
-#include <cstddef>
 
 namespace Wl
 {
@@ -111,9 +107,7 @@ namespace Wl
             double totalUploadedBytes = static_cast<double>(uploader.GetTotalPendingBytes());
             double totalUploadedMegaBytes = totalUploadedBytes / static_cast<double>(WL_KB);
             uploader.Flush(commandBuffer);
-            WL_LOG_DEBUG(
-                    "[MaterialRegistry]",
-                    Wl::Format("Flushed global upload scheduler, total uploaded: %.2lfKB", totalUploadedMegaBytes));
+            WL_LOG_DEBUG("Renderer", "Flushed global upload scheduler, total uploaded: %.2lfKB", totalUploadedMegaBytes);
         }, queue);
 
         uploader.Shutdown();

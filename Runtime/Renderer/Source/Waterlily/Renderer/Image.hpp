@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/String/Format.hpp"
-#include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/RHI/Types.hpp"
 
 namespace Wl
@@ -53,7 +50,7 @@ namespace Wl
                     format = RHIFormat::RGBA8;
                     break;
                 default:
-                    WL_LOG_WARN("[Image]", Wl::Format("Unsupported image component count: %u", image.Channels));
+                    WL_LOG_WARN("Image", "Unsupported image component count: %u", image.Channels);
                     break;
             }
         }
@@ -74,7 +71,7 @@ namespace Wl
                     format = RHIFormat::RGBA8sRGB;
                     break;
                 default:
-                    WL_LOG_WARN("[Image]", Wl::Format("Unsupported image component count: %u", image.Channels));
+                    WL_LOG_WARN("Image", "Unsupported image component count: %u", image.Channels);
                     break;
             }
         }

@@ -1,10 +1,9 @@
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 
 #include "Waterlily/Core/Containers/HashMap.hpp"
-#include "Waterlily/Core/String/Format.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/String/String.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -17,7 +16,7 @@ namespace Wl
         std::ifstream stream(filepath.data());
         if (!stream.is_open())
         {
-            WL_LOG_ERROR("[ModuleManifest]", Wl::Format(" Cannot open \"%s\"", filepath.data()));
+            WL_LOG_ERROR("ModuleManifest", " Cannot open \"%s\"", filepath.data());
             return false;
         }
 
@@ -29,7 +28,7 @@ namespace Wl
         }
         catch (const nlohmann::json::parse_error& e)
         {
-            WL_LOG_ERROR("[ModuleManifest]", Wl::Format("JSON parse error in \"%s\": \"%s\"", filepath.data(), e.what()));
+            WL_LOG_ERROR("ModuleManifest", "JSON parse error in \"%s\": \"%s\"", filepath.data(), e.what());
             return false;
         }
 
@@ -39,7 +38,7 @@ namespace Wl
         {
             if (!entry.is_object())
             {
-                WL_LOG_WARN("[ModuleManifest]", "Skipping non-object entry in the module manifest");
+                WL_LOG_WARN("ModuleManifest", "Skipping non-object entry in the module manifest");
                 continue;
             }
 
@@ -61,27 +60,25 @@ namespace Wl
 
             m_manifestInformations.Append(info);
         }
-        
+
         return true;
     }
 
     void ModuleManifestLog(const ModuleManifest& manifest)
     {
         const Array<ModuleInformation>& moduleInformations = manifest.GetModules();
-        WL_LOG_INFO("[ModuleManifest]", Wl::Format("Module Manifest Informations (%d modules):", moduleInformations.GetSize()));
+        WL_LOG_INFO("ModuleManifest", "Module Manifest Informations (%d modules):", moduleInformations.GetSize());
 
         for (size_t i = 0; i < manifest.GetModules().GetSize(); i++)
         {
             const ModuleInformation& moduleInformation = moduleInformations[i];
-            WL_LOG_INFO("[ModuleManifest]", "Module:");
-            WL_LOG_INFO("[ModuleManifest]",
-                        Wl::Format("  %s: %s", ModuleManifestKeyNames::Name, moduleInformation.Name.GetData()));
-            WL_LOG_INFO("[ModuleManifest]",
-                        Wl::Format("  %s: %s", ModuleManifestKeyNames::Version, moduleInformation.Version.GetData()));
+            WL_LOG_INFO("ModuleManifest", "Module:");
+            WL_LOG_INFO("ModuleManifest", "  %s: %s", ModuleManifestKeyNames::Name, moduleInformation.Name.GetData());
+            WL_LOG_INFO("ModuleManifest", "  %s: %s", ModuleManifestKeyNames::Version, moduleInformation.Version.GetData());
 
             if (moduleInformation.Dependencies.IsEmpty())
             {
-                WL_LOG_INFO("[ModuleManifest]", Wl::Format("  %s: []", ModuleManifestKeyNames::Deps));
+                WL_LOG_INFO("ModuleManifest", "  %s: []", ModuleManifestKeyNames::Deps);
                 continue;
             }
 
@@ -96,8 +93,7 @@ namespace Wl
                 }
             }
 
-            WL_LOG_INFO("[ModuleManifest]",
-                        Wl::Format("  %s: [%s]", ModuleManifestKeyNames::Deps, dependencyNames.GetData()));
+            WL_LOG_INFO("ModuleManifest","  %s: [%s]", ModuleManifestKeyNames::Deps, dependencyNames.GetData());
         }
     }
 
@@ -139,8 +135,7 @@ namespace Wl
                 }
                 else
                 {
-                    WL_LOG_ERROR("[ModuleManifest]",
-                                 Wl::Format("Module '%s' has an unknown dependency '%s'.", info.Name.GetData(), dependency.data()));
+                    WL_LOG_ERROR("ModuleManifest","Module '%s' has an unknown dependency '%s'.", info.Name.GetData(), dependency.data());
                 }
             }
         }

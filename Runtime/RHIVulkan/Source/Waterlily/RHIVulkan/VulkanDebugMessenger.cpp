@@ -1,5 +1,5 @@
 #include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
 

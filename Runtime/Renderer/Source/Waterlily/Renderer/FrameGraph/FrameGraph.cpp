@@ -2,6 +2,7 @@
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/Option.hpp"
 #include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Math.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
@@ -90,7 +91,7 @@ namespace Wl
 
     FrameGraphPass& FrameGraph::AddPass(const StringID& name)
     {
-        WL_CHECK_MSG(!m_passNames.Contains(name), Wl::Format("A pass named %s already exists in FrameGraph.", name.GetText().data()));
+        WL_CHECK_MSG(!m_passNames.Contains(name), "A pass named %s already exists in FrameGraph.", name.GetText().data());
         m_passes.Emplace(name);
         m_passNames.Put(name, m_passes.GetSize() - 1);
         return m_passes.Back();
@@ -98,7 +99,7 @@ namespace Wl
 
     FrameGraphPass& FrameGraph::GetPass(const StringID& name)
     {
-        WL_CHECK_MSG(m_passNames.Contains(name), Wl::Format("No pass named %s found in FrameGraph!", name.GetText().data()));
+        WL_CHECK_MSG(m_passNames.Contains(name), "No pass named %s found in FrameGraph!", name.GetText().data());
         size_t index = m_passNames[name];
         return m_passes[index];
     }
@@ -128,7 +129,6 @@ namespace Wl
 
     void FrameGraph::EndFrame()
     {
-
     }
 
     void FrameGraph::Compile()
@@ -165,7 +165,7 @@ namespace Wl
         for (size_t passIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[passIndex];
-            
+
             AllocatePhysicalPassResources(passIndex);
 
             for (FrameGraphTextureBarrier& barrier: pass.m_barriers)
@@ -523,7 +523,7 @@ namespace Wl
             AllocatePhysicalResource(resource);
         }
     }
-    
+
     void FrameGraph::AllocatePhysicalResource(FrameGraphTextureResource& resource)
     {
         WL_RETURN_WHEN(resource.IsAllocated || !resource.IsTransient);

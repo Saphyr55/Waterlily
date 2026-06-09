@@ -1,6 +1,5 @@
 #include "Waterlily/Renderer/FrameContext.hpp"
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/RHI/Buffer.hpp"

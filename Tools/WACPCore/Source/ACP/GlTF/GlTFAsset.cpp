@@ -191,7 +191,7 @@ namespace Wl
             pathURI /= filename.GetData();
             std::string pathURIText = pathURI.generic_string();
 
-            WL_LOG_INFO("[GlTFImporter]", Wl::Format("Creating MaterialAsset, URI: \"%s\"", pathURIText.data()));
+            WL_LOG_INFO("GlTFImporter","Creating MaterialAsset, URI: \"%s\"", pathURIText.data());
 
             StringRef pathURITextRef = pathURIText.data();
             StringID uri = CreateSID(pathURITextRef);
@@ -240,7 +240,7 @@ namespace Wl
             pathURI /= filename.GetData();
             std::string pathURIText = pathURI.generic_string();
 
-            WL_LOG_INFO("[GlTFImporter]", Wl::Format("Creating StaticMesh, URI: \"%s\"", pathURIText.data()));
+            WL_LOG_INFO("GlTFImporter", "Creating StaticMesh, URI: \"%s\"", pathURIText.data());
 
             StringRef pathURITextRef = pathURIText.data();
             StringID uri = CreateSID(pathURITextRef);

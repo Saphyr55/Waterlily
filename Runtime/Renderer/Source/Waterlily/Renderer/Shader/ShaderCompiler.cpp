@@ -1,7 +1,7 @@
 #include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
 #include "Waterlily/Core/String/Format.hpp"
 #include "Waterlily/Core/String/String.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 #include <filesystem>
 
@@ -48,17 +48,17 @@ namespace Wl
         cmd.Append(" -fspv-target-env=vulkan1.3");
         cmd.Append(" -fspv-extension=SPV_EXT_descriptor_indexing");
 
-        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("%s", cmd.GetData()));
+        WL_LOG_INFO("SPIRVShaderCompiler", "%s", cmd.GetData());
 
         int32_t result = std::system(cmd.GetData());
         if (result != 0)
         {
-            WL_LOG_ERROR("[SPIRVShaderCompiler]", Wl::Format("Failed to compile shader file: %s", inputFilepath.data()));
+            WL_LOG_ERROR("SPIRVShaderCompiler", "Failed to compile shader file: %s", inputFilepath.data());
             return false;
         }
 
-        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("Successfully compiled shader file: %s", inputFilepath.data()));
-        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("Output spv file: %s", outputFilepath.data()));
+        WL_LOG_INFO("SPIRVShaderCompiler", "Successfully compiled shader file: %s", inputFilepath.data());
+        WL_LOG_INFO("SPIRVShaderCompiler", "Output spv file: %s", outputFilepath.data());
 
         return true;
     }
@@ -95,15 +95,15 @@ namespace Wl
         cmd.Append(" -Os");
 
         int32_t result = std::system(cmd.GetData());
-        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("%s", cmd.GetData()));
+        WL_LOG_INFO("SPIRVShaderCompiler", "%s", cmd.GetData());
         if (result != 0)
         {
-            WL_LOG_ERROR("[SPIRVShaderCompiler]", Wl::Format("Failed to compile shader file: %s", inputFilepath.data()));
+            WL_LOG_ERROR("SPIRVShaderCompiler", "Failed to compile shader file: %s", inputFilepath.data());
             return false;
         }
 
-        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("Successfully compiled shader file: %s", inputFilepath.data()));
-        WL_LOG_INFO("[SPIRVShaderCompiler]", Wl::Format("Output spv file: %s", outputFilepath.data()));
+        WL_LOG_INFO("SPIRVShaderCompiler", "Successfully compiled shader file: %s", inputFilepath.data());
+        WL_LOG_INFO("SPIRVShaderCompiler", "Output spv file: %s", outputFilepath.data());
 
         return true;
     }

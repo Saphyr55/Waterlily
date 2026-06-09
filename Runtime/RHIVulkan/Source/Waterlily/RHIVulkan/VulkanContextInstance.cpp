@@ -2,9 +2,9 @@
 #include "Waterlily/Core/Algorithms/Algorithms.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/String/Format.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/RHIVulkan/RHIVulkan.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
@@ -42,18 +42,17 @@ namespace Wl
 
         for (StringRef ext: available_extension_names)
         {
-            WL_LOG_DEBUG("[Vulkan]", ext);
+            WL_LOG_DEBUG("Vulkan", ext);
         }
 
         for (StringRef required_extension: desired_extensions)
         {
-            WL_CHECK_MSG(available_extension_names.Contains(required_extension),
-                       Wl::Format("Required Vulkan extension '%s' is not available.", required_extension));
+            WL_CHECK_MSG(available_extension_names.Contains(required_extension), "Required Vulkan extension '%s' is not available.", required_extension);
         }
 
         Array<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
-        VkApplicationInfo applicationInfo{};
+        VkApplicationInfo applicationInfo {};
         applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         applicationInfo.pNext = nullptr;
         applicationInfo.pApplicationName = "Waterlily application";
@@ -62,7 +61,7 @@ namespace Wl
         applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         applicationInfo.apiVersion = context.VulkanAPIVersion;
 
-        VkInstanceCreateInfo createInfo{};
+        VkInstanceCreateInfo createInfo {};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.pApplicationInfo = &applicationInfo;
@@ -71,31 +70,31 @@ namespace Wl
         createInfo.enabledExtensionCount = static_cast<uint32_t>(desired_extensions.size());
         createInfo.ppEnabledExtensionNames = desired_extensions.data();
 
-        WL_LOG_INFO("[Vulkan]", "Creating Vulkan instance with the following extensions:");
+        WL_LOG_INFO("Vulkan", "Creating Vulkan instance with the following extensions:");
         for (const char* extension: desired_extensions)
         {
-            WL_LOG_INFO("[Vulkan]", Wl::Format("  - %s", extension));
+            WL_LOG_INFO("Vulkan", "  - %s", extension);
         }
 
-        WL_LOG_INFO("[Vulkan]", "Using the following validation layers:");
+        WL_LOG_INFO("Vulkan", "Using the following validation layers:");
         for (const char* layer: validationLayers)
         {
-            WL_LOG_INFO("[Vulkan]", Wl::Format("  - %s", layer));
+            WL_LOG_INFO("Vulkan", "  - %s", layer);
         }
 
         WL_VULKAN_CHECK(VulkanAPI::vkCreateInstance(&createInfo, context.Allocator, &context.Instance));
 
-        WL_LOG_INFO("[Vulkan]", "Vulkan instance created successfully.");
+        WL_LOG_INFO("Vulkan", "Vulkan instance created successfully.");
 
         VulkanInstanceAPILoad(context.Instance);
     }
 
     void VulkanInstanceDestroy(VulkanContext& context)
     {
-        WL_LOG_INFO("[Vulkan]", "Destroying Vulkan instance...");
+        WL_LOG_INFO("Vulkan", "Destroying Vulkan instance...");
         VulkanAPI::vkDestroyInstance(context.Instance, context.Allocator);
         context.Instance = VK_NULL_HANDLE;
-        WL_LOG_INFO("[Vulkan]", "Vulkan instance destroyed.");
+        WL_LOG_INFO("Vulkan", "Vulkan instance destroyed.");
     }
 
 }// namespace Wl

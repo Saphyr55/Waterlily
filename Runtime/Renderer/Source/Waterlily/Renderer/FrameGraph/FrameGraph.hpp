@@ -3,8 +3,7 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/HashSet.hpp"
-#include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/String/Format.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
@@ -47,7 +46,7 @@ namespace Wl
         {
             FrameGraphPass& pass = GetPass(name);
             SharedPtr<PassType> delegatePass = pass.GetDelegate<PassType>();
-            WL_CHECK_MSG(delegatePass, Wl::Format("Failed to cast pass %s to the specified type!", name.GetText().data()));
+            WL_CHECK_MSG(delegatePass, "Failed to cast pass %s to the specified type!", name.GetText().data());
             return *delegatePass;
         }
 

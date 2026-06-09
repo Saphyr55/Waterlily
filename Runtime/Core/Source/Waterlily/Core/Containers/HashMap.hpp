@@ -3,7 +3,6 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/Entry.hpp"
 #include "Waterlily/Core/Containers/HashMapSlot.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
@@ -237,6 +236,11 @@ namespace Wl
         {
             SlotType& slot = LookupDefaultImpl(key);
             return slot.Value.GetRef();
+        }
+
+        const ValueType& operator[](const KeyType& key) const
+        {
+            return Get(key);
         }
 
         ValueType& Get(const KeyType& key)

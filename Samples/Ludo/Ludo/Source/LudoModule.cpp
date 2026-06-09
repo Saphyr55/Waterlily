@@ -4,7 +4,7 @@
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/RHI/RHIModule.hpp"
 
 WL_REGISTER_MODULE(LudoModule, "Ludo");

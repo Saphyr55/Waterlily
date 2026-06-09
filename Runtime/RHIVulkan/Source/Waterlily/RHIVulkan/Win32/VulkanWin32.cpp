@@ -1,6 +1,6 @@
 #include "Waterlily/RHIVulkan/win32/VulkanWin32.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"

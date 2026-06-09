@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
 
@@ -21,8 +21,8 @@ namespace Wl
         constexpr Vector4(R x, R y, R z, R w);
 
         constexpr R Dot(const Vector4& vec) const;
-        constexpr R& operator[](size_t i);
         constexpr const R& operator[](size_t i) const;
+        constexpr R& operator[](size_t i);
 
         constexpr Vector4 operator*(const Real auto&) const;
         constexpr Vector4 operator+(const Real auto&) const;
@@ -105,7 +105,7 @@ namespace Wl
     constexpr Vector4f Vector4<R>::Normalize(Vector4 vec)
     {
         float l = Length(vec);
-        return Vector4f{vec.x / l, vec.y / l, vec.z / l, vec.w / l};
+        return Vector4f {vec.x / l, vec.y / l, vec.z / l, vec.w / l};
     }
 
     template<Real R>
@@ -123,7 +123,7 @@ namespace Wl
             case 3:
                 return w;
             default:
-                WL_CRASH("");
+                return x;
         }
         return x;
     }
@@ -143,7 +143,7 @@ namespace Wl
             case 3:
                 return w;
             default:
-                WL_CRASH("");
+                return x;
         }
         return x;
     }
@@ -151,55 +151,55 @@ namespace Wl
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator*(const Real auto& t) const
     {
-        return Vector4{x * t, y * t, z * t, w * t};
+        return Vector4 {x * t, y * t, z * t, w * t};
     }
 
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator+(const Real auto& t) const
     {
-        return Vector4{x + t, y + t, z + t, w + t};
+        return Vector4 {x + t, y + t, z + t, w + t};
     }
 
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator-(const Real auto& t) const
     {
-        return Vector4{x - t, y - t, z - t, w - t};
+        return Vector4 {x - t, y - t, z - t, w - t};
     }
 
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator/(const Real auto& t) const
     {
-        return Vector4{x / t, y / t, z / t, w / t};
+        return Vector4 {x / t, y / t, z / t, w / t};
     }
 
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator-() const
     {
-        return Vector4{-x, -y, -z, -w};
+        return Vector4 {-x, -y, -z, -w};
     }
 
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator*(const Vector4& vec) const
     {
-        return Vector4{x * vec.x, y * vec.y, z * vec.z, w * vec.w};
+        return Vector4 {x * vec.x, y * vec.y, z * vec.z, w * vec.w};
     }
 
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator/(const Vector4& vec) const
     {
-        return Vector4{x / vec.x, y / vec.y, z / vec.z, w / vec.w};
+        return Vector4 {x / vec.x, y / vec.y, z / vec.z, w / vec.w};
     }
 
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator+(const Vector4& vec) const
     {
-        return Vector4{x + vec.x, y + vec.y, z + vec.z, w + vec.w};
+        return Vector4 {x + vec.x, y + vec.y, z + vec.z, w + vec.w};
     }
 
     template<Real R>
     constexpr Vector4<R> Vector4<R>::operator-(const Vector4& vec) const
     {
-        return Vector4{x - vec.x, y - vec.y, z - vec.z, w - vec.w};
+        return Vector4 {x - vec.x, y - vec.y, z - vec.z, w - vec.w};
     }
 
     template<Real R>

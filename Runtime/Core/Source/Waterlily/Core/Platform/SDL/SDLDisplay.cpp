@@ -1,9 +1,7 @@
 #include "Waterlily/Core/Platform/SDL/SDLDisplay.hpp"
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Platform/SDL/SDLInput.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
-#include "Waterlily/Core/String/Format.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_Events.h>
@@ -42,7 +40,7 @@ namespace Wl
 
         if (!sdlWindow)
         {
-            WL_LOG_ERROR("[SDLDisplay]", Wl::Format("Failed to create window: %s", SDL_GetError()));
+            WL_LOG_ERROR("Platform", "Failed to create window: %s", SDL_GetError());
             return Display::InvalidWindowHandle;
         }
 
@@ -59,7 +57,7 @@ namespace Wl
 
         WindowProperties properties = m_windowPropertiesMap[window];
 
-        WL_LOG_INFO("[SDLDisplay]", Wl::Format("Retrieved window properties for handle: %d", window));
+        WL_LOG_INFO("Platform", "Retrieved window properties for handle: %d", window);
 
         return properties;
     }
@@ -101,7 +99,7 @@ namespace Wl
 
         SDL_ShowWindow(sdlWindow);
 
-        WL_LOG_INFO("[SDLDisplay]", Wl::Format("Showing window with handle: %d", window));
+        WL_LOG_INFO("Platform", "Showing window with handle: %d", window);
     }
 
     void SDLDisplay::HideWindow(WindowHandle window)

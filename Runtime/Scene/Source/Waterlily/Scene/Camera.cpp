@@ -1,8 +1,6 @@
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
-#include "Waterlily/Core/Platform/Input.hpp"
-#include "Waterlily/Core/String/Format.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {
@@ -43,14 +41,14 @@ namespace Wl
 
     void Camera::LogDebug()
     {
-        WL_LOG_DEBUG("[Ludo]", Wl::Format("Camera Position: X=%.2f, Y=%.2f, Z=%.2f", Position.x, Position.y, Position.z));
-        WL_LOG_DEBUG("[Ludo]", Wl::Format("Camera Rotation : X=%.2f, Y=%.2f, Z=%.2f", Rotation.x, Rotation.y, Rotation.z));
-        WL_LOG_DEBUG("[Ludo]", Wl::Format("Camera Front : X=%.2f, Y=%.2f, Z=%.2f", Front.x, Front.y, Front.z));
-        WL_LOG_DEBUG("[Ludo]", Wl::Format("Camera Right : X=%.2f, Y=%.2f, Z=%.2f", Right.x, Right.y, Right.z));
-        WL_LOG_DEBUG("[Ludo]", Wl::Format("Camera Up : X=%.2f, Y=%.2f, Z=%.2f", Up.x, Up.y, Up.z));
-        WL_LOG_DEBUG("[Ludo]", Wl::Format("Camera World Up : X=%.2f, Y=%.2f, Z=%.2f", WorldUp.x, WorldUp.y, WorldUp.z));
-        WL_LOG_DEBUG("[Ludo]", Wl::Format("Camera Movement Speed : V=%.2f", MovementSpeed));
-        WL_LOG_DEBUG("[Ludo]", Wl::Format("Camera Mouse Sensitivity : V=%.2f", MouseSensitivity));
+        WL_LOG_DEBUG("Ludo", "Camera Position: X=%.2f, Y=%.2f, Z=%.2f", Position.x, Position.y, Position.z);
+        WL_LOG_DEBUG("Ludo", "Camera Rotation : X=%.2f, Y=%.2f, Z=%.2f", Rotation.x, Rotation.y, Rotation.z);
+        WL_LOG_DEBUG("Ludo", "Camera Front : X=%.2f, Y=%.2f, Z=%.2f", Front.x, Front.y, Front.z);
+        WL_LOG_DEBUG("Ludo", "Camera Right : X=%.2f, Y=%.2f, Z=%.2f", Right.x, Right.y, Right.z);
+        WL_LOG_DEBUG("Ludo", "Camera Up : X=%.2f, Y=%.2f, Z=%.2f", Up.x, Up.y, Up.z);
+        WL_LOG_DEBUG("Ludo", "Camera World Up : X=%.2f, Y=%.2f, Z=%.2f", WorldUp.x, WorldUp.y, WorldUp.z);
+        WL_LOG_DEBUG("Ludo", "Camera Movement Speed : V=%.2f", MovementSpeed);
+        WL_LOG_DEBUG("Ludo", "Camera Mouse Sensitivity : V=%.2f", MouseSensitivity);
     }
 
 }// namespace Wl

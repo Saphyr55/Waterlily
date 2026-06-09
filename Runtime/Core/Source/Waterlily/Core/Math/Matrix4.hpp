@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Math/Math.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/Math/Vector4.hpp"
@@ -197,9 +196,9 @@ namespace Wl
     {
         WL_CHECK(pfar - pnear != 0);
         Mat result(1.0);
-        result[0][0] = R(2.0f) / R(right - left);
-        result[1][1] = R(2.0f) / R(top - bottom);
-        result[2][2] = -R(2.0f) / R(pfar - pnear);
+        result[0][0] = R(2.0) / R(right - left);
+        result[1][1] = R(2.0) / R(top - bottom);
+        result[2][2] = -R(2.0) / R(pfar - pnear);
         result[3][0] = -R(right + left) / R(right - left);
         result[3][1] = -R(top + bottom) / R(top - bottom);
         result[3][2] = -R(pfar + pnear) / R(pfar - pnear);
@@ -279,7 +278,7 @@ namespace Wl
         {
             for (int8_t j = 0; j < 4; j++)
             {
-                R r_ji{};
+                R r_ji {};
                 for (int8_t k = 0; k < 4; k++)
                 {
                     r_ji += m[j][k] * m_value[k][i];

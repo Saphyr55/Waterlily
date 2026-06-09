@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"

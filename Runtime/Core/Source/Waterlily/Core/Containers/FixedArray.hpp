@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Math/Math.hpp"
 #include "Waterlily/Core/Math/Vector2.hpp"
 

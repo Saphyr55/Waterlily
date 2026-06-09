@@ -2,6 +2,7 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/IO/FileHandle.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/String/Format.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/RHI/GraphicsPipeline.hpp"
@@ -13,7 +14,7 @@ namespace Wl
 
     RHIGraphicsPipeline* PipelineManager::Create(const StringID& name, GraphicsPipelineProperties& props)
     {
-        WL_CHECK_MSG(!m_cache.Contains(name), Wl::Format("The pipeline named '%s' already exist.", name.GetText().data()));
+        WL_CHECK_MSG(!m_cache.Contains(name), "The pipeline named '%s' already exist.", name.GetText().data());
 
         RHIGraphicsPipeline* pipeline = CreateInternal(props);
         m_cache[name] = pipeline;
@@ -48,7 +49,7 @@ namespace Wl
     void PipelineManager::Destroy(const StringID& name)
     {
         RHIGraphicsPipeline* pipeline = GetPipeline(name);
-        WL_CHECK_MSG(pipeline, Wl::Format("Pipeline \"%s\" not found, maybe was already removed?", name.GetText().GetData()));
+        WL_CHECK_MSG(pipeline, "Pipeline \"%s\" not found, maybe was already removed?", name.GetText().GetData());
         m_cache.Remove(name);
         DestroyInternal(pipeline);
     }
@@ -62,7 +63,7 @@ namespace Wl
     RHIGraphicsPipeline* PipelineManager::CreateInternal(GraphicsPipelineProperties& props)
     {
         WL_CHECK_MSG(props.RenderPass, "Render pass is required to create a graphics pipeline.");
-        
+
         bool result = false;
 
         // Load shaders binary codes.

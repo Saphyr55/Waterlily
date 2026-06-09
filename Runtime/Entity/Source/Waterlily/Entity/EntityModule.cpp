@@ -1,6 +1,6 @@
 #include "Waterlily/Entity/EntityModule.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {

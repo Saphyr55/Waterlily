@@ -1,12 +1,15 @@
 #include "Waterlily/Launcher/Launcher.hpp"
 
+#include "Waterlily/Core/Logging/ConsoleLoggerWriter.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
+#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Platform.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/Engine/Application.hpp"
 #include "Waterlily/Engine/Engine.hpp"
+
 
 namespace Wl
 {
@@ -20,7 +23,7 @@ namespace Wl
 
         if (!engineManifest.LoadJSON(manifestFilepath))
         {
-            WL_LOG_ERROR("[Launcher]", Wl::Format("Cannot load the manifest '%s'", manifestFilepath.data()))
+            WL_LOG_ERROR("Launcher", "Cannot load the manifest '%s'", manifestFilepath.data());
             return false;
         }
 
@@ -30,7 +33,7 @@ namespace Wl
 
         if (!ModuleManifestResolveDependencies(engineManifest, order))
         {
-            WL_LOG_ERROR("[Launcher]", "Cannot resolve manifest dependencies.");
+            WL_LOG_ERROR("Launcher", "Cannot resolve manifest dependencies.");
             return false;
         }
 
@@ -38,7 +41,7 @@ namespace Wl
         {
             if (!ModuleRegistry::GetInstance().LoadModule(info->Name))
             {
-                WL_LOG_ERROR("[Launcher]", Wl::Format("Cannot load module: %s", info->Name.GetData()));
+                WL_LOG_ERROR("Launcher", "Cannot load module: %s", info->Name.GetData());
                 return false;
             }
         }
@@ -53,13 +56,13 @@ namespace Wl
         {
             const ModuleInformation* info = engine.GetOrderedModuleInformations()[i];
             ModuleRegistry::GetInstance().UnloadModule(info->Name);
-            WL_LOG_INFO("[Launcher]", Wl::Format("Unloaded module: %s", info->Name.GetData()));
+            WL_LOG_INFO("Launcher", "Unloaded module: %s", info->Name.GetData());
         }
     }
 
     bool MainPreLaunch(int32_t argc, const char** argv)
     {
-        WL_LOG_INFO("[Launcher]", "Pre init Engine.");
+        WL_LOG_INFO("Launcher", "Pre init Engine.");
 
         if (!MainLoadManifest())
         {
@@ -76,7 +79,10 @@ namespace Wl
 
     int32_t Main(int32_t argc, const char** argv, EngineAppCallback* func)
     {
+        Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
+
         PlatformStartup();
+
         if (!MainPreLaunch(argc, argv))
         {
             return EXIT_FAILURE;

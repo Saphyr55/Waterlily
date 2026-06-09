@@ -2,7 +2,7 @@
 #include "Waterlily/Core/IO/PlatformFileSystem.hpp"
 #include "Waterlily/Core/Modules/Module.hpp"
 #include "Waterlily/Core/Platform/DynamicLibrary.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {
@@ -30,13 +30,13 @@ namespace Wl
         }
         else
         {
-            WL_LOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" not found.", name.data()));
+            WL_LOG_ERROR("ModuleRegistry", "Module \"%s\" not found.", name.data());
             return nullptr;
         }
 
         if (!m_pendingModules.Contains(name))
         {
-            WL_LOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" is not registered and cannot be loaded.", name.data()))
+            WL_LOG_ERROR("ModuleRegistry", "Module \"%s\" is not registered and cannot be loaded.", name.data());
             return nullptr;
         }
 
@@ -45,7 +45,7 @@ namespace Wl
 
         if (!modulePtr)
         {
-            WL_LOG_ERROR("[ModuleRegistry]", Wl::Format("Module \"%s\" failed to initialize.", name.data()))
+            WL_LOG_ERROR("ModuleRegistry", "Module \"%s\" failed to initialize.", name.data());
             return nullptr;
         }
 
@@ -109,7 +109,7 @@ namespace Wl
         if (!m_pendingModules.Contains(name))
         {
             m_pendingModules.Put(name, initializer);
-            WL_LOG_DEBUG("[ModuleRegistry]", Wl::Format("The module '%s' has been registered.", name.data()));
+            WL_LOG_DEBUG("ModuleRegistry", "The module '%s' has been registered.", name.data());
         }
     }
 

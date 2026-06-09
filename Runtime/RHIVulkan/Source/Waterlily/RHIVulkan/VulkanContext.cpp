@@ -1,15 +1,16 @@
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 
 #include "Waterlily/Core/Function/FunctionRef.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/DynamicLibrary.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/RHIVulkan/VulkanCommandQueue.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
 #include "Waterlily/RHIVulkan/VulkanPhysicalDevice.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"
 #include "Waterlily/RHIVulkan/VulkanShaderModule.hpp"
+
 
 #include <vk_mem_alloc.h>
 
@@ -33,7 +34,7 @@ namespace Wl
 
         Array<uint32_t> queueFamillies = VulkanQueryQueueFamilyIndices(context);
 
-        WL_LOG_INFO("[Vulkan]", "Creating Vulkan logical device with the following queue families:");
+        WL_LOG_INFO("Vulkan", "Creating Vulkan logical device with the following queue families:");
         Array<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
         for (uint32_t queueFamilyIndex: queueFamillies)
         {
@@ -65,12 +66,11 @@ namespace Wl
             }
 
             bool presentSupport = VulkanQueuePresentModeIsSupported(context, queueFamilyIndex);
-            WL_LOG_INFO("[Vulkan]",
-                      Wl::Format("Queue Family Index: %d | Queues: %d | Types: %s| Present: %s",
-                              queueFamilyIndex,
-                              props.queueCount,
-                              typeStr.GetData(),
-                              presentSupport ? "Yes" : "No"));
+            WL_LOG_INFO("Vulkan", "Queue Family Index: %d | Queues: %d | Types: %s| Present: %s",
+                        queueFamilyIndex,
+                        props.queueCount,
+                        typeStr.GetData(),
+                        presentSupport ? "Yes" : "No");
         }
 
         VkPhysicalDeviceFeatures physicalDeviceFeatures = physicalDeviceSelector.GetInfo().Features;
@@ -93,14 +93,14 @@ namespace Wl
         deviceCreateInfo.ppEnabledExtensionNames = physicalDeviceExtensions.data();
         deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(physicalDeviceExtensions.size());
 
-        WL_LOG_INFO("[Vulkan]", "Enabled Physical Device Extensions:");
+        WL_LOG_INFO("Vulkan", "Enabled Physical Device Extensions:");
         for (int32_t i = 0; i < physicalDeviceExtensions.size(); i++)
         {
-            WL_LOG_INFO("[Vulkan]", Wl::Format("Extension: %s", physicalDeviceExtensions[i]));
+            WL_LOG_INFO("Vulkan", "Extension: %s", physicalDeviceExtensions[i]);
         }
 
         WL_VULKAN_CHECK(VulkanAPI::vkCreateDevice(
-            context.PhysicalDevice, &deviceCreateInfo, context.Allocator, &context.Device));
+                context.PhysicalDevice, &deviceCreateInfo, context.Allocator, &context.Device));
 
         VulkanDeviceAPILoad(context.Device);
 
@@ -123,24 +123,30 @@ namespace Wl
 
     void VulkanDeviceDestroy(VulkanContext& context)
     {
-        WL_LOG_INFO("[Vulkan]", "Destroying Vulkan logical device.");
+        WL_LOG_INFO("Vulkan", "Destroying Vulkan logical device.");
 
         VulkanAPI::vkDestroyDevice(context.Device, context.Allocator);
         context.Device = VK_NULL_HANDLE;
 
-        WL_LOG_INFO("[Vulkan]", "Vulkan logical device destroyed.");
+        WL_LOG_INFO("Vulkan", "Vulkan logical device destroyed.");
     }
 
     void VulkanContextCreate(VulkanContext& context, void* nativeWindow)
     {
         WL_CHECK_MSG(nativeWindow, "Impossible to create the Vulkan Context if the native window is null.");
-     
-        WL_LOG_INFO("[Vulkan]", "Initializing Vulkan RHI context...");
+
+        WL_LOG_INFO("Vulkan", "Initializing Vulkan RHI context...");
         context.Library = VulkanLibraryLoad();
-        WL_LOG_FATAL_WHEN(!context.Library, "[Vulkan]", "Failed to load Vulkan RHI library.");
+        if (!context.Library)
+        {
+            WL_LOG_FATAL("Vulkan", "Failed to load Vulkan RHI library.");
+        }
 
         bool isCoreFunctionsLoaded = VulkanCoreAPILoad(context.Library);
-        WL_LOG_FATAL_WHEN(!isCoreFunctionsLoaded, "[Vulkan]", "Failed to load Vulkan RHI core functions.");
+        if (!isCoreFunctionsLoaded)
+        {
+            WL_LOG_FATAL("Vulkan", "Failed to load Vulkan RHI core functions.");
+        }
 
         VulkanInstanceCreate(context);
 
@@ -179,7 +185,7 @@ namespace Wl
         if (context.Library)
         {
             DynamicLibraryLoader::Unload(context.Library);
-            WL_LOG_INFO("[Vulkan]", "Vulkan RHI context destroyed.");
+            WL_LOG_INFO("Vulkan", "Vulkan RHI context destroyed.");
         }
     }
 

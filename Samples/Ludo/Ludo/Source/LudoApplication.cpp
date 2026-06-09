@@ -8,6 +8,7 @@
 #include "Passes/LightingPass.hpp"
 #include "Waterlily/Assets/AssetLoader.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
@@ -17,8 +18,7 @@
 #include "Waterlily/Core/Platform/Input.hpp"
 #include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
-#include "Waterlily/Core/String/Format.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Engine/Application.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
@@ -78,7 +78,7 @@ namespace Wl
         FileSystem& assetsFileSystem = FileSystem::GetPlatform();
 
         FileResult assetRegistryFileResult = assetsFileSystem.OpenRead(LudoAssetRegistry.GetText());
-        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), Wl::Format("Impossible to read \"%s\"", LudoAssetRegistry.GetText().GetData()));
+        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", LudoAssetRegistry.GetText().GetData());
         FileHandle& fileAssetRegistry = *assetRegistryFileResult.GetValue();
 
         SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadFromFile(fileAssetRegistry);
@@ -102,7 +102,7 @@ namespace Wl
         SharedPtr<PipelineManager> pipelineManager = MakeShared<PipelineManager>(device, frameContext->GetSRGLayoutCache(), assetsFileSystem);
 
         Model* sponzaModelAsset = assetManager->GetAsset<Model>(LudoAssetModelSponza);
-        WL_CHECK_MSG(sponzaModelAsset, Wl::Format("Impossible to load \"%s\" asset.", LudoAssetModelSponza.GetText().data()));
+        WL_CHECK_MSG(sponzaModelAsset, "Impossible to load \"%s\" asset.", LudoAssetModelSponza.GetText().data());
 
         Array<StaticMesh*> modelStaticMeshesAsset(sponzaModelAsset->Meshes.GetSize());
         for (const AssetHandle& meshAssetHandle: sponzaModelAsset->Meshes)
@@ -141,9 +141,7 @@ namespace Wl
             double byte = static_cast<double>(uploadScheduler.GetTotalPendingBytes());
             double megaByte = byte / static_cast<double>(WL_MB);
             uploadScheduler.Flush(commandBuffere);
-            WL_LOG_DEBUG(
-                    "[Ludo]",
-                    Wl::Format("Flushed global upload scheduler, total uploaded: %.2lfMB", megaByte));
+            WL_LOG_DEBUG("Ludo", "Flushed global upload scheduler, total uploaded: %.2lfMB", megaByte);
         }, device->GetGraphicsQueue());
 
         uploadScheduler.Shutdown();
@@ -159,13 +157,13 @@ namespace Wl
 
         window->GetEventHandler().OnClose.Connect([&]()
         {
-            WL_LOG_INFO("[Ludo]", "Window closed.");
+            WL_LOG_INFO("Ludo", "Window closed.");
             application.Stop();
         });
 
         window->GetEventHandler().OnResized.Connect([&](uint32_t width, uint32_t height)
         {
-            WL_LOG_INFO("[Ludo]", Wl::Format("Window resized to %dx%d", width, height));
+            WL_LOG_INFO("Ludo", "Window resized to %dx%d", width, height);
             frameContext->Resize(width, height);
             frameGraph->Dispose();
         });
@@ -436,7 +434,7 @@ namespace Wl
         frameContext->Shutdown();
 
         device->Shutdown();
-        
+
         window->Close();
 
         application.Stop();

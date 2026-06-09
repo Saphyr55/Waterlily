@@ -1,5 +1,5 @@
 #include "Waterlily/Core/coreModule.hpp"
-#include "Waterlily/Core/Trace/Trace.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/TypedAllocator.hpp"
 
