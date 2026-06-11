@@ -23,12 +23,12 @@
 namespace Wl
 {
 
-    FrameGraph::FrameGraph(const SharedPtr<RHIDevice>& device, const SharedPtr<FrameContext>& frameContext)
-        : m_device(device)
+    FrameGraph::FrameGraph(const SharedPtr<FrameContext>& frameContext)
+        : m_device(frameContext->GetDevice())
         , m_frameContext(frameContext)
-        , m_framebufferCache(device)
-        , m_renderPassCache(device)
-        , m_texturePool(device, frameContext)
+        , m_framebufferCache(m_device)
+        , m_renderPassCache(m_device)
+        , m_texturePool(frameContext)
     {
     }
 

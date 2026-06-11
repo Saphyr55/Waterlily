@@ -57,7 +57,7 @@ namespace Wl
         void EndFrame();
 
         void Compile();
-        void Execute(RHICommandBuffer* command_buffer);
+        void Execute(RHICommandBuffer* commandBuffer);
 
         void Resize();
         void Destroy();
@@ -110,7 +110,7 @@ namespace Wl
         }
 
     public:
-        FrameGraph(const SharedPtr<RHIDevice>& device, const SharedPtr<FrameContext>& frame_context);
+        FrameGraph(const SharedPtr<FrameContext>& frameContext);
         FrameGraph(const FrameGraph&) = delete;
         FrameGraph(FrameGraph&&) = default;
         ~FrameGraph() = default;
@@ -122,8 +122,8 @@ namespace Wl
         void ComputeResourceLifetimes();
         void BuildPasses();
 
-        void AllocatePhysicalPassResources(size_t pass_index);
-        void DeallocatePhysicalPassResources(size_t pass_index);
+        void AllocatePhysicalPassResources(size_t passIndex);
+        void DeallocatePhysicalPassResources(size_t passIndex);
 
         void AllocatePhysicalResource(FrameGraphTextureResource& resource);
         void DeallocatePhysicalResource(FrameGraphTextureResource& resource);

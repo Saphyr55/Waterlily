@@ -3,8 +3,9 @@
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
+#include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
+
 
 namespace Wl
 {
@@ -40,8 +41,8 @@ namespace Wl
 
         void Dispose();
 
-        FrameGraphPhysicalTexturePool(const SharedPtr<RHIDevice>& device, const SharedPtr<FrameContext>& frameContext)
-            : m_device(device)
+        FrameGraphPhysicalTexturePool(const SharedPtr<FrameContext>& frameContext)
+            : m_device(frameContext->GetDevice())
             , m_frameContext(frameContext)
         {
         }

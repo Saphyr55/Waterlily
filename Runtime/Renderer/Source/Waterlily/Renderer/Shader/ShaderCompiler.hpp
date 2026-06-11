@@ -2,6 +2,7 @@
 
 #include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
+#include "Waterlily/Renderer/Shader/Shader.hpp"
 
 namespace Wl
 {
@@ -9,16 +10,7 @@ namespace Wl
     class WL_RENDERER_API SPIRVShaderCompiler
     {
     public:
-        enum class Stage : uint8_t
-        {
-            Vertex,
-            Fragment,
-            Compute,
-        };
-
-        static bool CompileGLSL(StringRef inputFilepath, StringRef outputFilepath, Stage stage);
-        static bool CompileHLSL(StringRef inputFilepath, StringRef outputFilepath, StringRef entryPoint, Stage stage);
-
+        static bool CompileHLSL(StringRef inputFilepath, StringRef outputFilepath, StringRef entryPoint, Shader::Stage stage);
     };
 
 }// namespace Wl

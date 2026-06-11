@@ -10,15 +10,16 @@
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/RHI/ShaderResourceCache.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
+#include "Waterlily/Renderer/Shader/Shader.hpp"
 
 namespace Wl
 {
 
-    struct GraphicsPipelineProperties
+    struct GraphicsPipelineState
     {
-        StringID VertexShaderPath;
-        StringID FragmentShaderPath;
         RHIRenderPass* RenderPass = nullptr;
+        Shader* VertexShader;
+        Shader* FragmentShader;
         Viewport Viewport = {};
         Rect2D Scissor = {};
         RHICullModeFlags CullMode = RHICullModeFlags::Back;
@@ -29,9 +30,10 @@ namespace Wl
     {
     public:
         RHIGraphicsPipeline* GetPipeline(const StringID& name);
-        RHIGraphicsPipeline* GetOrCreate(const StringID& name, GraphicsPipelineProperties& props);
-        RHIGraphicsPipeline* Create(const StringID& name, GraphicsPipelineProperties& props);
-        RHIGraphicsPipeline* Recreate(const StringID& name, GraphicsPipelineProperties& props);
+        RHIGraphicsPipeline* GetOrCreate(const StringID& name, GraphicsPipelineState& state);
+
+        RHIGraphicsPipeline* Create(const StringID& name, GraphicsPipelineState& state);
+        RHIGraphicsPipeline* Recreate(const StringID& name, GraphicsPipelineState& state);
         void Destroy(const StringID& name);
 
         HashMap<StringID, RHIGraphicsPipeline*>& GetPipelines()
@@ -63,7 +65,7 @@ namespace Wl
         }
 
     private:
-        RHIGraphicsPipeline* CreateInternal(GraphicsPipelineProperties& props);
+        RHIGraphicsPipeline* CreateInternal(GraphicsPipelineState& state);
         void DestroyInternal(RHIGraphicsPipeline* pipeline);
 
     private:

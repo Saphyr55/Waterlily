@@ -7,6 +7,7 @@
 #include "Waterlily/Renderer/Material/Material.hpp"
 #include "Waterlily/Renderer/Mesh/StaticMesh.hpp"
 #include "Waterlily/Renderer/Model/Model.hpp"
+#include "Waterlily/Renderer/Shader/Shader.hpp"
 #include "Waterlily/Renderer/Texture/TextureAsset.hpp"
 
 namespace Wl
@@ -27,6 +28,7 @@ namespace Wl
         AssetSerializer::RegisterAssetType<TextureAsset>(AssetType_Texture2D);
         AssetSerializer::RegisterAssetType<StaticMesh>(AssetType_StaticMesh);
         AssetSerializer::RegisterAssetType<Model>(AssetType_Model);
+        AssetSerializer::RegisterAssetType<Shader>(AssetType_Shader);
     }
 
     void RendererModule::OnShutdown()
@@ -35,6 +37,7 @@ namespace Wl
         AssetSerializer::UnregisterAssetType<TextureAsset>(AssetType_Texture2D);
         AssetSerializer::UnregisterAssetType<StaticMesh>(AssetType_StaticMesh);
         AssetSerializer::UnregisterAssetType<Model>(AssetType_Model);
+        AssetSerializer::UnregisterAssetType<Shader>(AssetType_Shader);
 
         WL_LOG_INFO("[RendererModule]", "Renderer module stopped.");
     }

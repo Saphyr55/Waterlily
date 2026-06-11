@@ -1,12 +1,10 @@
 #include "LudoApplication.hpp"
 
-#include "LudoAssets.hpp"
-#include "LudoShaders.hpp"
-#include "LudoState.hpp"
 #include "LudoTypes.hpp"
 #include "Passes/GBufferPass.hpp"
 #include "Passes/LightingPass.hpp"
 #include "Waterlily/Assets/AssetLoader.hpp"
+#include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
@@ -19,10 +17,13 @@
 #include "Waterlily/Core/Platform/Input.hpp"
 #include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
+#include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/Application.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
+#include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/Swapchain.hpp"
+#include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
@@ -36,36 +37,85 @@
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PunctualLight.hpp"
+#include "Waterlily/Renderer/Shader/Shader.hpp"
+#include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
 
 namespace Wl
 {
+    static const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
+    static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
+
+    static const StringID GBufferVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.vert.wlca");
+    static const StringID GBufferFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.frag.wlca");
+    static const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
+    static const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
+
+    static bool CompileShaders()
+    {
+        FileSystem& fileSystem = FileSystem::GetPlatform();
+
+        bool success = SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
+                                                        GBufferVertexShaderAssetURI.GetText(),
+                                                        "VSMain",
+                                                        Shader::Stage::Vertex);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
+                                                              GBufferFragmentShaderAssetURI.GetText(),
+                                                              "FSMain",
+                                                              Shader::Stage::Fragment);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
+                                                              LightingVertexShaderAssetURI.GetText(),
+                                                              "VSMain",
+                                                              Shader::Stage::Vertex);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
+                                                              LightingFragmentShaderAssetURI.GetText(),
+                                                              "FSMain",
+                                                              Shader::Stage::Fragment);
+        return success;
+    }
+
+    static void ReloadShaders(SharedPtr<RHIDevice> device,
+                              SharedPtr<PipelineManager> pipelineManager,
+                              HashMap<StringID, GraphicsPipelineState*>& propsMap)
+    {
+        device->WaitIdle();
+
+        CompileShaders();
+        for (auto [name, props]: propsMap)
+        {
+            pipelineManager->Recreate(name, *props);
+        }
+    }
+
     static FixedArray<PunctualLight, 5> MakeLights()
     {
         FixedArray<PunctualLight, 5> lights;
 
         lights[0] = {
                 {3.49f, 3.49f, -2.34f},
-                {0.1f, 0.6f, 0.9f},
+                {0.1f,  0.6f,  0.9f  },
         };
 
         lights[1] = {
                 {-5.76f, 1.22f, -0.82f},
-                {1.0f, 0.6f, 0.1f},
+                {1.0f,   0.6f,  0.1f  },
         };
 
         lights[2] = {
                 {-0.46f, 3.63f, 1.88f},
-                {0.4f,  1.0f, 0.2f},
+                {0.4f,   1.0f,  0.2f },
         };
 
         lights[3] = {
                 {-2.07f, 1.94f, 0.04f},
-                {0.0f, 0.5f, 1.0f},
+                {0.0f,   0.5f,  1.0f },
         };
 
         lights[4] = {
                 {-6.5f, 0.75f, 0.5f},
-                {0.4f, 0.8f, 0.8f},
+                {0.4f,  0.8f,  0.8f},
         };
 
         return lights;
@@ -83,11 +133,9 @@ namespace Wl
 
     int32_t LudoApplication(Application& application)
     {
-        // Create a window. WindowHandle behave like a reference.
         WindowProperties windowProperties("Demo Window", 1080, 720, 100, 100);
         SharedPtr<Window> window = Window::Create(windowProperties);
 
-        // Need to know the window for creating the surface. Vulkan API is already the default option.
         SharedPtr<RHIDevice> device = RHIDeviceFactory::Create(RHIGraphicsAPI::Vulkan);
         device->Init(window->GetNativeWindow());
 
@@ -104,19 +152,17 @@ namespace Wl
             }
         });
 
-        WL_CHECK_MSG(Wl::CompileShaders(), "Failed to compile shaders.");
-
         FileSystem& assetsFileSystem = FileSystem::GetPlatform();
 
-        FileResult assetRegistryFileResult = assetsFileSystem.OpenRead(LudoAssetRegistry.GetText());
-        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", LudoAssetRegistry.GetText().GetData());
+        FileResult assetRegistryFileResult = assetsFileSystem.OpenRead(AssetRegistryURI.GetText());
+        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", AssetRegistryURI.GetText().GetData());
         File& fileAssetRegistry = *assetRegistryFileResult.GetValue();
 
         SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadFromFile(fileAssetRegistry);
         WL_CHECK(assetRegistry);
         fileAssetRegistry.Close();
 
-        SharedPtr<IAssetLoader> assetLoader = MakeShared<LCAAssetLoader>(assetsFileSystem);
+        SharedPtr<IAssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>(assetsFileSystem);
         SharedPtr<AssetManager> assetManager = MakeShared<AssetManager>(assetRegistry, assetLoader);
 
         SharedPtr<FrameContext> frameContext = MakeShared<FrameContext>();
@@ -131,9 +177,25 @@ namespace Wl
         SharedPtr<TextureRegistry> textureRegistry = MakeShared<TextureRegistry>(device, *assetManager, LudoTexturesSRGBinding);
         SharedPtr<MaterialRegistry> materialRegistry = MakeShared<MaterialRegistry>(device, LudoMaterialsSRGBinding);
         SharedPtr<PipelineManager> pipelineManager = MakeShared<PipelineManager>(device, frameContext->GetSRGLayoutCache(), assetsFileSystem);
+        
+        // This should be not done in application mode, but only in dev mode.
+        bool isCompilingShaderSuccessed = Wl::CompileShaders();
+        WL_CHECK_MSG(isCompilingShaderSuccessed, "Failed to compile shaders.");
 
-        Model* sponzaModelAsset = assetManager->GetAsset<Model>(LudoAssetModelSponza);
-        WL_CHECK_MSG(sponzaModelAsset, "Impossible to load \"%s\" asset.", LudoAssetModelSponza.GetText().data());
+        AssetHandle gBufferVertexShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, GBufferVertexShaderAssetURI);
+        Shader* gBufferVertexShaderAsset = assetManager->GetAsset<Shader>(gBufferVertexShaderAssetHandle);
+        
+        AssetHandle gBufferFragmentShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, GBufferFragmentShaderAssetURI);
+        Shader* gBufferFragmentShaderAsset = assetManager->GetAsset<Shader>(gBufferFragmentShaderAssetHandle);
+        
+        AssetHandle lightingVertexShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, LightingVertexShaderAssetURI);
+        Shader* lightingVertexShaderAsset = assetManager->GetAsset<Shader>(lightingVertexShaderAssetHandle);
+
+        AssetHandle lightingFragmentShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, LightingFragmentShaderAssetURI);
+        Shader* lightingFragmentShaderAsset = assetManager->GetAsset<Shader>(lightingFragmentShaderAssetHandle);
+
+        Model* sponzaModelAsset = assetManager->GetAsset<Model>(SponzaModelAssetURI);
+        WL_CHECK_MSG(sponzaModelAsset, "Impossible to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
 
         Array<StaticMesh*> modelStaticMeshesAsset(sponzaModelAsset->Meshes.GetSize());
         for (const AssetHandle& meshAssetHandle: sponzaModelAsset->Meshes)
@@ -185,9 +247,7 @@ namespace Wl
         FixedArray<PunctualLight, 5> originalsPunctualLights = MakeLights();
         FixedArray<PunctualLight, 5> punctualLights = MakeLights();
 
-        SharedPtr<FrameGraph> frameGraph = MakeShared<FrameGraph>(device, frameContext);
-
-        LudoState::Type state = LudoState::Type::Running;
+        SharedPtr<FrameGraph> frameGraph = MakeShared<FrameGraph>(frameContext);
 
         window->GetEventHandler().OnClose.Connect([&]()
         {
@@ -202,38 +262,43 @@ namespace Wl
             frameGraph->Resize();
         });
 
-        window->GetEventHandler().OnMinimized.Connect([&]()
-        {
-            state = LudoState::Type::Paused;
-        });
+        GraphicsPipelineState gbufferPipelineProperties = {};
+        GraphicsPipelineState lightingPipelineProperties = {};
 
-        window->GetEventHandler().OnShown.Connect([&]()
+        auto getOrCreatePipeline = [&](FrameGraphPass& pass,
+                                       GraphicsPipelineState& state,
+                                       RHICullModeFlags cullMode,
+                                       const Viewport& viewport,
+                                       const Rect2D& scissor,
+                                       Shader* vertexShader,
+                                       Shader* fragmentShader) -> RHIGraphicsPipeline*
         {
-            state = LudoState::Type::Running;
-        });
+            state.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
+            state.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
+            state.CullMode = cullMode;
+            state.Viewport = viewport;
+            state.Scissor = scissor;
+            state.VertexShader = vertexShader;
+            state.FragmentShader = fragmentShader;
+            state.RenderPass = frameGraph->GetRenderPass(pass.GetName());
 
-        GraphicsPipelineProperties gbufferPipelineProperties = {};
-        GraphicsPipelineProperties lightingPipelineProperties = {};
+            return pipelineManager->GetOrCreate(pass.GetName(), state);
+        };
 
         Input::OnKeyRelease.Connect([&](VirtualKey key)
         {
             switch (key)
             {
-                case VirtualKey::G:
+                case VirtualKey::F3:
                 {
-                    HashMap<StringID, GraphicsPipelineProperties*> propsMap = {
+                    HashMap<StringID, GraphicsPipelineState*> propsMap = {
                             {GBufferPassName,  &gbufferPipelineProperties },
                             {LightingPassName, &lightingPipelineProperties}
                     };
                     Wl::ReloadShaders(device, pipelineManager, propsMap);
                     break;
                 }
-                case VirtualKey::P:
-                {
-                    state = LudoState::TooglePause(state);
-                    break;
-                }
-                case VirtualKey::F:
+                case VirtualKey::F2:
                 {
                     camera.LogDebug();
                     break;
@@ -243,18 +308,19 @@ namespace Wl
             }
         });
 
-        float lightVelocity = 1.0f;
-        float lightThresholdPosition = 5.0f; 
+        RenderView view;
+
+        float lightVelocity = 3.1f;
+        float lightThresholdPosition = 3.0f;
 
         // Update handle
         application.OnTick.Connect([&](Timer& timer)
         {
             float deltaTime = static_cast<float>(timer.GetDeltaTimeSeconds());
 
-            if (LudoState::IsPaused(state))
-            {
-                return;
-            }
+            uint32_t width = frameContext->GetSwapchain()->GetWidth();
+            uint32_t height = frameContext->GetSwapchain()->GetHeight();
+            float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
             for (size_t i = 0; i < punctualLights.GetSize(); i++)
             {
@@ -262,8 +328,8 @@ namespace Wl
                 PunctualLight& originalLight = originalsPunctualLights[i];
 
                 light.Position.x += lightVelocity * deltaTime;
-
-                if (Math::Abs(light.Position.x) > originalLight.Position.x + lightThresholdPosition)
+                float offset = light.Position.x - originalLight.Position.x;
+                if (Math::Abs(offset) > lightThresholdPosition)
                 {
                     lightVelocity = -lightVelocity;
                 }
@@ -324,16 +390,22 @@ namespace Wl
             }
 
             camera.UpdateView();
+
+            view.View = camera.View;
+            view.Proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
+            view.ViewProj = view.Proj * view.View;
+            view.Eye = camera.Position;
         });
+
+        PassContext passContext = {};
+        passContext.FrameGraph = frameGraph;
+        passContext.MaterialRegistry = materialRegistry;
+        passContext.TextureRegistry = textureRegistry;
+        passContext.PipelineManager = pipelineManager;
 
         // Render handle
         application.OnTick.Connect([&](Timer& /* timer */)
         {
-            if (LudoState::IsPaused(state))
-            {
-                return;
-            }
-
             FrameResult result = frameContext->BeginFrame();
             WL_CHECK(result == FrameResult::Success);
 
@@ -342,16 +414,13 @@ namespace Wl
 
             uint32_t width = frameContext->GetSwapchain()->GetWidth();
             uint32_t height = frameContext->GetSwapchain()->GetHeight();
-            float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+
+            Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
+            Rect2D scissor(0.0f, 0.0f, width, height);
 
             // View Instance allocation
             RenderAllocation viewAllocation = frame.UniformAllocator.Allocate<RenderView>();
-            RenderView* view = viewAllocation.Get<RenderView>();
-            view->View = camera.View;
-            view->Proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
-            view->ViewProj = view->Proj * view->View;
-            view->Eye = camera.Position;
-            frame.UniformAllocator.UpdateData(viewAllocation, *view);
+            frame.UniformAllocator.UpdateData(viewAllocation, view);
 
             // Light allocation
             RenderAllocation punctualLightBufferAllocation = frame.UniformAllocator.AllocateArray<PunctualLight>(punctualLights.GetSize());
@@ -404,12 +473,6 @@ namespace Wl
             depthStencilTextureInfo.SizeClass = SizeClass::Swapchain;
             FrameGraphTextureHandle depthStencil = frameGraph->CreateTexture(depthStencilTextureInfo);
 
-            PassContext passContext = {};
-            passContext.FrameGraph = frameGraph;
-            passContext.MaterialRegistry = materialRegistry;
-            passContext.TextureRegistry = textureRegistry;
-            passContext.PipelineManager = pipelineManager;
-
             GBufferPassParameters gBufferParams = {};
             gBufferParams.Position = position;
             gBufferParams.Normal = normal;
@@ -441,29 +504,21 @@ namespace Wl
             frameGraph->AddOutput(color);
             frameGraph->Compile();
 
-            Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
-            Rect2D scissor(0.0f, 0.0f, width, height);
+            getOrCreatePipeline(gBufferPass,
+                                gbufferPipelineProperties,
+                                RHICullModeFlags::Back,
+                                viewport,
+                                scissor,
+                                gBufferVertexShaderAsset,
+                                gBufferFragmentShaderAsset);
 
-            gbufferPipelineProperties.RenderPass = frameGraph->GetRenderPass(GBufferPassName);
-            gbufferPipelineProperties.CullMode = RHICullModeFlags::Back;
-            gbufferPipelineProperties.VertexShaderPath = AssetSPVVertexShaderGBuffer;
-            gbufferPipelineProperties.FragmentShaderPath = AssetSPVFragmentShaderGBuffer;
-            gbufferPipelineProperties.Scissor = scissor;
-            gbufferPipelineProperties.Viewport = viewport;
-            gbufferPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
-            gbufferPipelineProperties.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
-
-            lightingPipelineProperties.RenderPass = frameGraph->GetRenderPass(LightingPassName);
-            lightingPipelineProperties.CullMode = RHICullModeFlags::None;
-            lightingPipelineProperties.VertexShaderPath = AssetSPVVertexShaderLighting;
-            lightingPipelineProperties.FragmentShaderPath = AssetSPVFragmentShaderLigthing;
-            lightingPipelineProperties.Scissor = scissor;
-            lightingPipelineProperties.Viewport = viewport;
-            lightingPipelineProperties.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
-            lightingPipelineProperties.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
-
-            pipelineManager->GetOrCreate(gBufferPass.GetName(), gbufferPipelineProperties);
-            pipelineManager->GetOrCreate(lightingPass.GetName(), lightingPipelineProperties);
+            getOrCreatePipeline(lightingPass,
+                                lightingPipelineProperties,
+                                RHICullModeFlags::None,
+                                viewport,
+                                scissor,
+                                lightingVertexShaderAsset,
+                                lightingFragmentShaderAsset);
 
             frameGraph->Execute(frame.CommandBuffer);
             frameGraph->EndFrame();

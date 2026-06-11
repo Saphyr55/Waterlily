@@ -28,7 +28,7 @@ namespace Wl
     WL_CORE_API size_t StringHash(const char* str, size_t length);
     WL_CORE_API size_t StringHash(const wchar_t* str, size_t length);
 
-    consteval uint64_t CStringPack64(const char* str)
+    consteval uint64_t CStringPack64(const char str[9])
     {
         uint64_t result = 0;
         for (size_t i = 0; i < 8; i++)

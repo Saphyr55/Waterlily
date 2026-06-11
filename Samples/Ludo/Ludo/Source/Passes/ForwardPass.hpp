@@ -10,6 +10,8 @@ namespace Wl
 {
     inline const StringID LudoForwardPassName = WL_SID("Forward");
 
+    inline const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
+
     struct ForwardPassParameters
     {
         FrameGraphTextureHandle Color;
@@ -25,7 +27,7 @@ namespace Wl
     };
 
     LUDO_API FrameGraphPass& ForwardPassCreate(PassContext& passContext,
-                                               GraphicsPipelineProperties& pipeline,
+                                               GraphicsPipelineState& pipeline,
                                                ForwardPassParameters& params);
 
 }// namespace Wl

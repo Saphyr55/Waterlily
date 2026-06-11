@@ -24,8 +24,6 @@ do
     add_extrafiles("Assets/**")
 end
 
-add_moduledirs("Tools")
-
 includes("Tools/BuildTool/BuildTool.lua")
 includes("Tools/BuildTool/Tasks.lua")
 

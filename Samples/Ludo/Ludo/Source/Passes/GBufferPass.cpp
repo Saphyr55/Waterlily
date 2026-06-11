@@ -8,7 +8,7 @@ namespace Wl
 {
 
     FrameGraphPass& GBufferPassCreate(PassContext& passContext, 
-                                      GraphicsPipelineProperties& pipeline,
+                                      GraphicsPipelineState& pipeline,
                                       GBufferPassParameters& data)
     {
         FrameGraphPass& gBufferPass = passContext.FrameGraph->AddPass(GBufferPassName);

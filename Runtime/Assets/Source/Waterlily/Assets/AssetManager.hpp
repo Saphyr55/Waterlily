@@ -44,13 +44,13 @@ namespace Wl
             StringID assetType = metadata.GetAssetType();
 
             SharedPtr<AssetPool<AssetType>> pool = GetAssetPoolOrCreate<AssetType>(assetType);
-            AssetType* asset = pool->GetAsset(metadata.GetUUID());
+            AssetType* asset = pool->GetAsset(UUID);
             if (asset)
             {
                 return asset;
             }
 
-            asset = pool->Allocate(metadata.GetUUID());
+            asset = pool->Allocate(UUID);
             if (SharedPtr<Stream> stream = m_loader->OpenAndValidate(metadata))
             {
                 WL_PLACEMENT_NEW(asset)
@@ -59,8 +59,7 @@ namespace Wl
                 return asset;
             }
 
-            asset->~AssetType();
-            pool->Deallocate(metadata.GetUUID());
+            pool->Deallocate(UUID);
             return nullptr;
         }
 

@@ -12,7 +12,7 @@
 namespace Wl
 {
 
-    RHIGraphicsPipeline* PipelineManager::Create(const StringID& name, GraphicsPipelineProperties& props)
+    RHIGraphicsPipeline* PipelineManager::Create(const StringID& name, GraphicsPipelineState& props)
     {
         WL_CHECK_MSG(!m_cache.Contains(name), "The pipeline named '%s' already exist.", name.GetText().data());
 
@@ -21,13 +21,13 @@ namespace Wl
         return pipeline;
     }
 
-    RHIGraphicsPipeline* PipelineManager::GetOrCreate(const StringID& name, GraphicsPipelineProperties& props)
+    RHIGraphicsPipeline* PipelineManager::GetOrCreate(const StringID& name, GraphicsPipelineState& state)
     {
         if (RHIGraphicsPipeline* pipeline = GetPipeline(name))
         {
             return pipeline;
         }
-        return Create(name, props);
+        return Create(name, state);
     }
 
     RHIGraphicsPipeline* PipelineManager::GetPipeline(const StringID& name)
@@ -40,7 +40,7 @@ namespace Wl
         return (*it).Value;
     }
 
-    RHIGraphicsPipeline* PipelineManager::Recreate(const StringID& name, GraphicsPipelineProperties& props)
+    RHIGraphicsPipeline* PipelineManager::Recreate(const StringID& name, GraphicsPipelineState& props)
     {
         Destroy(name);
         return Create(name, props);
@@ -60,38 +60,23 @@ namespace Wl
         m_device->DestroyGraphicsPipeline(pipeline);
     }
 
-    RHIGraphicsPipeline* PipelineManager::CreateInternal(GraphicsPipelineProperties& props)
+    RHIGraphicsPipeline* PipelineManager::CreateInternal(GraphicsPipelineState& state)
     {
-        WL_CHECK_MSG(props.RenderPass, "Render pass is required to create a graphics pipeline.");
+        WL_CHECK_MSG(state.RenderPass, "The GraphicsPipelineProperties.RenderPass is not nullable to create a graphics pipeline.");
 
         bool result = false;
 
-        // Load shaders binary codes.
-        FileResult vertexFileOpenError = m_fileSystem.OpenRead(props.VertexShaderPath.GetText());
-        WL_RETURN_OBJECT_WHEN(!vertexFileOpenError.HasValue(), nullptr);
+        const SPIRVShader& vertexShader = state.VertexShader->GetSPIRVShader();
+        const SPIRVShader& fragmentShader = state.FragmentShader->GetSPIRVShader();
 
-        SharedPtr<File> vertexFileHandle = vertexFileOpenError.GetValue();
-        SPIRVShader vertexShader(RHIShaderStage::Vertex, vertexFileHandle->ReadAllBytes());
-        vertexFileHandle->Close();
-
-        FileResult fragmentFileOpenError = m_fileSystem.OpenRead(props.FragmentShaderPath.GetText());
-        WL_RETURN_OBJECT_WHEN(!fragmentFileOpenError.HasValue(), nullptr);
-
-        SharedPtr<File> FragmentFileHandle = fragmentFileOpenError.GetValue();
-        SPIRVShader fragmentShader(RHIShaderStage::Fragment, FragmentFileHandle->ReadAllBytes());
-        FragmentFileHandle->Close();
-
-        // Reflect shaders to Build shader resource group layouts.
         SPIRVPipelineReflection reflection;
-        FixedArray<SPIRVShader, 2> shaders = {vertexShader, fragmentShader};
-        result = SPIRVPipelineReflector::Reflect(reflection, shaders);
+        result = SPIRVPipelineReflector::Reflect(reflection, {vertexShader, fragmentShader});
         WL_RETURN_OBJECT_WHEN(!result, nullptr);
 
-        // Build Shader resource group layouts.
         Array<uint32_t> groupIndices;
-        groupIndices.Reserve(props.SRGLayouts.GetSize());
+        groupIndices.Reserve(state.SRGLayouts.GetSize());
 
-        for (auto [group, _]: props.SRGLayouts)
+        for (auto [group, _]: state.SRGLayouts)
         {
             groupIndices.Append(group);
         }
@@ -106,13 +91,13 @@ namespace Wl
             merged.Put(group, layout);
         }
 
-        for (auto [group, layout]: props.SRGLayouts)
+        for (auto [group, layout]: state.SRGLayouts)
         {
             merged.Put(group, layout);
         }
 
-        props.SRGLayouts.Clear();
-        props.SRGLayouts = merged;
+        state.SRGLayouts.Clear();
+        state.SRGLayouts = merged;
 
         Array<RHIShaderResourceGroupLayout*> srgLayouts;
         srgLayouts.Reserve(merged.GetSize());
@@ -134,13 +119,13 @@ namespace Wl
         }
 
         RHIGraphicsPipelineDescriptionBuilder builder;
-        builder.WithRenderPass(props.RenderPass)
+        builder.WithRenderPass(state.RenderPass)
                 .WithVertexShader(vertexShader, reflection.EntryPointNames[RHIShaderStage::Vertex])
                 .WithFragmentShader(fragmentShader, reflection.EntryPointNames[RHIShaderStage::Fragment])
                 .WithVertexBindings(bindings, attributes)
-                .WithViewport(props.Viewport, props.Scissor)
+                .WithViewport(state.Viewport, state.Scissor)
                 .WithSRGLayout(srgLayouts)
-                .WithCullMode(props.CullMode);
+                .WithCullMode(state.CullMode);
 
         const RHIGraphicsPipelineDescription& description = builder.Build();
         return m_device->CreateGraphicsPipeline(description);

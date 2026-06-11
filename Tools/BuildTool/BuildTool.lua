@@ -24,9 +24,17 @@ local function ApplyDefaultTarget(target)
 end
 
 local function CreateModuleFromTarget(target)
+    local moduleDeps = {}
+
+    for i, name in ipairs(target.Deps or {}) do
+        if BuildTool.Modules[name] then
+            moduleDeps[name] = target.Deps[i]
+        end
+    end
+
     return {
         Name = target.Name,
-        Deps = target.Deps or {}
+        Deps = moduleDeps
     }
 end
 

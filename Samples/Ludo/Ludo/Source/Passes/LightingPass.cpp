@@ -3,11 +3,10 @@
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 
-
 namespace Wl
 {
 
-    FrameGraphPass& LightingPassCreate(PassContext& passContext, GraphicsPipelineProperties& pipeline, LightingPassParameters& params)
+    FrameGraphPass& LightingPassCreate(PassContext& passContext, GraphicsPipelineState& pipelineProps, LightingPassParameters& params)
     {
         FrameGraphPass& lightingPass = passContext.FrameGraph->AddPass(LightingPassName);
         FrameGraphPassDelegate& lightingPassDelegate = lightingPass.EmplaceDefault();
@@ -33,14 +32,11 @@ namespace Wl
             float height = static_cast<float>(swapchain->GetHeight());
 
             Rect2D area(0.0f, 0.0f, width, height);
-            Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
-            Rect2D scissor(0.0f, 0.0f, width, height);
-
             Vector4f color(0.01f, 0.01f, 0.01f, 1.0f);
 
             uint32_t gBufferSRGGroup = 4;
 
-            RHIShaderResourceGroupLayout* globalSRGLayout = pipeline.SRGLayouts[GlobalSRGIndex];
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineProps.SRGLayouts[GlobalSRGIndex];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
 
             RHIWriteBufferResource writeRenderView(GlobalSRGRenderViewBinding,
@@ -63,7 +59,7 @@ namespace Wl
             globalSRG->SetBuffer(writeCounters);
             globalSRG->Update();
 
-            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipeline.SRGLayouts[RenderInstanceSRGIndex];
+            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipelineProps.SRGLayouts[RenderInstanceSRGIndex];
             RHIShaderResourceGroup* renderInstanceSRG = frame.SRGPool->AllocateSRG(renderInstanceSRGLayout);
 
             RHIWriteBufferResource writeRenderInstance(RenderInstanceSRGBinding,
@@ -74,7 +70,7 @@ namespace Wl
             renderInstanceSRG->SetBuffer(writeRenderInstance);
             renderInstanceSRG->Update();
 
-            RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipeline.SRGLayouts[gBufferSRGGroup];
+            RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipelineProps.SRGLayouts[gBufferSRGGroup];
             RHIShaderResourceGroup* gBufferTexturesSRG = frame.SRGPool->AllocateSRG(gBufferTexturesSRGLayout);
 
             FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(params.Position);
@@ -100,10 +96,11 @@ namespace Wl
             commandBuffer->BeginRenderPass(renderPassBeginInfo);
             {
                 RHIPipeline* pipeline = passContext.PipelineManager->GetPipeline(LightingPassName);
+
                 commandBuffer->BindPipeline(pipeline);
 
-                commandBuffer->SetViewport(viewport);
-                commandBuffer->SetScissor(scissor);
+                commandBuffer->SetViewport(pipelineProps.Viewport);
+                commandBuffer->SetScissor(pipelineProps.Scissor);
 
                 commandBuffer->BindSRG(pipeline, {globalSRG}, GlobalSRGIndex);
                 commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, RenderInstanceSRGIndex);

@@ -6,10 +6,9 @@
 #include "ACP/Texture/TextureAssetImporter.hpp"
 #include "Waterlily/Assets/Asset.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
-#include "Waterlily/Assets/AssetSerializer.hpp"
 #include "Waterlily/Assets/AssetSource.hpp"
 #include "Waterlily/Assets/VFSAssetSource.hpp"
-#include "Waterlily/Assets/WLCAFile.hpp"
+#include "Waterlily/Assets/ConditionnedAsset.hpp"
 #include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
@@ -18,10 +17,10 @@
 #include "Waterlily/Core/String/String.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
+#include "Waterlily/Core/Logging/ConsoleLoggerWriter.hpp"
 #include "Waterlily/Renderer/Mesh/StaticMesh.hpp"
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Texture/TextureAsset.hpp"
-
 
 #include <filesystem>
 
@@ -30,19 +29,13 @@ static const StringRef VFSAssetsDirectory = "Assets/";
 static const String VFSOutputAssetDirectory = VFSAssetsDirectory + "Models/Sponza/";
 static constexpr StringRef OriginalAssetFilepath = "../../../Assets/Models/Sponza/glTF/Sponza.gltf";
 
-static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Asset>& asset)
+static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Asset> asset)
 {
     FileResult result = fileSystem.OpenWrite(output, FileMode::Create);
 
     if (result.HasValue())
     {
-        File& file = *result.GetValue();
-
-        WLCAHeader header;
-        header.AssetType = asset->AssetType;
-        file << header;
-
-        AssetSerializer::Serialize(file, *asset);
+        WLCA::SerializeAsset(result.GetValue(), asset.GetResource());
         return true;
     }
 
@@ -51,6 +44,8 @@ static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Ass
 
 int32_t main(int32_t argc, const char* argv[])
 {
+    Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
+
     WL_LOG_INFO("WACP", "Build started");
 
     ModuleRegistry& modules = ModuleRegistry::GetInstance();

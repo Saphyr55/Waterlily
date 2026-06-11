@@ -60,18 +60,15 @@ namespace Wl
             return nullptr;
         }
 
-        AssetRegistry& registry = *ctx.Registry;
-        AssetStorage& storage = ctx.Storage;
-
         String lcaPath = PathToLCAFilepath(ctx.URI, ctx.OutputURI);
-        AssetHandle handle = registry.CreateAsset(model->AssetType, CreateSID(lcaPath));
+        AssetHandle handle = ctx.Registry->CreateAsset(model->AssetType, CreateSID(lcaPath));
 
         if (!GlTFConstruct(handle, *model, m_importers, ctx, basedir.data()))
         {
             return nullptr;
         }
 
-        storage.Put(handle, model);
+        ctx.Storage.Put(handle, model);
 
         return model;
     }

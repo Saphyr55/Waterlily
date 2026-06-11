@@ -72,7 +72,7 @@ namespace Wl
 
         RHISampler* GetDefaultSampler();
 
-        inline SharedPtr<RHIDevice> GetDevice();
+        inline SharedPtr<RHIDevice> GetDevice() const;
         inline Frame& GetCurrentFrame();
         inline void NextFrame();
 
@@ -103,7 +103,7 @@ namespace Wl
         uint64_t m_frameCount = 0;
     };
 
-    inline SharedPtr<RHIDevice> FrameContext::GetDevice()
+    inline SharedPtr<RHIDevice> FrameContext::GetDevice() const
     {
         return m_device;
     }

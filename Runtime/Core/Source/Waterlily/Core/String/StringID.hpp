@@ -88,12 +88,6 @@ namespace Wl
         return StringRegistry::GetInstance().RegisterSID(sid, str);
     }
 
-    inline StringID CreateSID(const String& str)
-    {
-        StringID sid(Wl::fnv1a_cstr(str.GetData(), str.GetSize()));
-        return StringRegistry::GetInstance().RegisterSID(sid, str);
-    }
-
 }// namespace Wl
 
 WL_HASH_DEFINE(Wl::StringID, sid, { return sid.GetHash(); })

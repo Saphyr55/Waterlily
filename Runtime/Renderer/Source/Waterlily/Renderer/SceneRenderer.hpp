@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Scene/Scene.hpp"
 
 namespace Wl

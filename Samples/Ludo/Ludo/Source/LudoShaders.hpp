@@ -8,9 +8,5 @@
 namespace Wl
 {
 
-    LUDO_API bool CompileShaders();
-    LUDO_API void ReloadShaders(SharedPtr<RHIDevice> device,
-                                SharedPtr<PipelineManager> pipelineManager,
-                                HashMap<StringID, GraphicsPipelineProperties*>& propsMap);
 
 }// namespace Wl

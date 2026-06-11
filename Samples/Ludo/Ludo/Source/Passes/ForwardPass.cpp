@@ -12,7 +12,7 @@ namespace Wl
 {
 
     FrameGraphPass& ForwardPassCreate(PassContext& passContext,
-                                      GraphicsPipelineProperties& pipeline,
+                                      GraphicsPipelineState& pipeline,
                                       ForwardPassParameters& params)
     {
         FrameGraphPass& forwardPass = passContext.FrameGraph->AddPass(LudoForwardPassName);
