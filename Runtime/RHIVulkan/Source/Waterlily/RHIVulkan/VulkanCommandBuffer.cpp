@@ -300,7 +300,7 @@ namespace Wl
 
         if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
         {
-            WL_LOG_ERROR("[Vulkan]", "Texture format does not support linear blitting.");
+            WL_LOG_ERROR("Vulkan", "Texture format does not support linear blitting.");
             return;
         }
 

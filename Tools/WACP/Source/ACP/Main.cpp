@@ -7,21 +7,22 @@
 #include "Waterlily/Assets/Asset.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/AssetSource.hpp"
-#include "Waterlily/Assets/VFSAssetSource.hpp"
 #include "Waterlily/Assets/ConditionnedAsset.hpp"
+#include "Waterlily/Assets/VFSAssetSource.hpp"
 #include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/String/String.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Core/Logging/ConsoleLoggerWriter.hpp"
+#include "Waterlily/Launcher/Launcher.hpp"
 #include "Waterlily/Renderer/Mesh/StaticMesh.hpp"
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Texture/TextureAsset.hpp"
 
+
+#include <cstdlib>
 #include <filesystem>
 
 static constexpr StringRef WorkingDirectory = "";
@@ -42,15 +43,9 @@ static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Ass
     return false;
 }
 
-int32_t main(int32_t argc, const char* argv[])
+static int32_t StartConsole()
 {
-    Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
-
     WL_LOG_INFO("WACP", "Build started");
-
-    ModuleRegistry& modules = ModuleRegistry::GetInstance();
-    Module* rendererModule = modules.LoadModule("Waterlily.Renderer");
-    rendererModule->OnStartup();
 
     FileSystem& fileSystem = FileSystem::GetPlatform();
 
@@ -147,7 +142,10 @@ int32_t main(int32_t argc, const char* argv[])
 
     WL_LOG_INFO("WACP", "Build finish");
 
-    rendererModule->OnShutdown();
-
     return EXIT_SUCCESS;
+}
+
+int32_t main(int32_t argc, const char* argv[])
+{
+    return Wl::MainConsole(argc, argv, &StartConsole);
 }

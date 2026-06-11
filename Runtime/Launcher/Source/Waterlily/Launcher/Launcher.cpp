@@ -77,7 +77,31 @@ namespace Wl
         MainUnloadManifest();
     }
 
-    int32_t Main(int32_t argc, const char** argv, EngineAppCallback* func)
+    int32_t MainConsole(int32_t argc, const char** argv, EngineConsoleCallback* func)
+    {
+        Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
+
+        PlatformStartup();
+
+        if (!MainPreLaunch(argc, argv))
+        {
+            return EXIT_FAILURE;
+        }
+
+        Engine& engine = Engine::GetInstance();
+        engine.Startup();
+
+        int32_t result = func();
+
+        engine.Shutdown();
+
+        MainPostLaunch();
+        PlatformShutdown();
+
+        return result;
+    }
+
+    int32_t MainApplication(int32_t argc, const char** argv, EngineApplicationCallback* func)
     {
         Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
 

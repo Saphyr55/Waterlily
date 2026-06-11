@@ -17,12 +17,12 @@ namespace Wl
 
     void RendererModule::OnLoad()
     {
-        WL_LOG_INFO("[RendererModule]", "Renderer module loaded.");
+        WL_LOG_INFO("RendererModule", "Renderer module loaded.");
     }
 
     void RendererModule::OnStartup()
     {
-        WL_LOG_INFO("[RendererModule]", "Renderer module started.");
+        WL_LOG_INFO("RendererModule", "Renderer module started.");
 
         AssetSerializer::RegisterAssetType<MaterialAsset>(AssetType_Material);
         AssetSerializer::RegisterAssetType<TextureAsset>(AssetType_Texture2D);
@@ -39,12 +39,12 @@ namespace Wl
         AssetSerializer::UnregisterAssetType<Model>(AssetType_Model);
         AssetSerializer::UnregisterAssetType<Shader>(AssetType_Shader);
 
-        WL_LOG_INFO("[RendererModule]", "Renderer module stopped.");
+        WL_LOG_INFO("RendererModule", "Renderer module stopped.");
     }
 
     void RendererModule::OnUnload()
     {
-        WL_LOG_INFO("[RendererModule]", "Renderer module unloaded.");
+        WL_LOG_INFO("RendererModule", "Renderer module unloaded.");
     }
 
 }// namespace Wl

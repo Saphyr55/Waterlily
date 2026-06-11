@@ -6,6 +6,7 @@ WACP.Group = "Tools"
 WACP.Deps = {
     "Waterlily.Core",
     "Waterlily.Engine",
+    "Waterlily.Launcher",
     "WACP.Core"
 }
 

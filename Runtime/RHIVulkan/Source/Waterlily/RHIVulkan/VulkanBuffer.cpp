@@ -115,7 +115,7 @@ namespace Wl
         void* destination = Map(offset, size);
         if (!destination)
         {
-            WL_LOG_ERROR("[Vulkan]", "Failed to map buffer memory for update.");
+            WL_LOG_ERROR("Vulkan", "Failed to map buffer memory for update.");
             return;
         }
 

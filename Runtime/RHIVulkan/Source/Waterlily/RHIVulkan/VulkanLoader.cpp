@@ -10,7 +10,7 @@
                     ::Wl::DynamicLibraryLoader::LoadFunction(library, #Name)); \
     if (VulkanAPI::Name == nullptr)                                            \
     {                                                                          \
-        WL_LOG_ERROR("[Vulkan]", "Failed to load Vulkan function: " #Name);      \
+        WL_LOG_ERROR("Vulkan", "Failed to load Vulkan function: " #Name);      \
     }
 
 #define WL_LOAD_RHI_INSTANCE_FUNCTION(Name)                                                              \
@@ -18,7 +18,7 @@
             (WL_DEFINE_RHI_VULKAN_FUNCTION_TYPE(Name))VulkanAPI::vkGetInstanceProcAddr(instance, #Name); \
     if (VulkanAPI::WL_DEFINE_RHI_VULKAN_FUNCTION_NAME(Name) == nullptr)                                  \
     {                                                                                                    \
-        WL_LOG_ERROR("[Vulkan]", "Failed to load Vulkan instance function: " #Name);                       \
+        WL_LOG_ERROR("Vulkan", "Failed to load Vulkan instance function: " #Name);                       \
     }
 
 #define WL_LOAD_RHI_DEVICE_FUNCTION(Name)                                                                              \
@@ -26,7 +26,7 @@
             reinterpret_cast<WL_DEFINE_RHI_VULKAN_FUNCTION_TYPE(Name)>(VulkanAPI::vkGetDeviceProcAddr(device, #Name)); \
     if (VulkanAPI::WL_DEFINE_RHI_VULKAN_FUNCTION_NAME(Name) == nullptr)                                                \
     {                                                                                                                  \
-        WL_LOG_ERROR("[Vulkan]", "Failed to load Vulkan device function: " #Name);                                       \
+        WL_LOG_ERROR("Vulkan", "Failed to load Vulkan device function: " #Name);                                       \
     }
 
 namespace Wl

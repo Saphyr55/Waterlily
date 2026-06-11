@@ -191,7 +191,7 @@ namespace Wl
             pathURI /= filename.GetData();
             std::string pathURIText = pathURI.generic_string();
 
-            WL_LOG_INFO("GlTFImporter","Creating MaterialAsset, URI: \"%s\"", pathURIText.data());
+            WL_LOG_INFO("GlTFImporter","Creating Material Asset, URI: \"%s\"", pathURIText.data());
 
             StringRef pathURITextRef = pathURIText.data();
             StringID uri = CreateSID(pathURITextRef);

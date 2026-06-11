@@ -25,32 +25,37 @@ namespace Wl
         }
 
         template<typename AssetType>
-        AssetType* GetAsset(AssetHandle handle)
+        AssetType* GetAsset(AssetHandle handle, bool reload = false)
         {
             if (!handle.IsValid())
             {
                 return nullptr;
             }
 
-            AssetUUID UUID = handle.UUID;
+            AssetUUID uuid = handle.UUID;
 
-            if (!m_registry->HasMetadata(UUID))
+            if (!m_registry->HasMetadata(uuid))
             {
                 return nullptr;
             }
 
-            AssetMetadata& metadata = m_registry->GetMetadata(UUID);
+            AssetMetadata& metadata = m_registry->GetMetadata(uuid);
 
             StringID assetType = metadata.GetAssetType();
 
             SharedPtr<AssetPool<AssetType>> pool = GetAssetPoolOrCreate<AssetType>(assetType);
-            AssetType* asset = pool->GetAsset(UUID);
-            if (asset)
+            AssetType* asset = pool->GetAsset(uuid);
+            if (asset && !reload)
             {
                 return asset;
             }
-
-            asset = pool->Allocate(UUID);
+            else if (asset && reload)
+            {
+                asset->~AssetType();
+                pool->Deallocate(uuid);
+            }
+            
+            asset = pool->Allocate(uuid);
             if (SharedPtr<Stream> stream = m_loader->OpenAndValidate(metadata))
             {
                 WL_PLACEMENT_NEW(asset)
@@ -59,7 +64,7 @@ namespace Wl
                 return asset;
             }
 
-            pool->Deallocate(UUID);
+            pool->Deallocate(uuid);
             return nullptr;
         }
 
@@ -122,6 +127,7 @@ namespace Wl
             return Wl::StaticPtrCast<AssetPool<AssetType>>(*base_pool);
         }
 
+    private:
     public:
         AssetManager(const SharedPtr<AssetRegistry>& registry, const SharedPtr<IAssetLoader>& loader)
             : m_registry(registry)

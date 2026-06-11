@@ -402,7 +402,7 @@ namespace Wl
             case RHIShaderResourceType::CombinedTextureSampler:
                 return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             default:
-                WL_LOG_FATAL("[Vulkan]", "Unknown RHIShaderResourceType.");
+                WL_LOG_FATAL("Vulkan", "Unknown RHIShaderResourceType.");
                 return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         }
     }

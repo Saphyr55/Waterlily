@@ -30,7 +30,7 @@ namespace Wl
                 return shaderResourceBinding.Type;
             }
         }
-        WL_LOG_FATAL("[Vulkan]", "Binding index not found in shader resource group layout.");
+        WL_LOG_FATAL("Vulkan", "Binding index not found in shader resource group layout.");
         return RHIShaderResourceType(-1);
     }
 

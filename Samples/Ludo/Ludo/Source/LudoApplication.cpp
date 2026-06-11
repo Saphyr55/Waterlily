@@ -4,8 +4,8 @@
 #include "Passes/GBufferPass.hpp"
 #include "Passes/LightingPass.hpp"
 #include "Waterlily/Assets/AssetLoader.hpp"
-#include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
+#include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
@@ -35,10 +35,11 @@
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RenderView.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
-#include "Waterlily/Scene/Camera.hpp"
-#include "Waterlily/Scene/PunctualLight.hpp"
 #include "Waterlily/Renderer/Shader/Shader.hpp"
 #include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
+#include "Waterlily/Scene/Camera.hpp"
+#include "Waterlily/Scene/PunctualLight.hpp"
+
 
 namespace Wl
 {
@@ -74,19 +75,6 @@ namespace Wl
                                                               "FSMain",
                                                               Shader::Stage::Fragment);
         return success;
-    }
-
-    static void ReloadShaders(SharedPtr<RHIDevice> device,
-                              SharedPtr<PipelineManager> pipelineManager,
-                              HashMap<StringID, GraphicsPipelineState*>& propsMap)
-    {
-        device->WaitIdle();
-
-        CompileShaders();
-        for (auto [name, props]: propsMap)
-        {
-            pipelineManager->Recreate(name, *props);
-        }
     }
 
     static FixedArray<PunctualLight, 5> MakeLights()
@@ -177,22 +165,31 @@ namespace Wl
         SharedPtr<TextureRegistry> textureRegistry = MakeShared<TextureRegistry>(device, *assetManager, LudoTexturesSRGBinding);
         SharedPtr<MaterialRegistry> materialRegistry = MakeShared<MaterialRegistry>(device, LudoMaterialsSRGBinding);
         SharedPtr<PipelineManager> pipelineManager = MakeShared<PipelineManager>(device, frameContext->GetSRGLayoutCache(), assetsFileSystem);
-        
+
         // This should be not done in application mode, but only in dev mode.
         bool isCompilingShaderSuccessed = Wl::CompileShaders();
         WL_CHECK_MSG(isCompilingShaderSuccessed, "Failed to compile shaders.");
 
         AssetHandle gBufferVertexShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, GBufferVertexShaderAssetURI);
-        Shader* gBufferVertexShaderAsset = assetManager->GetAsset<Shader>(gBufferVertexShaderAssetHandle);
-        
         AssetHandle gBufferFragmentShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, GBufferFragmentShaderAssetURI);
-        Shader* gBufferFragmentShaderAsset = assetManager->GetAsset<Shader>(gBufferFragmentShaderAssetHandle);
-        
         AssetHandle lightingVertexShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, LightingVertexShaderAssetURI);
-        Shader* lightingVertexShaderAsset = assetManager->GetAsset<Shader>(lightingVertexShaderAssetHandle);
 
         AssetHandle lightingFragmentShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, LightingFragmentShaderAssetURI);
-        Shader* lightingFragmentShaderAsset = assetManager->GetAsset<Shader>(lightingFragmentShaderAssetHandle);
+
+        Shader* gBufferVertexShaderAsset;
+        Shader* gBufferFragmentShaderAsset;
+        Shader* lightingVertexShaderAsset;
+        Shader* lightingFragmentShaderAsset;
+
+        auto loadAssets = [&](bool reload = false)
+        {
+            gBufferVertexShaderAsset = assetManager->GetAsset<Shader>(gBufferVertexShaderAssetHandle, reload);
+            gBufferFragmentShaderAsset = assetManager->GetAsset<Shader>(gBufferFragmentShaderAssetHandle, reload);
+            lightingVertexShaderAsset = assetManager->GetAsset<Shader>(lightingVertexShaderAssetHandle, reload);
+            lightingFragmentShaderAsset = assetManager->GetAsset<Shader>(lightingFragmentShaderAssetHandle, reload);
+        };
+
+        loadAssets();
 
         Model* sponzaModelAsset = assetManager->GetAsset<Model>(SponzaModelAssetURI);
         WL_CHECK_MSG(sponzaModelAsset, "Impossible to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
@@ -295,7 +292,16 @@ namespace Wl
                             {GBufferPassName,  &gbufferPipelineProperties },
                             {LightingPassName, &lightingPipelineProperties}
                     };
-                    Wl::ReloadShaders(device, pipelineManager, propsMap);
+                    device->WaitIdle();
+
+                    CompileShaders();
+
+                    loadAssets(true);
+
+                    for (auto [name, props]: propsMap)
+                    {
+                        pipelineManager->Recreate(name, *props);
+                    }
                     break;
                 }
                 case VirtualKey::F2:

@@ -19,13 +19,13 @@ namespace Wl
     {
         if (!SDL_Init(SDL_INIT_VIDEO))
         {
-            WL_LOG_ERROR("[Platform]", "Failed to initialize SDL: %s", SDL_GetError());
+            WL_LOG_ERROR("Platform", "Failed to initialize SDL: %s", SDL_GetError());
             return;
         }
 
         PlatformTimeInit();
 
-        WL_LOG_INFO("[Platform]", "SDL initialized successfully.");
+        WL_LOG_INFO("Platform", "SDL initialized successfully.");
 
         DisplayProvider::SetDisplay(&g_display);
     }
@@ -36,13 +36,13 @@ namespace Wl
 
         if (display)
         {
-            WL_LOG_INFO("[Platform]", "Cleaning up display resources.");
+            WL_LOG_INFO("Platform", "Cleaning up display resources.");
             DisplayProvider::SetDisplay(nullptr);
         }
 
         SDL_Quit();
 
-        WL_LOG_INFO("[Platform]", "SDL cleaned up successfully.");
+        WL_LOG_INFO("Platform", "SDL cleaned up successfully.");
     }
 
 }// namespace Wl

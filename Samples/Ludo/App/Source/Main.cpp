@@ -3,5 +3,5 @@
 
 int main(int argc, const char* argv[])
 {
-    return Wl::Main(argc, argv, &Wl::LudoApplication);
+    return Wl::MainApplication(argc, argv, &Wl::LudoApplication);
 }

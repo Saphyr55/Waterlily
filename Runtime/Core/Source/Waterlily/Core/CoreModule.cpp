@@ -8,22 +8,22 @@ namespace Wl
 
     void CoreModule::OnLoad()
     {
-        WL_LOG_INFO("[CoreModule]", "Core module loaded.");
+        WL_LOG_INFO("CoreModule", "Core module loaded.");
     }
 
     void CoreModule::OnStartup()
     {
-        WL_LOG_INFO("[CoreModule]", "Core module started.");
+        WL_LOG_INFO("CoreModule", "Core module started.");
     }
 
     void CoreModule::OnShutdown()
     {
-        WL_LOG_INFO("[CoreModule]", "Core module stopped.");
+        WL_LOG_INFO("CoreModule", "Core module stopped.");
     }
 
     void CoreModule::OnUnload()
     {
-        WL_LOG_INFO("[CoreModule]", "Core module unloaded.");
+        WL_LOG_INFO("CoreModule", "Core module unloaded.");
     }
 
 }// namespace Wl

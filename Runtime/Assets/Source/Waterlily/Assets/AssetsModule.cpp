@@ -9,22 +9,22 @@ namespace Wl
 
     void AssetsModule::OnLoad()
     {
-        WL_LOG_INFO("[AssetsModule]", "Assets module loaded.");
+        WL_LOG_INFO("AssetsModule", "Assets module loaded.");
     }
 
     void AssetsModule::OnStartup()
     {
-        WL_LOG_INFO("[AssetsModule]", "Assets module started.");
+        WL_LOG_INFO("AssetsModule", "Assets module started.");
     }
 
     void AssetsModule::OnShutdown()
     {
-        WL_LOG_INFO("[AssetsModule]", "Assets module stopped.");
+        WL_LOG_INFO("AssetsModule", "Assets module stopped.");
     }
 
     void AssetsModule::OnUnload()
     {
-        WL_LOG_INFO("[AssetsModule]", "Assets module unloaded.");
+        WL_LOG_INFO("AssetsModule", "Assets module unloaded.");
     }
 
 }// namespace Wl
