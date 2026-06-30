@@ -6,6 +6,7 @@ set_languages("c++20")
 set_targetdir("Build/Bin/$(plat)_$(arch)_$(mode)")
 
 add_rules("mode.debug", "mode.release")
+
 add_rules("plugin.vsxmake.autoupdate")
 add_rules("plugin.compile_commands.autoupdate", {
     outputdir = ".xmake"

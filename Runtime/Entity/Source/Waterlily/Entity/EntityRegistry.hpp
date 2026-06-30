@@ -43,7 +43,7 @@ namespace Wl
         {
             if (auto it = m_componentPools.find(GetTypeIndex<ComponentType>()); it != m_componentPools.end())
             {
-                Wl::StaticPtrCast<ComponentPool<ComponentType>>((*it).Value)->RemoveComponent(e);
+                Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->RemoveComponent(e);
             }
         }
 
@@ -55,7 +55,7 @@ namespace Wl
             {
                 return false;
             }
-            return Wl::StaticPtrCast<ComponentPool<ComponentType>>((*it).Value)->HasComponent(e);
+            return Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->HasComponent(e);
         }
 
         template<typename... Components>
@@ -72,7 +72,7 @@ namespace Wl
             {
                 return nullptr;
             }
-            return Wl::StaticPtrCast<ComponentPool<ComponentType>>((*it).Value)->GetComponent(e);
+            return Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->GetComponent(e);
         }
 
         template<typename... Components>
@@ -102,7 +102,7 @@ namespace Wl
                 m_componentPools[key] = std::move(pool);
                 return *ptr;
             }
-            return *StaticPtrCast<ComponentPool<ComponentType>>((*it).Value);
+            return *StaticPtrCast<ComponentPool<ComponentType>>(it->Value);
         }
 
         void Dispose();

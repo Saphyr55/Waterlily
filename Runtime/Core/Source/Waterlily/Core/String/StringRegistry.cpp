@@ -29,7 +29,7 @@ namespace Wl
         auto it = m_registry.find(sid.GetHash());
         if (it != m_registry.end())
         {
-            return (*it).Value;
+            return it->Value;
         }
 
         return nullptr;

@@ -37,7 +37,7 @@ namespace Wl
         {
             return nullptr;
         }
-        return (*it).Value;
+        return it->Value;
     }
 
     RHIGraphicsPipeline* PipelineManager::Recreate(const StringID& name, GraphicsPipelineState& props)

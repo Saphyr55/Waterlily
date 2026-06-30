@@ -14,12 +14,10 @@
 namespace Wl
 {
 
-    bool MainLoadManifest()
+    bool MainLoadManifest(StringRef manifestFilepath)
     {
         Engine& engine = Engine::GetInstance();
         ModuleManifest& engineManifest = engine.GetManifest();
-
-        StringRef manifestFilepath = "ModuleManifest.json";
 
         if (!engineManifest.LoadJSON(manifestFilepath))
         {
@@ -62,64 +60,51 @@ namespace Wl
 
     bool MainPreLaunch(int32_t argc, const char** argv)
     {
-        WL_LOG_INFO("Launcher", "Pre init Engine.");
+        Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
 
-        if (!MainLoadManifest())
+        PlatformStartup();
+
+        if (!MainLoadManifest("ModuleManifest.json"))
         {
             return false;
         }
+
+        Engine::GetInstance().Startup();
 
         return true;
     }
 
     void MainPostLaunch()
     {
+        Engine::GetInstance().Shutdown();
         MainUnloadManifest();
+        PlatformShutdown();
     }
 
-    int32_t MainConsole(int32_t argc, const char** argv, EngineConsoleCallback* func)
+    int32_t MainConsole(int32_t argc, const char** argv, EngineConsoleCallback* callback)
     {
-        Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
-
-        PlatformStartup();
-
         if (!MainPreLaunch(argc, argv))
         {
             return EXIT_FAILURE;
         }
 
-        Engine& engine = Engine::GetInstance();
-        engine.Startup();
-
-        int32_t result = func();
-
-        engine.Shutdown();
+        int32_t result = callback();
 
         MainPostLaunch();
-        PlatformShutdown();
 
         return result;
     }
 
-    int32_t MainApplication(int32_t argc, const char** argv, EngineApplicationCallback* func)
+    int32_t MainApplication(int32_t argc, const char** argv, EngineApplicationCallback* callback)
     {
-        Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
-
-        PlatformStartup();
-
         if (!MainPreLaunch(argc, argv))
         {
             return EXIT_FAILURE;
         }
 
-        Engine& engine = Engine::GetInstance();
-        engine.Startup();
-
         Application application;
 
-        int32_t result = func(application);
-
-        engine.Shutdown();
+        int32_t result = callback(application);
 
         MainPostLaunch();
         PlatformShutdown();

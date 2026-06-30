@@ -6,6 +6,7 @@
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Traits/AlignedStorage.hpp"
 
 #include <cstddef>
 #include <type_traits>
@@ -49,6 +50,7 @@ namespace Wl
             EntryIterator(HashMap* table, size_type index)
                 : m_table(table)
                 , m_index(index)
+                , m_entry()
             {
                 Next();
             }
@@ -83,6 +85,12 @@ namespace Wl
                 return {slot.Key.GetRef(), slot.Value.GetRef()};
             }
 
+            pointer operator->() const
+            {
+                SlotType& slot = m_table->m_slots[m_index];
+                m_entry.Emplace({slot.Key.GetRef(), slot.Value.GetRef()});
+                return m_entry.GetPtr();
+            }
 
         private:
             void Next()
@@ -96,6 +104,7 @@ namespace Wl
         private:
             HashMap* m_table;
             size_type m_index;
+            mutable AlignedStorageType<value_type> m_entry;
         };
 
         class ImmutableEntryIterator
@@ -142,7 +151,14 @@ namespace Wl
             value_type operator*() const
             {
                 const SlotType& slot = m_table->m_slots[m_index];
-                return ImmutableEntryType{slot.Key.GetRef(), slot.Value.GetRef()};
+                return ImmutableEntryType {slot.Key.GetRef(), slot.Value.GetRef()};
+            }
+
+            pointer operator->() const
+            {
+                const SlotType& slot = m_table->m_slots[m_index];
+                m_entry.Emplace({slot.Key.GetRef(), slot.Value.GetRef()});
+                return m_entry.GetPtr();
             }
 
         private:
@@ -157,6 +173,7 @@ namespace Wl
         private:
             const HashMap* m_table;
             size_type m_index;
+            mutable AlignedStorageType<value_type> m_entry;
         };
 
     public:
@@ -277,24 +294,24 @@ namespace Wl
 
         EntryType Put(const KeyType& key, const ValueType& value)
         {
-            return Insert(ImmutableEntryType{key, value});
+            return Insert(ImmutableEntryType {key, value});
         }
 
         EntryType Emplace(const KeyType& key, const ValueType& value)
         {
-            return Insert(ImmutableEntryType{key, value});
+            return Insert(ImmutableEntryType {key, value});
         }
 
         EntryType Insert(const ImmutableEntryType& entry)
         {
             SlotType& slot = InsertImpl(entry);
-            return EntryType{slot.Key.GetRef(), slot.Value.GetRef()};
+            return EntryType {slot.Key.GetRef(), slot.Value.GetRef()};
         }
 
         EntryType Insert(const EntryType& entry)
         {
             SlotType& slot = InsertImpl(ImmutableEntryType(entry.Key, entry.value));
-            return EntryType{slot.Key.GetRef(), slot.Value.GetRef()};
+            return EntryType {slot.Key.GetRef(), slot.Value.GetRef()};
         }
 
         bool Remove(const KeyType& key)
@@ -578,7 +595,7 @@ namespace Wl
                 SlotType& oldSlot = oldSlots[i];
                 if (oldSlot.IsOccupied())
                 {
-                    Insert(ImmutableEntryType{oldSlot.Key.GetRef(), oldSlot.Value.GetRef()});
+                    Insert(ImmutableEntryType {oldSlot.Key.GetRef(), oldSlot.Value.GetRef()});
                 }
             }
         }

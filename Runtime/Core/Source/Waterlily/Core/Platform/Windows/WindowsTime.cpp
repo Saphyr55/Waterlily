@@ -26,7 +26,7 @@ namespace Wl
         LARGE_INTEGER counter;
         QueryPerformanceCounter(&counter);
 
-        return static_cast<double>(counter.QuadPart) * 1000.0 / static_cast<double>(s_Frequency.QuadPart);
+        return static_cast<double>(counter.QuadPart) / static_cast<double>(s_Frequency.QuadPart);
     }
 
     void PlatformDelay(double ms)

@@ -2,9 +2,7 @@
 
 #include "LudoExports.hpp"
 
-#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/Module.hpp"
-#include "Waterlily/Core/Platform/Window.hpp"
 
 using namespace Wl;
 

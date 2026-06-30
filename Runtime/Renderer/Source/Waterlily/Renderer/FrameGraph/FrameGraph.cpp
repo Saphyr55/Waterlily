@@ -236,7 +236,7 @@ namespace Wl
                 LastProducerIterator it = last_texture_producer.Find(read.GetIndex());
                 if (it != last_texture_producer.end())
                 {
-                    FrameGraphPass* producer = (*it).Value;
+                    FrameGraphPass* producer = it->Value;
                     addEdge(producer, &current);
                 }
             }
@@ -246,7 +246,7 @@ namespace Wl
                 LastProducerIterator it = last_buffer_producer.Find(read.GetIndex());
                 if (it != last_buffer_producer.end())
                 {
-                    addEdge((*it).Value, &current);
+                    addEdge(it->Value, &current);
                 }
             }
 

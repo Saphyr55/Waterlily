@@ -1,12 +1,11 @@
 #pragma once
 
-#include <cstdint>
-#include <type_traits>
-
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
+
+#include <cstdint>
+#include <type_traits>
 
 #define WL_NEW ::new
 #define WL_PLACEMENT_NEW WL_NEW

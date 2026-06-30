@@ -93,7 +93,7 @@ namespace Wl
                 }
             }
 
-            WL_LOG_INFO("ModuleManifest","  %s: [%s]", ModuleManifestKeyNames::Deps, dependencyNames.GetData());
+            WL_LOG_INFO("ModuleManifest", "  %s: [%s]", ModuleManifestKeyNames::Deps, dependencyNames.GetData());
         }
     }
 
@@ -121,7 +121,9 @@ namespace Wl
         {
             moduleMap[info.Name] = &info;
             indegree[info.Name] = 0;
-            graph[info.Name] = Array<String>(size);
+            
+            Array<String>& value = graph.Emplace(info.Name, Array<String>()).Value;
+            value.Reserve(size);
         }
 
         for (const ModuleInformation& info: manifest.GetModules())
@@ -135,7 +137,7 @@ namespace Wl
                 }
                 else
                 {
-                    WL_LOG_ERROR("ModuleManifest","Module '%s' has an unknown dependency '%s'.", info.Name.GetData(), dependency.data());
+                    WL_LOG_ERROR("ModuleManifest", "Module '%s' has an unknown dependency '%s'.", info.Name.GetData(), dependency.data());
                 }
             }
         }

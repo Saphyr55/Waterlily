@@ -44,7 +44,7 @@ namespace Wl
         typename CacheType::iterator it = m_cache.Find(key);
         if (it != m_cache.end())
         {
-            return m_registry[(*it).Value];
+            return m_registry[it->Value];
         }
 
         ObjectType resource = m_createCallback(key);

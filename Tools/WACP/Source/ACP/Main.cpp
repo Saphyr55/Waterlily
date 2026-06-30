@@ -66,8 +66,7 @@ static int32_t StartConsole()
 
     std::string larFilepathText = larFilepath.generic_string();
 
-    FileResult larFileResult =
-            fileSystem.Open(larFilepathText.data(), FileAccess::ReadWrite, FileMode::OpenOrCreate);
+    FileResult larFileResult = fileSystem.Open(larFilepathText.data(), FileAccess::ReadWrite, FileMode::OpenOrCreate);
     if (!larFileResult.HasValue())
     {
         WL_LOG_ERROR("WACP", "Failed to open \"%s\"", larFilepathText.data());
@@ -145,7 +144,4 @@ static int32_t StartConsole()
     return EXIT_SUCCESS;
 }
 
-int32_t main(int32_t argc, const char* argv[])
-{
-    return Wl::MainConsole(argc, argv, &StartConsole);
-}
+WL_DEFINE_CONSOLE_ENTRY_POINT(&StartConsole)

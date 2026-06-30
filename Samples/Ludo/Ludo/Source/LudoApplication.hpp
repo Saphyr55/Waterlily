@@ -6,6 +6,11 @@
 namespace Wl
 {
 
-    LUDO_API int32_t LudoApplication(Application& application);
+    class LudoApplication
+    {
+
+    };
+
+    LUDO_API int32_t LudoApplicationMain(Application& application);
 
 }// namespace Wl

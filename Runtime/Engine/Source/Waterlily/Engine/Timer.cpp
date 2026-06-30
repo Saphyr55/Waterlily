@@ -6,7 +6,7 @@ namespace Wl
 
     Timer::Timer()
     {
-        m_lastTime = PlatformGetHighResolutionTime();
+        Tick();
     }
 
     void Timer::Tick()

@@ -119,7 +119,7 @@ namespace Wl
         return camera;
     }
 
-    int32_t LudoApplication(Application& application)
+    int32_t LudoApplicationMain(Application& application)
     {
         WindowProperties windowProperties("Demo Window", 1080, 720, 100, 100);
         SharedPtr<Window> window = Window::Create(windowProperties);
@@ -181,7 +181,7 @@ namespace Wl
         Shader* lightingVertexShaderAsset;
         Shader* lightingFragmentShaderAsset;
 
-        auto loadAssets = [&](bool reload = false)
+        auto loadShaderAssets = [&](bool reload = false)
         {
             gBufferVertexShaderAsset = assetManager->GetAsset<Shader>(gBufferVertexShaderAssetHandle, reload);
             gBufferFragmentShaderAsset = assetManager->GetAsset<Shader>(gBufferFragmentShaderAssetHandle, reload);
@@ -189,7 +189,7 @@ namespace Wl
             lightingFragmentShaderAsset = assetManager->GetAsset<Shader>(lightingFragmentShaderAssetHandle, reload);
         };
 
-        loadAssets();
+        loadShaderAssets();
 
         Model* sponzaModelAsset = assetManager->GetAsset<Model>(SponzaModelAssetURI);
         WL_CHECK_MSG(sponzaModelAsset, "Impossible to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
@@ -286,7 +286,12 @@ namespace Wl
         {
             switch (key)
             {
-                case VirtualKey::F3:
+                case VirtualKey::F1:
+                {
+                    application.ToogleUnlimitedFrameRate(Application::DefaultTargetFrameRate);
+                    break;
+                }
+                case VirtualKey::F2:
                 {
                     HashMap<StringID, GraphicsPipelineState*> propsMap = {
                             {GBufferPassName,  &gbufferPipelineProperties },
@@ -296,7 +301,7 @@ namespace Wl
 
                     CompileShaders();
 
-                    loadAssets(true);
+                    loadShaderAssets(true);
 
                     for (auto [name, props]: propsMap)
                     {
@@ -304,9 +309,19 @@ namespace Wl
                     }
                     break;
                 }
-                case VirtualKey::F2:
+                case VirtualKey::F3:
                 {
                     camera.LogDebug();
+                    break;
+                }
+                case Wl::VirtualKey::F4:
+                {
+                    camera = initialCamera;
+                    break;
+                }
+                case VirtualKey::Escape:
+                {
+                    application.Stop();
                     break;
                 }
                 default:
@@ -322,7 +337,7 @@ namespace Wl
         // Update handle
         application.OnTick.Connect([&](Timer& timer)
         {
-            float deltaTime = static_cast<float>(timer.GetDeltaTimeSeconds());
+            double deltaTime = timer.GetDeltaTimeSeconds();
 
             uint32_t width = frameContext->GetSwapchain()->GetWidth();
             uint32_t height = frameContext->GetSwapchain()->GetHeight();
@@ -333,27 +348,12 @@ namespace Wl
                 PunctualLight& light = punctualLights[i];
                 PunctualLight& originalLight = originalsPunctualLights[i];
 
-                light.Position.x += lightVelocity * deltaTime;
+                light.Position.x += (lightVelocity * deltaTime);
                 float offset = light.Position.x - originalLight.Position.x;
                 if (Math::Abs(offset) > lightThresholdPosition)
                 {
                     lightVelocity = -lightVelocity;
                 }
-            }
-
-            if (Input::KeyIsPressed(VirtualKey::C))
-            {
-                camera = initialCamera;
-            }
-
-            if (Input::KeyIsPressed(VirtualKey::F1))
-            {
-                application.ToogleUnlimitedFrameRate(Application::DefaultTargetFrameRate);
-            }
-
-            if (Input::KeyIsPressed(VirtualKey::Escape))
-            {
-                application.Stop();
             }
 
             Vector3f direction(0.0f, 0.0f, 0.0f);
@@ -415,8 +415,9 @@ namespace Wl
             FrameResult result = frameContext->BeginFrame();
             WL_CHECK(result == FrameResult::Success);
 
-            Frame& frame = frameContext->GetCurrentFrame();
             frameGraph->BeginFrame();
+
+            Frame& frame = frameContext->GetCurrentFrame();
 
             uint32_t width = frameContext->GetSwapchain()->GetWidth();
             uint32_t height = frameContext->GetSwapchain()->GetHeight();
