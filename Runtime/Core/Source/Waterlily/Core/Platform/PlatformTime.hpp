@@ -10,6 +10,7 @@ namespace Wl
 
     WL_CORE_API void PlatformDelay(double ms);
 
+    // Returns ms
     WL_CORE_API double PlatformGetHighResolutionTime();
 
 }// namespace Wl

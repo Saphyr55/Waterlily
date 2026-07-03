@@ -7,12 +7,12 @@
 namespace Wl
 {
 
-    class IAssetLoader
+    class AssetLoader
     {
     public:
         virtual SharedPtr<Stream> OpenAndValidate(const AssetMetadata& metadata) = 0;
 
-        virtual ~IAssetLoader() = default;
+        virtual ~AssetLoader() = default;
     };
 
 }// namespace Wl

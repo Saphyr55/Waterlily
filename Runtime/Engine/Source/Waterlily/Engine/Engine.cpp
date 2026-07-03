@@ -1,7 +1,6 @@
 #include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
-#include "Waterlily/Engine/ProjectSettings.hpp"
 
 namespace Wl
 {

@@ -1,6 +1,5 @@
 #include "LudoApplication.hpp"
 
-#include "LudoTypes.hpp"
 #include "Passes/GBufferPass.hpp"
 #include "Passes/LightingPass.hpp"
 #include "Waterlily/Assets/AssetLoader.hpp"
@@ -9,8 +8,6 @@
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
-#include "Waterlily/Core/Math/Matrix4.hpp"
-#include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
@@ -40,9 +37,9 @@
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PunctualLight.hpp"
 
-
 namespace Wl
 {
+
     static const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
     static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
 
@@ -129,10 +126,9 @@ namespace Wl
 
         ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
 
-        Camera initialCamera = InitCamera();
-        Camera camera = initialCamera;
+        Camera camera = InitCamera();
 
-        Input::OnMouseMove.Connect([&](const MouseMove& mouseMove) -> void
+        Input::OnMouseMove.Connect([&](const MouseMove& mouseMove)
         {
             if (Input::ButtonIsDown(Button::Left))
             {
@@ -144,13 +140,13 @@ namespace Wl
 
         FileResult assetRegistryFileResult = assetsFileSystem.OpenRead(AssetRegistryURI.GetText());
         WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", AssetRegistryURI.GetText().GetData());
-        File& fileAssetRegistry = *assetRegistryFileResult.GetValue();
+        SharedPtr<File> fileAssetRegistry = assetRegistryFileResult.GetValue();
 
-        SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadFromFile(fileAssetRegistry);
+        SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadFromFile(*fileAssetRegistry);
         WL_CHECK(assetRegistry);
-        fileAssetRegistry.Close();
+        fileAssetRegistry->Close();
 
-        SharedPtr<IAssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>(assetsFileSystem);
+        SharedPtr<AssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>(assetsFileSystem);
         SharedPtr<AssetManager> assetManager = MakeShared<AssetManager>(assetRegistry, assetLoader);
 
         SharedPtr<FrameContext> frameContext = MakeShared<FrameContext>();
@@ -206,9 +202,6 @@ namespace Wl
         uploadSchedulerInit.StagingSize = 16 * WL_MB;
         uploadSchedulerInit.MinAlignment = device->GetDeviceProperties().NonCoherentAtomSize;
         uploadScheduler.Init(uploadSchedulerInit);
-
-        UIDrawElement uiDrawElement;
-        RenderMesh uiMesh = uiDrawElement.Instanciate(device, uploadScheduler);
 
         RenderMesh sponzaMesh(device);
         // TODO: We should create one big mesh to send.
@@ -316,7 +309,7 @@ namespace Wl
                 }
                 case Wl::VirtualKey::F4:
                 {
-                    camera = initialCamera;
+                    camera = InitCamera();
                     break;
                 }
                 case VirtualKey::Escape:
@@ -337,7 +330,7 @@ namespace Wl
         // Update handle
         application.OnTick.Connect([&](Timer& timer)
         {
-            double deltaTime = timer.GetDeltaTimeSeconds();
+            double deltaTime = timer.GetDeltaTime();
 
             uint32_t width = frameContext->GetSwapchain()->GetWidth();
             uint32_t height = frameContext->GetSwapchain()->GetHeight();
@@ -348,7 +341,7 @@ namespace Wl
                 PunctualLight& light = punctualLights[i];
                 PunctualLight& originalLight = originalsPunctualLights[i];
 
-                light.Position.x += (lightVelocity * deltaTime);
+                // light.Position.x += (lightVelocity * deltaTime);
                 float offset = light.Position.x - originalLight.Position.x;
                 if (Math::Abs(offset) > lightThresholdPosition)
                 {
@@ -502,7 +495,6 @@ namespace Wl
             lightingParams.DepthStencil = depthStencil;
             lightingParams.RenderViewAllocation = &viewAllocation;
             lightingParams.LightAllocation = &punctualLightBufferAllocation;
-            lightingParams.Mesh = &uiMesh;
             lightingParams.MeshAllocation = &sponzaAllocation;
             lightingParams.CountersAllocation = &countersAllocation;
 
@@ -540,7 +532,6 @@ namespace Wl
         frameGraph->Destroy();
 
         sponzaMesh.Destroy();
-        uiMesh.Destroy();
 
         device->DestroyBuffer(indirectBuffer);
 

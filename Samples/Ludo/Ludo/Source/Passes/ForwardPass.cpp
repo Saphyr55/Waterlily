@@ -1,6 +1,5 @@
 #include "Passes/ForwardPass.hpp"
 
-#include "LudoTypes.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"

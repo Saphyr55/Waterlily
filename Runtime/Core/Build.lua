@@ -7,7 +7,6 @@ CoreModule.Group = "Engine"
 
 CoreModule.XMakePackages = {
     "libsdl3",
-    "lua",
 }
 
 CoreModule.Deps = {

@@ -23,11 +23,6 @@ namespace Wl
             return m_deltaTime;
         }
 
-        inline double GetDeltaTimeSeconds() const
-        {
-            return m_deltaTime * 0.001;
-        }
-
     public:
         Timer();
         ~Timer() = default;

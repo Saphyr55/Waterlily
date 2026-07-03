@@ -9,6 +9,19 @@
 namespace Wl
 {
 
+    inline constexpr uint32_t GlobalSRGIndex = 0;
+    inline constexpr uint32_t GlobalSRGRenderViewBinding = 0;
+    inline constexpr uint32_t GlobalSRGLightBinding = 1;
+
+    inline constexpr uint32_t RenderInstanceSRGIndex = 1;
+    inline constexpr uint32_t RenderInstanceSRGBinding = 0;
+
+    inline constexpr uint32_t LudoTextureGRGIndex = 2;
+    inline constexpr uint32_t LudoTexturesSRGBinding = 0;
+
+    inline constexpr uint32_t LudoMaterialsSRGIndex = 3;
+    inline constexpr uint32_t LudoMaterialsSRGBinding = 0;
+
     struct PassContext
     {
         SharedPtr<FrameGraph> FrameGraph;

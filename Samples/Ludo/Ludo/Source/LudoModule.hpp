@@ -4,16 +4,19 @@
 
 #include "Waterlily/Core/Modules/Module.hpp"
 
-using namespace Wl;
-
-class LUDO_API LudoModule : public Module
+namespace Wl
 {
-public:
-    virtual void OnLoad() override;
 
-    virtual void OnStartup() override;
+    class LUDO_API LudoModule : public Module
+    {
+    public:
+        virtual void OnLoad() override;
 
-    virtual void OnShutdown() override;
+        virtual void OnStartup() override;
 
-    virtual void OnUnload() override;
-};
+        virtual void OnShutdown() override;
+
+        virtual void OnUnload() override;
+    };
+
+}// namespace Wl

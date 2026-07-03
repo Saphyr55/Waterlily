@@ -2,7 +2,6 @@
 
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
-#include "LudoTypes.hpp"
 
 namespace Wl
 {

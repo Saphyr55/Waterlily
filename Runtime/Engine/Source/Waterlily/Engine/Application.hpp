@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Timer.hpp"
 #include "Waterlily/Core/Signals/Signal.hpp"
 #include "Waterlily/Engine/EngineExports.hpp"
 #include "Waterlily/Engine/Timer.hpp"

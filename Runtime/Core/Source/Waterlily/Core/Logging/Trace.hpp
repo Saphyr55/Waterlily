@@ -62,7 +62,7 @@
 #ifdef WL_DEBUG
     #define WL_CHECK_MSG(expr, format, ...)                             \
         WL_ENCAPULSE_BEGIN                                           \
-        WL_LOG_FATAL_WHEN(!(expr), "[ASSERTS]", format, ##__VA_ARGS__); \
+        WL_LOG_FATAL_WHEN(!(expr), "ASSERTS", format, ##__VA_ARGS__); \
         WL_ENCAPULSE_END
 #else
     #define WL_CHECK_MSG(expr, format, ...) ((void)(expr))

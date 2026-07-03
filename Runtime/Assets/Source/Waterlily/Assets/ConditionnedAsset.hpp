@@ -42,7 +42,7 @@ namespace Wl
         static void SerializeAsset(SharedPtr<Stream> stream, Asset* asset);
     };
 
-    class WL_ASSETS_API ConditionnedAssetLoader : public IAssetLoader
+    class WL_ASSETS_API ConditionnedAssetLoader : public AssetLoader
     {
     public:
         virtual SharedPtr<Stream> OpenAndValidate(const AssetMetadata& metadata) override;

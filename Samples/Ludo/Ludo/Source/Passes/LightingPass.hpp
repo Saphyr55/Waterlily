@@ -2,7 +2,6 @@
 
 #include "Passes/PassContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
-#include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 
@@ -30,7 +29,6 @@ namespace Wl
         FrameGraphBufferHandle Indirect;
 
         RenderAllocation* MeshAllocation;
-        RenderMesh* Mesh;
 
         RenderAllocation* LightAllocation;
         RenderAllocation* CountersAllocation;

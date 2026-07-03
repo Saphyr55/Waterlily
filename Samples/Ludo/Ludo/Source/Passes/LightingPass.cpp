@@ -1,5 +1,4 @@
 #include "Passes/LightingPass.hpp"
-#include "LudoTypes.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 

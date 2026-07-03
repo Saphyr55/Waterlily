@@ -129,7 +129,7 @@ namespace Wl
 
     private:
     public:
-        AssetManager(const SharedPtr<AssetRegistry>& registry, const SharedPtr<IAssetLoader>& loader)
+        AssetManager(const SharedPtr<AssetRegistry>& registry, const SharedPtr<AssetLoader>& loader)
             : m_registry(registry)
             , m_loader(loader)
         {
@@ -138,7 +138,7 @@ namespace Wl
 
     private:
         SharedPtr<AssetRegistry> m_registry;
-        SharedPtr<IAssetLoader> m_loader;
+        SharedPtr<AssetLoader> m_loader;
 
         HashMap<StringID, SharedPtr<IAssetPool>> m_pools;
     };

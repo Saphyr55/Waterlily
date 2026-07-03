@@ -6,19 +6,18 @@ namespace Wl
 
     Timer::Timer()
     {
-        Tick();
     }
 
     void Timer::Tick()
     {
-        double now = PlatformGetHighResolutionTime();
+        double now = GetTime();
         m_deltaTime = now - m_lastTime;
         m_lastTime = now;
     }
 
     void Timer::LimitFrameRate(double targetFrameTime)
     {
-        double now = PlatformGetHighResolutionTime();
+        double now = GetTime();
         double elapsed = now - m_lastTime;
         double remaining = targetFrameTime - elapsed;
         if (remaining > 0.0)
