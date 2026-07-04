@@ -144,4 +144,7 @@ static int32_t StartConsole()
     return EXIT_SUCCESS;
 }
 
-WL_DEFINE_CONSOLE_ENTRY_POINT(&StartConsole)
+int main(int argc, const char* argv[])
+{
+    return Wl::MainConsole(argc, argv, &StartConsole);
+}

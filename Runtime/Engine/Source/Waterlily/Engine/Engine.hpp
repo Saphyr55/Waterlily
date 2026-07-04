@@ -3,10 +3,12 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Engine/engineExports.hpp"
+#include "Waterlily/Engine/EngineExports.hpp"
 
 namespace Wl
 {
+    class Application;
+    class ApplicationDelegate;
 
     class WL_ENGINE_API Engine
     {
@@ -15,6 +17,12 @@ namespace Wl
 
         void Startup();
         void Shutdown();
+
+        Application* GetApplication();
+        void SetApplication(Application* application);
+
+        ApplicationDelegate* GetApplicationDelegate();
+        void SetApplicationDelegate(ApplicationDelegate* delegate);
 
         Array<const ModuleInformation*>& GetOrderedModuleInformations();
 
@@ -34,6 +42,8 @@ namespace Wl
         Array<const ModuleInformation*> m_orderedModuleInformations;
         ModuleManifest m_manifest;
         StringRef m_projectDirectory;
+        Application* m_application;
+        ApplicationDelegate* m_delegate;
     };
 
 }// namespace Wl

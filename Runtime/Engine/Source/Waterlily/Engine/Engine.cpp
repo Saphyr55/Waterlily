@@ -6,7 +6,7 @@ namespace Wl
 {
 
     Engine::Engine()
-        : m_orderedModuleInformations(64)
+        : m_delegate(nullptr)
     {
     }
 
@@ -37,6 +37,26 @@ namespace Wl
             Module* module = module_registry.GetModuleInterface(info->Name);
             module->OnShutdown();
         }
+    }
+
+    Application* Engine::GetApplication()
+    {
+        return m_application;
+    }
+
+    void Engine::SetApplication(Application* application)
+    {
+        m_application = application;
+    }
+    
+    ApplicationDelegate* Engine::GetApplicationDelegate()
+    {
+        return m_delegate;
+    }
+
+    void Engine::SetApplicationDelegate(ApplicationDelegate* delegate)
+    {
+        m_delegate = delegate;
     }
 
     Array<const ModuleInformation*>& Engine::GetOrderedModuleInformations()

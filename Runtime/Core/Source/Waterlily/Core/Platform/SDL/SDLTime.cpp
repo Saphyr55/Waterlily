@@ -12,12 +12,20 @@ namespace Wl
 
     double PlatformGetHighResolutionTime()
     {
-        return SDL_NS_TO_SECONDS(static_cast<double>(SDL_GetTicksNS()));
+        static const Uint64 s_frequency = SDL_GetPerformanceFrequency();
+        const Uint64 counter = SDL_GetPerformanceCounter();
+
+        return static_cast<double>(counter) / static_cast<double>(s_frequency);
     }
 
     void PlatformDelay(double seconds)
     {
-        SDL_DelayNS(SDL_SECONDS_TO_NS(seconds));
+        if (seconds <= 0.0)
+        {
+            return;
+        }
+
+        SDL_Delay(static_cast<Uint32>(seconds * 1000.0));
     }
 
 }// namespace Wl

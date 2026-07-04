@@ -15,11 +15,9 @@
 #include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
-#include "Waterlily/Engine/Application.hpp"
+#include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/GraphicsPipeline.hpp"
-#include "Waterlily/RHI/Swapchain.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
@@ -30,10 +28,8 @@
 #include "Waterlily/Renderer/Mesh/StaticMesh.hpp"
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
-#include "Waterlily/Renderer/RenderView.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
-#include "Waterlily/Renderer/Shader/Shader.hpp"
-#include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
+#include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PunctualLight.hpp"
 
@@ -42,37 +38,6 @@ namespace Wl
 
     static const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
     static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
-
-    static const StringID GBufferVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.vert.wlca");
-    static const StringID GBufferFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.frag.wlca");
-    static const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
-    static const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
-
-    static bool CompileShaders()
-    {
-        FileSystem& fileSystem = FileSystem::GetPlatform();
-
-        bool success = SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
-                                                        GBufferVertexShaderAssetURI.GetText(),
-                                                        "VSMain",
-                                                        Shader::Stage::Vertex);
-
-        success = success && SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
-                                                              GBufferFragmentShaderAssetURI.GetText(),
-                                                              "FSMain",
-                                                              Shader::Stage::Fragment);
-
-        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
-                                                              LightingVertexShaderAssetURI.GetText(),
-                                                              "VSMain",
-                                                              Shader::Stage::Vertex);
-
-        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
-                                                              LightingFragmentShaderAssetURI.GetText(),
-                                                              "FSMain",
-                                                              Shader::Stage::Fragment);
-        return success;
-    }
 
     static FixedArray<PunctualLight, 5> MakeLights()
     {
@@ -116,23 +81,27 @@ namespace Wl
         return camera;
     }
 
-    int32_t LudoApplicationMain(Application& application)
+    LudoApplicationDelegate::LudoApplicationDelegate()
+        : m_sponzaModelAsset(nullptr)
+        , m_indirectBuffer(nullptr)
+        , m_indirectBufferCount(0)
     {
-        WindowProperties windowProperties("Demo Window", 1080, 720, 100, 100);
-        SharedPtr<Window> window = Window::Create(windowProperties);
+    }
 
-        SharedPtr<RHIDevice> device = RHIDeviceFactory::Create(RHIGraphicsAPI::Vulkan);
-        device->Init(window->GetNativeWindow());
+    void LudoApplicationDelegate::OnStartup()
+    {
+        m_window = Window::Create(WindowProperties("Demo Window", 1080, 720, 100, 100));
 
-        ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
+        m_device = RHIDeviceFactory::Create(RHIGraphicsAPI::Vulkan);
+        m_device->Init(m_window->GetNativeWindow());
 
-        Camera camera = InitCamera();
+        m_camera = InitCamera();
 
-        Input::OnMouseMove.Connect([&](const MouseMove& mouseMove)
+        Input::OnMouseMove.Connect([this](const MouseMove& mouseMove)
         {
             if (Input::ButtonIsDown(Button::Left))
             {
-                camera.LookAround(mouseMove.PosRelX, -mouseMove.PosRelY);
+                m_camera.LookAround(mouseMove.PosRelX, -mouseMove.PosRelY);
             }
         });
 
@@ -142,179 +111,133 @@ namespace Wl
         WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", AssetRegistryURI.GetText().GetData());
         SharedPtr<File> fileAssetRegistry = assetRegistryFileResult.GetValue();
 
-        SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadFromFile(*fileAssetRegistry);
-        WL_CHECK(assetRegistry);
+        m_assetRegistry = AssetRegistry::LoadFromFile(*fileAssetRegistry);
+        WL_CHECK(m_assetRegistry);
         fileAssetRegistry->Close();
 
         SharedPtr<AssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>(assetsFileSystem);
-        SharedPtr<AssetManager> assetManager = MakeShared<AssetManager>(assetRegistry, assetLoader);
+        m_assetManager = MakeShared<AssetManager>(m_assetRegistry, assetLoader);
 
-        SharedPtr<FrameContext> frameContext = MakeShared<FrameContext>();
         FrameContextInitInfo frameContextInitInfo = {};
         frameContextInitInfo.StagingBufferSize = 16 * WL_MB;
         frameContextInitInfo.StorageBufferSize = 16 * WL_MB;
         frameContextInitInfo.UniformBufferSize = 16 * WL_MB;
-        frameContextInitInfo.FrameWidth = window->GetProperties().Width;
-        frameContextInitInfo.FrameHeight = window->GetProperties().Height;
-        frameContext->Init(device, frameContextInitInfo);
+        frameContextInitInfo.FrameWidth = m_window->GetProperties().Width;
+        frameContextInitInfo.FrameHeight = m_window->GetProperties().Height;
 
-        SharedPtr<TextureRegistry> textureRegistry = MakeShared<TextureRegistry>(device, *assetManager, LudoTexturesSRGBinding);
-        SharedPtr<MaterialRegistry> materialRegistry = MakeShared<MaterialRegistry>(device, LudoMaterialsSRGBinding);
-        SharedPtr<PipelineManager> pipelineManager = MakeShared<PipelineManager>(device, frameContext->GetSRGLayoutCache(), assetsFileSystem);
+        m_frameContext = MakeShared<FrameContext>(m_device);
+        m_frameContext->Init(frameContextInitInfo);
+
+        m_textureRegistry = MakeShared<TextureRegistry>(m_device, *m_assetManager, LudoTexturesSRGBinding);
+        m_materialRegistry = MakeShared<MaterialRegistry>(m_device, LudoMaterialsSRGBinding);
+        m_pipelineManager = MakeShared<PipelineManager>(m_device, m_frameContext->GetSRGLayoutCache(), assetsFileSystem);
+
+        m_shaderBundle = MakeShared<ShaderBundle>();
+        m_shaderBundle->CreateAssets(m_assetRegistry);
 
         // This should be not done in application mode, but only in dev mode.
-        bool isCompilingShaderSuccessed = Wl::CompileShaders();
+        bool isCompilingShaderSuccessed = m_shaderBundle->LoadAssets(m_assetManager);
         WL_CHECK_MSG(isCompilingShaderSuccessed, "Failed to compile shaders.");
 
-        AssetHandle gBufferVertexShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, GBufferVertexShaderAssetURI);
-        AssetHandle gBufferFragmentShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, GBufferFragmentShaderAssetURI);
-        AssetHandle lightingVertexShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, LightingVertexShaderAssetURI);
+        m_sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
+        WL_CHECK_MSG(m_sponzaModelAsset, "Impossible to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
 
-        AssetHandle lightingFragmentShaderAssetHandle = assetRegistry->CreateAsset(AssetType_Shader, LightingFragmentShaderAssetURI);
-
-        Shader* gBufferVertexShaderAsset;
-        Shader* gBufferFragmentShaderAsset;
-        Shader* lightingVertexShaderAsset;
-        Shader* lightingFragmentShaderAsset;
-
-        auto loadShaderAssets = [&](bool reload = false)
+        Array<StaticMesh*> modelStaticMeshesAsset(m_sponzaModelAsset->Meshes.GetSize());
+        for (const AssetHandle& meshAssetHandle: m_sponzaModelAsset->Meshes)
         {
-            gBufferVertexShaderAsset = assetManager->GetAsset<Shader>(gBufferVertexShaderAssetHandle, reload);
-            gBufferFragmentShaderAsset = assetManager->GetAsset<Shader>(gBufferFragmentShaderAssetHandle, reload);
-            lightingVertexShaderAsset = assetManager->GetAsset<Shader>(lightingVertexShaderAssetHandle, reload);
-            lightingFragmentShaderAsset = assetManager->GetAsset<Shader>(lightingFragmentShaderAssetHandle, reload);
-        };
-
-        loadShaderAssets();
-
-        Model* sponzaModelAsset = assetManager->GetAsset<Model>(SponzaModelAssetURI);
-        WL_CHECK_MSG(sponzaModelAsset, "Impossible to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
-
-        Array<StaticMesh*> modelStaticMeshesAsset(sponzaModelAsset->Meshes.GetSize());
-        for (const AssetHandle& meshAssetHandle: sponzaModelAsset->Meshes)
-        {
-            modelStaticMeshesAsset.Append(assetManager->GetAsset<StaticMesh>(meshAssetHandle));
+            modelStaticMeshesAsset.Append(m_assetManager->GetAsset<StaticMesh>(meshAssetHandle));
         }
 
         UploadScheduler uploadScheduler;
         UploadSchedulerInitInfo uploadSchedulerInit = {};
-        uploadSchedulerInit.Device = device;
+        uploadSchedulerInit.Device = m_device;
         uploadSchedulerInit.StagingSize = 16 * WL_MB;
-        uploadSchedulerInit.MinAlignment = device->GetDeviceProperties().NonCoherentAtomSize;
+        uploadSchedulerInit.MinAlignment = m_device->GetDeviceProperties().NonCoherentAtomSize;
         uploadScheduler.Init(uploadSchedulerInit);
 
-        RenderMesh sponzaMesh(device);
+        m_sponzaMesh = MakeShared<RenderMesh>(m_device);
         // TODO: We should create one big mesh to send.
-        sponzaMesh.Instanciate(uploadScheduler, assetManager, textureRegistry, materialRegistry, modelStaticMeshesAsset[0]);
+        m_sponzaMesh->Instanciate(uploadScheduler, m_assetManager, m_textureRegistry, m_materialRegistry, modelStaticMeshesAsset[0]);
 
-        for (RenderSubMesh& subMesh: sponzaMesh.GetSubMeshes())
+        for (RenderSubMesh& subMesh: m_sponzaMesh->GetSubMeshes())
         {
             subMesh.Model = Matrix4f::Scale(subMesh.Model, Vector3f(0.005f));
         }
 
-        Array<RHIDrawIndexedCommand> drawIndexedCommands = sponzaMesh.CreateDrawIndexedCommands();
-        RHIBuffer* indirectBuffer = device->CreateIndirectBuffer(drawIndexedCommands);
+        Array<RHIDrawIndexedCommand> drawIndexedCommands = m_sponzaMesh->CreateDrawIndexedCommands();
+        m_indirectBuffer = m_device->CreateIndirectBuffer(drawIndexedCommands);
+        m_indirectBufferCount = drawIndexedCommands.GetSize();
 
-        uploadScheduler.Upload(ArrayView(drawIndexedCommands), indirectBuffer);
-        textureRegistry->Upload();
-        materialRegistry->Upload(device->GetGraphicsQueue());
+        uploadScheduler.Upload(ArrayView(drawIndexedCommands), m_indirectBuffer);
+        m_textureRegistry->Upload();
+        m_materialRegistry->Upload(m_device->GetGraphicsQueue());
 
-        device->ImediateSubmit([&](RHICommandBuffer* commandBuffere)
+        m_device->ImediateSubmit([uploadScheduler](RHICommandBuffer* commandBuffere) mutable
         {
             double byte = static_cast<double>(uploadScheduler.GetTotalPendingBytes());
             double megaByte = byte / static_cast<double>(WL_MB);
             uploadScheduler.Flush(commandBuffere);
             WL_LOG_DEBUG("Ludo", "Flushed global upload scheduler, total uploaded: %.2lfMB", megaByte);
-        }, device->GetGraphicsQueue());
+        }, m_device->GetGraphicsQueue());
 
         uploadScheduler.Shutdown();
 
-        textureRegistry->CompileSRG();
-        materialRegistry->CompileShaderResource();
+        m_textureRegistry->CompileSRG();
+        m_materialRegistry->CompileShaderResource();
 
-        frameContext->InitializeSRGPools();
+        m_frameContext->InitializeSRGPools();
 
-        FixedArray<PunctualLight, 5> originalsPunctualLights = MakeLights();
-        FixedArray<PunctualLight, 5> punctualLights = MakeLights();
+        m_originalLights = MakeLights();
+        m_lights = MakeLights();
 
-        SharedPtr<FrameGraph> frameGraph = MakeShared<FrameGraph>(frameContext);
+        m_frameGraph = MakeShared<FrameGraph>(m_frameContext);
 
-        window->GetEventHandler().OnClose.Connect([&]()
+        m_window->GetEventHandler().OnClose.Connect([]()
         {
             WL_LOG_INFO("Ludo", "Window closed.");
-            application.Stop();
+            Engine::GetInstance().GetApplication()->RequestStop();
         });
 
-        window->GetEventHandler().OnResized.Connect([&](uint32_t width, uint32_t height)
+        m_window->GetEventHandler().OnResized.Connect([this](uint32_t width, uint32_t height)
         {
             WL_LOG_INFO("Ludo", "Window resized to %dx%d", width, height);
-            frameContext->Resize(width, height);
-            frameGraph->Resize();
+            m_frameContext->Resize(width, height);
+            m_frameGraph->Resize();
         });
 
-        GraphicsPipelineState gbufferPipelineProperties = {};
-        GraphicsPipelineState lightingPipelineProperties = {};
-
-        auto getOrCreatePipeline = [&](FrameGraphPass& pass,
-                                       GraphicsPipelineState& state,
-                                       RHICullModeFlags cullMode,
-                                       const Viewport& viewport,
-                                       const Rect2D& scissor,
-                                       Shader* vertexShader,
-                                       Shader* fragmentShader) -> RHIGraphicsPipeline*
-        {
-            state.SRGLayouts[LudoTextureGRGIndex] = textureRegistry->GetSRGLayout();
-            state.SRGLayouts[LudoMaterialsSRGIndex] = materialRegistry->GetSRGLayout();
-            state.CullMode = cullMode;
-            state.Viewport = viewport;
-            state.Scissor = scissor;
-            state.VertexShader = vertexShader;
-            state.FragmentShader = fragmentShader;
-            state.RenderPass = frameGraph->GetRenderPass(pass.GetName());
-
-            return pipelineManager->GetOrCreate(pass.GetName(), state);
-        };
-
-        Input::OnKeyRelease.Connect([&](VirtualKey key)
+        Input::OnKeyRelease.Connect([this](VirtualKey key)
         {
             switch (key)
             {
-                case VirtualKey::F1:
-                {
-                    application.ToogleUnlimitedFrameRate(Application::DefaultTargetFrameRate);
-                    break;
-                }
                 case VirtualKey::F2:
                 {
+                    m_device->WaitIdle();
+
+                    m_shaderBundle->ReloadAssets(m_assetManager);
+
                     HashMap<StringID, GraphicsPipelineState*> propsMap = {
-                            {GBufferPassName,  &gbufferPipelineProperties },
-                            {LightingPassName, &lightingPipelineProperties}
+                            {GBufferPassName,  &m_shaderBundle->GBufferPipelineProperties },
+                            {LightingPassName, &m_shaderBundle->LightingPipelineProperties}
                     };
-                    device->WaitIdle();
-
-                    CompileShaders();
-
-                    loadShaderAssets(true);
-
                     for (auto [name, props]: propsMap)
                     {
-                        pipelineManager->Recreate(name, *props);
+                        m_pipelineManager->Recreate(name, *props);
                     }
                     break;
                 }
                 case VirtualKey::F3:
                 {
-                    camera.LogDebug();
+                    m_camera.LogDebug();
                     break;
                 }
                 case Wl::VirtualKey::F4:
                 {
-                    camera = InitCamera();
+                    m_camera = InitCamera();
                     break;
                 }
                 case VirtualKey::Escape:
                 {
-                    application.Stop();
+                    Engine::GetInstance().GetApplication()->RequestStop();
                     break;
                 }
                 default:
@@ -322,232 +245,238 @@ namespace Wl
             }
         });
 
-        RenderView view;
-
-        float lightVelocity = 3.1f;
-        float lightThresholdPosition = 3.0f;
-
-        // Update handle
-        application.OnTick.Connect([&](Timer& timer)
-        {
-            double deltaTime = timer.GetDeltaTime();
-
-            uint32_t width = frameContext->GetSwapchain()->GetWidth();
-            uint32_t height = frameContext->GetSwapchain()->GetHeight();
-            float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
-            for (size_t i = 0; i < punctualLights.GetSize(); i++)
-            {
-                PunctualLight& light = punctualLights[i];
-                PunctualLight& originalLight = originalsPunctualLights[i];
-
-                // light.Position.x += (lightVelocity * deltaTime);
-                float offset = light.Position.x - originalLight.Position.x;
-                if (Math::Abs(offset) > lightThresholdPosition)
-                {
-                    lightVelocity = -lightVelocity;
-                }
-            }
-
-            Vector3f direction(0.0f, 0.0f, 0.0f);
-
-            if (Input::KeyIsDown(VirtualKey::Z))
-            {
-                direction += camera.Front;
-            }
-
-            if (Input::KeyIsDown(VirtualKey::S))
-            {
-                direction -= camera.Front;
-            }
-
-            if (Input::KeyIsDown(VirtualKey::Q))
-            {
-                direction -= camera.Right;
-            }
-
-            if (Input::KeyIsDown(VirtualKey::D))
-            {
-                direction += camera.Right;
-            }
-
-            if (Input::KeyIsDown(VirtualKey::Space))
-            {
-                direction += camera.WorldUp;
-            }
-
-            if (Input::KeyIsDown(VirtualKey::LeftShift))
-            {
-                direction -= camera.WorldUp;
-            }
-
-            if (Vector3f::Length(direction) > 0.0f)
-            {
-                direction = Vector3f::Normalize(direction);
-                camera.Position += direction * camera.MovementSpeed * deltaTime;
-                camera.UpdateVectors();
-            }
-
-            camera.UpdateView();
-
-            view.View = camera.View;
-            view.Proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
-            view.ViewProj = view.Proj * view.View;
-            view.Eye = camera.Position;
-        });
-
-        PassContext passContext = {};
-        passContext.FrameGraph = frameGraph;
-        passContext.MaterialRegistry = materialRegistry;
-        passContext.TextureRegistry = textureRegistry;
-        passContext.PipelineManager = pipelineManager;
-
-        // Render handle
-        application.OnTick.Connect([&](Timer& /* timer */)
-        {
-            FrameResult result = frameContext->BeginFrame();
-            WL_CHECK(result == FrameResult::Success);
-
-            frameGraph->BeginFrame();
-
-            Frame& frame = frameContext->GetCurrentFrame();
-
-            uint32_t width = frameContext->GetSwapchain()->GetWidth();
-            uint32_t height = frameContext->GetSwapchain()->GetHeight();
-
-            Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
-            Rect2D scissor(0.0f, 0.0f, width, height);
-
-            // View Instance allocation
-            RenderAllocation viewAllocation = frame.UniformAllocator.Allocate<RenderView>();
-            frame.UniformAllocator.UpdateData(viewAllocation, view);
-
-            // Light allocation
-            RenderAllocation punctualLightBufferAllocation = frame.UniformAllocator.AllocateArray<PunctualLight>(punctualLights.GetSize());
-            for (size_t i = 0; i < punctualLights.GetSize(); i++)
-            {
-                punctualLightBufferAllocation.Get<PunctualLight>()[i] = punctualLights[i];
-            }
-
-            RenderAllocation countersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
-            uint32_t* punctualLightCount = countersAllocation.Get<uint32_t>();
-            *punctualLightCount = punctualLights.GetSize();
-
-            // Sponza allocation
-            RenderAllocation sponzaAllocation = frame.StorageAllocator.AllocateArray<RenderSubMeshData>(sponzaMesh.GetSubMeshCount());
-            RenderSubMeshDataLayout layout = RenderSubMeshData::CreateLayout(frame.StorageAllocator.GetMinAligment());
-            for (size_t i = 0; i < sponzaMesh.GetSubMeshCount(); i++)
-            {
-                layout.UpdateData(sponzaAllocation.Get<uint8_t>() + i * layout.Stride, sponzaMesh.GetSubMeshes()[i]);
-            }
-
-            FrameGraphBufferHandle indirect = frameGraph->ImportBuffer(indirectBuffer, indirectBuffer->GetSize(), 0);
-
-            FrameGraphTextureInfo colorTextureInfo = {};
-            colorTextureInfo.Name = "Color";
-            colorTextureInfo.Format = frameContext->GetSwapchain()->GetFormat();
-            colorTextureInfo.SizeClass = SizeClass::Swapchain;
-            FrameGraphTextureHandle color = frameGraph->CreateTexture(colorTextureInfo);
-
-            FrameGraphTextureInfo positionTextureInfo = {};
-            positionTextureInfo.Name = "Position";
-            positionTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
-            positionTextureInfo.SizeClass = SizeClass::Swapchain;
-            FrameGraphTextureHandle position = frameGraph->CreateTexture(positionTextureInfo);
-
-            FrameGraphTextureInfo normalTextureInfo = {};
-            normalTextureInfo.Name = "Normal";
-            normalTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
-            normalTextureInfo.SizeClass = SizeClass::Swapchain;
-            FrameGraphTextureHandle normal = frameGraph->CreateTexture(normalTextureInfo);
-
-            FrameGraphTextureInfo albedoTextureInfo = {};
-            albedoTextureInfo.Name = "Albedo";
-            albedoTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
-            albedoTextureInfo.SizeClass = SizeClass::Swapchain;
-            FrameGraphTextureHandle albedo = frameGraph->CreateTexture(albedoTextureInfo);
-
-            FrameGraphTextureInfo depthStencilTextureInfo = {};
-            depthStencilTextureInfo.Name = "DepthScentil";
-            depthStencilTextureInfo.Format = RHIFormat::D24S8;
-            depthStencilTextureInfo.SizeClass = SizeClass::Swapchain;
-            FrameGraphTextureHandle depthStencil = frameGraph->CreateTexture(depthStencilTextureInfo);
-
-            GBufferPassParameters gBufferParams = {};
-            gBufferParams.Position = position;
-            gBufferParams.Normal = normal;
-            gBufferParams.Albedo = albedo;
-            gBufferParams.DepthStencil = depthStencil;
-            gBufferParams.Indirect = indirect;
-            gBufferParams.DrawCount = drawIndexedCommands.GetSize();
-            gBufferParams.MeshAllocation = &sponzaAllocation;
-            gBufferParams.Mesh = &sponzaMesh;
-            gBufferParams.RenderViewAllocation = &viewAllocation;
-
-            FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, gbufferPipelineProperties, gBufferParams);
-
-            LightingPassParameters lightingParams = {};
-            lightingParams.Color = color;
-            lightingParams.Albedo = albedo;
-            lightingParams.Normal = normal;
-            lightingParams.Position = position;
-            lightingParams.Indirect = indirect;
-            lightingParams.DepthStencil = depthStencil;
-            lightingParams.RenderViewAllocation = &viewAllocation;
-            lightingParams.LightAllocation = &punctualLightBufferAllocation;
-            lightingParams.MeshAllocation = &sponzaAllocation;
-            lightingParams.CountersAllocation = &countersAllocation;
-
-            FrameGraphPass& lightingPass = LightingPassCreate(passContext, lightingPipelineProperties, lightingParams);
-
-            frameGraph->AddOutput(color);
-            frameGraph->Compile();
-
-            getOrCreatePipeline(gBufferPass,
-                                gbufferPipelineProperties,
-                                RHICullModeFlags::Back,
-                                viewport,
-                                scissor,
-                                gBufferVertexShaderAsset,
-                                gBufferFragmentShaderAsset);
-
-            getOrCreatePipeline(lightingPass,
-                                lightingPipelineProperties,
-                                RHICullModeFlags::None,
-                                viewport,
-                                scissor,
-                                lightingVertexShaderAsset,
-                                lightingFragmentShaderAsset);
-
-            frameGraph->Execute(frame.CommandBuffer);
-            frameGraph->EndFrame();
-            frameContext->EndFrame();
-        });
-
-        window->Show();
-
-        application.Start();
-        application.Run();
-
-        frameGraph->Destroy();
-
-        sponzaMesh.Destroy();
-
-        device->DestroyBuffer(indirectBuffer);
-
-        pipelineManager->Destroy();
-
-        materialRegistry->Destroy();
-        textureRegistry->Destroy();
-
-        frameContext->Destroy();
-        device->Destroy();
-
-        window->Close();
-
-        application.Stop();
-
-        return EXIT_SUCCESS;
+        m_window->Show();
     }
+
+    void LudoApplicationDelegate::OnUpdate(double deltaTime)
+    {
+        uint32_t width = m_frameContext->GetSwapchain()->GetWidth();
+        uint32_t height = m_frameContext->GetSwapchain()->GetHeight();
+
+        float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+        
+        static float elapsedTime = 0.0f;
+        
+        float lightVelocity = 3.0f; 
+        float lightAmplitude = 0.5f;
+
+        elapsedTime += deltaTime;
+
+        for (size_t i = 0; i < m_lights.GetSize(); i++)
+        {
+            PunctualLight& light = m_lights[i];
+            PunctualLight& originalLight = m_originalLights[i];
+
+            float offset = Math::Sin(elapsedTime * lightVelocity) * lightAmplitude;
+            light.Position = originalLight.Position + Wl::Vector3(offset, 0.0f, 0.0f);
+        }
+
+        Vector3f direction(0.0f, 0.0f, 0.0f);
+
+        if (Input::KeyIsDown(VirtualKey::Z))
+        {
+            direction += m_camera.Front;
+        }
+
+        if (Input::KeyIsDown(VirtualKey::S))
+        {
+            direction -= m_camera.Front;
+        }
+
+        if (Input::KeyIsDown(VirtualKey::Q))
+        {
+            direction -= m_camera.Right;
+        }
+
+        if (Input::KeyIsDown(VirtualKey::D))
+        {
+            direction += m_camera.Right;
+        }
+
+        if (Input::KeyIsDown(VirtualKey::Space))
+        {
+            direction += m_camera.WorldUp;
+        }
+
+        if (Input::KeyIsDown(VirtualKey::LeftShift))
+        {
+            direction -= m_camera.WorldUp;
+        }
+
+        if (Vector3f::Length(direction) > 0.0f)
+        {
+            direction = Vector3f::Normalize(direction);
+            m_camera.Position += direction * m_camera.MovementSpeed * deltaTime;
+            m_camera.UpdateVectors();
+        }
+
+        m_camera.UpdateView();
+
+        m_view.View = m_camera.View;
+        m_view.Proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
+        m_view.ViewProj = m_view.Proj * m_view.View;
+        m_view.Eye = m_camera.Position;
+    }
+
+    void LudoApplicationDelegate::OnRender()
+    {
+        PassContext passContext = {};
+        passContext.FrameGraph = m_frameGraph;
+        passContext.MaterialRegistry = m_materialRegistry;
+        passContext.TextureRegistry = m_textureRegistry;
+        passContext.PipelineManager = m_pipelineManager;
+
+        FrameResult result = m_frameContext->BeginFrame();
+        WL_CHECK(result == FrameResult::Success);
+
+        m_frameGraph->BeginFrame();
+
+        Frame& frame = m_frameContext->GetCurrentFrame();
+
+        uint32_t width = m_frameContext->GetSwapchain()->GetWidth();
+        uint32_t height = m_frameContext->GetSwapchain()->GetHeight();
+
+        Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
+        Rect2D scissor(0.0f, 0.0f, width, height);
+
+        // View Instance allocation
+        RenderAllocation viewAllocation = frame.UniformAllocator.Allocate<ViewData>();
+        frame.UniformAllocator.UpdateData(viewAllocation, m_view);
+
+        // Light allocation
+        RenderAllocation punctualLightBufferAllocation = frame.UniformAllocator.AllocateArray<PunctualLight>(m_lights.GetSize());
+        for (size_t i = 0; i < m_lights.GetSize(); i++)
+        {
+            punctualLightBufferAllocation.Get<PunctualLight>()[i] = m_lights[i];
+        }
+
+        RenderAllocation countersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
+        uint32_t* punctualLightCount = countersAllocation.Get<uint32_t>();
+        *punctualLightCount = m_lights.GetSize();
+
+        // Sponza allocation
+        RenderAllocation sponzaAllocation = frame.StorageAllocator.AllocateArray<RenderSubMeshData>(m_sponzaMesh->GetSubMeshCount());
+        RenderSubMeshDataLayout layout = RenderSubMeshData::CreateLayout(frame.StorageAllocator.GetMinAligment());
+        for (size_t i = 0; i < m_sponzaMesh->GetSubMeshCount(); i++)
+        {
+            layout.UpdateData(sponzaAllocation.Get<uint8_t>() + i * layout.Stride, m_sponzaMesh->GetSubMeshes()[i]);
+        }
+
+        FrameGraphBufferHandle indirect = m_frameGraph->ImportBuffer(m_indirectBuffer, m_indirectBuffer->GetSize(), 0);
+
+        FrameGraphTextureInfo colorTextureInfo = {};
+        colorTextureInfo.Name = "Color";
+        colorTextureInfo.Format = m_frameContext->GetSwapchain()->GetFormat();
+        colorTextureInfo.SizeClass = SizeClass::Swapchain;
+        FrameGraphTextureHandle color = m_frameGraph->CreateTexture(colorTextureInfo);
+
+        FrameGraphTextureInfo positionTextureInfo = {};
+        positionTextureInfo.Name = "Position";
+        positionTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
+        positionTextureInfo.SizeClass = SizeClass::Swapchain;
+        FrameGraphTextureHandle position = m_frameGraph->CreateTexture(positionTextureInfo);
+
+        FrameGraphTextureInfo normalTextureInfo = {};
+        normalTextureInfo.Name = "Normal";
+        normalTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
+        normalTextureInfo.SizeClass = SizeClass::Swapchain;
+        FrameGraphTextureHandle normal = m_frameGraph->CreateTexture(normalTextureInfo);
+
+        FrameGraphTextureInfo albedoTextureInfo = {};
+        albedoTextureInfo.Name = "Albedo";
+        albedoTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
+        albedoTextureInfo.SizeClass = SizeClass::Swapchain;
+        FrameGraphTextureHandle albedo = m_frameGraph->CreateTexture(albedoTextureInfo);
+
+        FrameGraphTextureInfo depthStencilTextureInfo = {};
+        depthStencilTextureInfo.Name = "DepthScentil";
+        depthStencilTextureInfo.Format = RHIFormat::D24S8;
+        depthStencilTextureInfo.SizeClass = SizeClass::Swapchain;
+        FrameGraphTextureHandle depthStencil = m_frameGraph->CreateTexture(depthStencilTextureInfo);
+
+        GBufferPassParameters gBufferParams = {};
+        gBufferParams.Position = position;
+        gBufferParams.Normal = normal;
+        gBufferParams.Albedo = albedo;
+        gBufferParams.DepthStencil = depthStencil;
+        gBufferParams.Indirect = indirect;
+        gBufferParams.DrawCount = m_indirectBufferCount;
+        gBufferParams.MeshAllocation = &sponzaAllocation;
+        gBufferParams.Mesh = m_sponzaMesh;
+        gBufferParams.RenderViewAllocation = &viewAllocation;
+
+        FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, m_shaderBundle->GBufferPipelineProperties, gBufferParams);
+
+        LightingPassParameters lightingParams = {};
+        lightingParams.Color = color;
+        lightingParams.Albedo = albedo;
+        lightingParams.Normal = normal;
+        lightingParams.Position = position;
+        lightingParams.Indirect = indirect;
+        lightingParams.DepthStencil = depthStencil;
+        lightingParams.RenderViewAllocation = &viewAllocation;
+        lightingParams.LightAllocation = &punctualLightBufferAllocation;
+        lightingParams.MeshAllocation = &sponzaAllocation;
+        lightingParams.CountersAllocation = &countersAllocation;
+
+        FrameGraphPass& lightingPass = LightingPassCreate(passContext, m_shaderBundle->LightingPipelineProperties, lightingParams);
+
+        m_frameGraph->AddOutput(color);
+        m_frameGraph->Compile();
+
+        GetOrCreatePipeline(gBufferPass,
+                            m_shaderBundle->GBufferPipelineProperties,
+                            RHICullModeFlags::Back,
+                            viewport,
+                            scissor);
+
+        GetOrCreatePipeline(lightingPass,
+                            m_shaderBundle->LightingPipelineProperties,
+                            RHICullModeFlags::None,
+                            viewport,
+                            scissor);
+
+        m_frameGraph->Execute(frame.CommandBuffer);
+        m_frameGraph->EndFrame();
+        m_frameContext->EndFrame();
+    }
+
+    RHIPipeline* LudoApplicationDelegate::GetOrCreatePipeline(FrameGraphPass& pass,
+                                                              GraphicsPipelineState& state,
+                                                              RHICullModeFlags cullMode,
+                                                              const Viewport& viewport,
+                                                              const Rect2D& scissor)
+    {
+        state.SRGLayouts[LudoTextureGRGIndex] = m_textureRegistry->GetSRGLayout();
+        state.SRGLayouts[LudoMaterialsSRGIndex] = m_materialRegistry->GetSRGLayout();
+        state.CullMode = cullMode;
+        state.Viewport = viewport;
+        state.Scissor = scissor;
+        state.VertexShader = state.VertexShader;
+        state.FragmentShader = state.FragmentShader;
+        state.RenderPass = m_frameGraph->GetRenderPass(pass.GetName());
+
+        return m_pipelineManager->GetOrCreate(pass.GetName(), state);
+    }
+
+    void LudoApplicationDelegate::OnShutdown()
+    {
+        m_frameGraph->Destroy();
+
+        m_sponzaMesh->Destroy();
+
+        m_device->DestroyBuffer(m_indirectBuffer);
+
+        m_pipelineManager->Destroy();
+
+        m_materialRegistry->Destroy();
+        m_textureRegistry->Destroy();
+
+        m_frameContext->Destroy();
+        m_device->Destroy();
+
+        m_window->Close();
+    }
+
 
 }// namespace Wl

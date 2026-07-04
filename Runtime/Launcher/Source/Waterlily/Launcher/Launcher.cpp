@@ -8,8 +8,8 @@
 #include "Waterlily/Core/Platform/Platform.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/Engine/Application.hpp"
+#include "Waterlily/Engine/ApplicationDelegate.hpp"
 #include "Waterlily/Engine/Engine.hpp"
-
 
 namespace Wl
 {
@@ -80,8 +80,8 @@ namespace Wl
         MainUnloadManifest();
         PlatformShutdown();
     }
-
-    int32_t MainConsole(int32_t argc, const char** argv, EngineConsoleCallback* callback)
+    
+    int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback* callback)
     {
         if (!MainPreLaunch(argc, argv))
         {
@@ -91,25 +91,35 @@ namespace Wl
         int32_t result = callback();
 
         MainPostLaunch();
+        PlatformShutdown();
 
         return result;
     }
-
-    int32_t MainApplication(int32_t argc, const char** argv, EngineApplicationCallback* callback)
+    
+    int32_t MainApplication(int32_t argc, const char* argv[])
     {
         if (!MainPreLaunch(argc, argv))
         {
             return EXIT_FAILURE;
         }
 
-        Application application;
+        ApplicationDelegate* delegate = Engine::GetInstance().GetApplicationDelegate();
+        WL_CHECK(delegate);
 
-        int32_t result = callback(application);
+        Application app(delegate);
+        Engine::GetInstance().SetApplication(&app);
+
+        app.Start();
+        app.Run();
+        app.Stop();
+
+        Engine::GetInstance().SetApplication(nullptr);
+        Engine::GetInstance().SetApplicationDelegate(nullptr);
 
         MainPostLaunch();
         PlatformShutdown();
 
-        return result;
+        return EXIT_SUCCESS;
     }
 
 }// namespace Wl

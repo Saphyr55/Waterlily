@@ -57,8 +57,7 @@ namespace Wl
     };
 
     template<typename ResourceType, typename DeleterType>
-    class ReferenceCounterWithDeleter : private DeleterDelegate<DeleterType>
-        , public ReferenceCounter
+    class ReferenceCounterWithDeleter : private DeleterDelegate<DeleterType> , public ReferenceCounter
     {
     public:
         virtual void DestroyResource() override

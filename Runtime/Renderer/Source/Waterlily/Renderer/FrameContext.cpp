@@ -14,15 +14,14 @@
 namespace Wl
 {
 
-    void FrameContext::Init(const SharedPtr<RHIDevice>& device, const FrameContextInitInfo& info)
+    void FrameContext::Init(const FrameContextInitInfo& info)
     {
         WL_CHECK_MSG(info.GraphicsCommandBufferCount > 0, "Must have at least 1 graphics command buffer.");
-        m_device = device;
 
         Display& display = Display::GetDefault();
 
         m_defaultSampler = m_device->CreateSampler(RHISamplerDescription());
-
+        
         m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_maxFrameInFlight);
 
         m_frameInFlightFences.Resize(m_swapchain->GetTextureViews().GetSize(), nullptr);

@@ -33,6 +33,7 @@ namespace Wl
         void LogDebug();
 
     public:
+        Camera() = default;
         Camera(const Vector3f& position, const Vector3f& worldUp = Vector3f(0.0f, 1.0f, 0.0f))
             : Position(position)
             , WorldUp(worldUp)
@@ -40,6 +41,7 @@ namespace Wl
         {
             UpdateVectors();
         }
+        ~Camera() = default;
     };
 
 }// namespace Wl

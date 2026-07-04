@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Passes/PassContext.hpp"
+#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 
@@ -24,7 +25,7 @@ namespace Wl
         RenderAllocation* RenderViewAllocation = nullptr;
         RenderAllocation* MeshAllocation = nullptr;
 
-        RenderMesh* Mesh = nullptr;
+        SharedPtr<RenderMesh> Mesh = nullptr;
     };
 
     FrameGraphPass& GBufferPassCreate(PassContext& passContext,

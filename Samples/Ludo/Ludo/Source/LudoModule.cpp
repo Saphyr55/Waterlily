@@ -2,6 +2,7 @@
 
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
+#include "Waterlily/Engine/Engine.hpp"
 
 namespace Wl
 {
@@ -16,10 +17,14 @@ namespace Wl
     void LudoModule::OnStartup()
     {
         WL_LOG_INFO("LudoModule", "Starting Ludo application.");
+
+        Engine::GetInstance().SetApplicationDelegate(&m_applicationState);
     }
 
     void LudoModule::OnShutdown()
     {
+        Engine::GetInstance().SetApplicationDelegate(nullptr);
+
         WL_LOG_INFO("LudoModule", "Shutting down Ludo application.");
     }
 

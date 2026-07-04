@@ -58,7 +58,7 @@ namespace Wl
         static constexpr uint32_t MaxFrameInFlight = 3;
 
     public:
-        void Init(const SharedPtr<RHIDevice>& device, const FrameContextInitInfo& info);
+        void Init(const FrameContextInitInfo& info);
         void Destroy();
 
         // TODO: This is a temporary solution, we should have a better way to handle shader resource group pool in the
@@ -84,7 +84,10 @@ namespace Wl
         inline SharedPtr<RHIShaderResourceGroupLayoutCache> GetSRGLayoutCache();
 
     public:
-        FrameContext() = default;
+        FrameContext(const SharedPtr<RHIDevice>& device)
+            : m_device(device)
+        {
+        }
         ~FrameContext() = default;
 
     private:
