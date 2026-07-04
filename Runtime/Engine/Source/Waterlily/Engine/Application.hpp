@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Engine/EngineExports.hpp"
 
 namespace Wl
@@ -11,12 +10,18 @@ namespace Wl
     class WL_ENGINE_API Application
     {
     public:
-        void Run();
-
         void RequestStop();
+        void Pause();
+        void Unpause();
+        bool IsPaused()
+        {
+            return m_paused;
+        }
 
         void Start();
         void Stop();
+
+        void Run();
 
         inline bool IsRunning()
         {
@@ -32,6 +37,7 @@ namespace Wl
     private:
         ApplicationDelegate* m_delegate;
         bool m_isRunning = false;
+        bool m_paused = false;
     };
 
 }// namespace Wl

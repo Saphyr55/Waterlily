@@ -192,6 +192,16 @@ namespace Wl
 
         m_frameGraph = MakeShared<FrameGraph>(m_frameContext);
 
+        m_window->GetEventHandler().OnMinimized.Connect([this]()
+        {
+            Engine::GetInstance().GetApplication()->Pause();
+        });
+
+        m_window->GetEventHandler().OnExposed.Connect([this]()
+        {
+            Engine::GetInstance().GetApplication()->Unpause();
+        });
+
         m_window->GetEventHandler().OnClose.Connect([]()
         {
             WL_LOG_INFO("Ludo", "Window closed.");
@@ -254,10 +264,10 @@ namespace Wl
         uint32_t height = m_frameContext->GetSwapchain()->GetHeight();
 
         float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-        
+
         static float elapsedTime = 0.0f;
-        
-        float lightVelocity = 3.0f; 
+
+        float lightVelocity = 3.0f;
         float lightAmplitude = 0.5f;
 
         elapsedTime += deltaTime;

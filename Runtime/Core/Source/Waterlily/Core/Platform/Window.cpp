@@ -51,6 +51,14 @@ namespace Wl
             }
         });
 
+        DisplaySignals::OnWindowExposed.Connect([&](WindowHandle handle)
+        {
+            if (m_handle == handle) 
+            {
+                m_eventHandler.OnExposed.Emit();
+            }
+        });
+
         DisplaySignals::OnWindowMinimized.Connect([&](WindowHandle handle)
         {
             if (m_handle == handle)

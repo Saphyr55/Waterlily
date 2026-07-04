@@ -13,6 +13,7 @@ namespace Wl
         WL_SIGNAL(OnClose);
         WL_SIGNAL(OnResized, uint32_t /* width */, uint32_t /* height */);
         WL_SIGNAL(OnMinimized);
+        WL_SIGNAL(OnExposed);
         WL_SIGNAL(OnShown);
     };
 

@@ -1,4 +1,5 @@
 #include "Waterlily/Core/Platform/SDL/SDLDisplay.hpp"
+#include "SDL3/SDL_events.h"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Platform/SDL/SDLInput.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
@@ -156,30 +157,28 @@ namespace Wl
                 break;
             }
 
+            SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
+
             switch (event.type)
             {
                 case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-                    WindowHandle handle = m_ReverseWindowMap[window];
-                    m_eventHandler->OnWindowClose(handle);
+                    m_eventHandler->OnWindowClose(m_ReverseWindowMap[window]);
                     break;
                 }
                 case SDL_EVENT_WINDOW_RESIZED: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-                    WindowHandle handle = m_ReverseWindowMap[window];
-                    m_eventHandler->OnWindowResized(handle, event.window.data1, event.window.data2);
+                    m_eventHandler->OnWindowResized(m_ReverseWindowMap[window], event.window.data1, event.window.data2);
+                    break;
+                }
+                case SDL_EVENT_WINDOW_EXPOSED: {
+                    m_eventHandler->OnWindowExposed(m_ReverseWindowMap[window]);
                     break;
                 }
                 case SDL_EVENT_WINDOW_SHOWN: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-                    WindowHandle handle = m_ReverseWindowMap[window];
-                    m_eventHandler->OnWindowShown(handle);
+                    m_eventHandler->OnWindowShown(m_ReverseWindowMap[window]);
                     break;
                 }
                 case SDL_EVENT_WINDOW_MINIMIZED: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-                    WindowHandle handle = m_ReverseWindowMap[window];
-                    m_eventHandler->OnWindowMinimized(handle);
+                    m_eventHandler->OnWindowMinimized(m_ReverseWindowMap[window]);
                     break;
                 }
                 case SDL_EVENT_MOUSE_WHEEL: {

@@ -13,7 +13,7 @@ namespace Wl
         while (IsRunning())
         {
             Display::GetDefault().HandleEvents();
-            
+
             double nowTime = PlatformGetHighResolutionTime();
             double deltaTime = nowTime - lastTime;
             lastTime = nowTime;
@@ -21,7 +21,10 @@ namespace Wl
             if (m_delegate)
             {
                 m_delegate->OnUpdate(deltaTime);
-                m_delegate->OnRender();
+                if (!IsPaused())
+                {
+                    m_delegate->OnRender();
+                }
             }
         }
     }
@@ -34,10 +37,21 @@ namespace Wl
     void Application::Start()
     {
         m_isRunning = true;
+        Unpause();
         if (m_delegate)
         {
             m_delegate->OnStartup();
         }
+    }
+
+    void Application::Pause()
+    {
+        m_paused = true;
+    }
+
+    void Application::Unpause()
+    {
+        m_paused = false;
     }
 
     void Application::Stop()
