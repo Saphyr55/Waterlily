@@ -9,7 +9,6 @@ namespace Wl
 {
     inline const StringID LightingPassName = WL_SID("Lighting");
 
-    inline const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
 
     struct FrameGraphPass;
 

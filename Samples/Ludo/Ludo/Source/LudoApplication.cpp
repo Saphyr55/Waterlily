@@ -3,41 +3,40 @@
 #include "Passes/GBufferPass.hpp"
 #include "Passes/LightingPass.hpp"
 #include "Waterlily/Assets/AssetLoader.hpp"
-#include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
-#include "Waterlily/Core/Platform/Window.hpp"
-#include "Waterlily/Core/Platform/WindowHandle.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/Engine.hpp"
-#include "Waterlily/RHI/Buffer.hpp"
-#include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
-#include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
-#include "Waterlily/Renderer/Material/MaterialRegistry.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
-#include "Waterlily/Renderer/Mesh/StaticMesh.hpp"
-#include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
+#include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
 #include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PunctualLight.hpp"
 
 namespace Wl
 {
+    static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.hlsl");
+    static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
+    static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
 
     static const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
     static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
+
+    inline const StringID GBufferVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.vert.wlca");
+    inline const StringID GBufferFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.frag.wlca");
+    inline const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
+    inline const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
 
     static FixedArray<PunctualLight, 5> MakeLights()
     {
@@ -81,6 +80,32 @@ namespace Wl
         return camera;
     }
 
+    static bool CompileShaders()
+    {
+        FileSystem& fileSystem = FileSystem::GetPlatform();
+
+        bool success = SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
+                                                        GBufferVertexShaderAssetURI.GetText(),
+                                                        "VSMain",
+                                                        Shader::Stage::Vertex);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
+                                                              GBufferFragmentShaderAssetURI.GetText(),
+                                                              "FSMain",
+                                                              Shader::Stage::Fragment);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
+                                                              LightingVertexShaderAssetURI.GetText(),
+                                                              "VSMain",
+                                                              Shader::Stage::Vertex);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
+                                                              LightingFragmentShaderAssetURI.GetText(),
+                                                              "FSMain",
+                                                              Shader::Stage::Fragment);
+        return success;
+    }
+
     LudoApplicationDelegate::LudoApplicationDelegate()
         : m_sponzaModelAsset(nullptr)
         , m_indirectBuffer(nullptr)
@@ -96,14 +121,6 @@ namespace Wl
         m_device->Init(m_window->GetNativeWindow());
 
         m_camera = InitCamera();
-
-        Input::OnMouseMove.Connect([this](const MouseMove& mouseMove)
-        {
-            if (Input::ButtonIsDown(Button::Left))
-            {
-                m_camera.LookAround(mouseMove.PosRelX, -mouseMove.PosRelY);
-            }
-        });
 
         FileSystem& assetsFileSystem = FileSystem::GetPlatform();
 
@@ -132,15 +149,18 @@ namespace Wl
         m_materialRegistry = MakeShared<MaterialRegistry>(m_device, LudoMaterialsSRGBinding);
         m_pipelineManager = MakeShared<PipelineManager>(m_device, m_frameContext->GetSRGLayoutCache(), assetsFileSystem);
 
-        m_shaderBundle = MakeShared<ShaderBundle>();
-        m_shaderBundle->CreateAssets(m_assetRegistry);
+        m_shaderBundle = MakeShared<ShaderBundle>(m_assetRegistry, m_assetManager, m_pipelineManager);
 
         // This should be not done in application mode, but only in dev mode.
-        bool isCompilingShaderSuccessed = m_shaderBundle->LoadAssets(m_assetManager);
-        WL_CHECK_MSG(isCompilingShaderSuccessed, "Failed to compile shaders.");
+        WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
+
+        m_shaderBundle->RegisterGraphicsPass(GBufferPassName, GBufferVertexShaderAssetURI, GBufferFragmentShaderAssetURI);
+        m_shaderBundle->RegisterGraphicsPass(LightingPassName, LightingVertexShaderAssetURI, LightingFragmentShaderAssetURI);
+
+        m_shaderBundle->LoadAssets();
 
         m_sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
-        WL_CHECK_MSG(m_sponzaModelAsset, "Impossible to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
+        WL_CHECK_MSG(m_sponzaModelAsset, "Failed to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
 
         Array<StaticMesh*> modelStaticMeshesAsset(m_sponzaModelAsset->Meshes.GetSize());
         for (const AssetHandle& meshAssetHandle: m_sponzaModelAsset->Meshes)
@@ -148,11 +168,12 @@ namespace Wl
             modelStaticMeshesAsset.Append(m_assetManager->GetAsset<StaticMesh>(meshAssetHandle));
         }
 
-        UploadScheduler uploadScheduler;
         UploadSchedulerInitInfo uploadSchedulerInit = {};
         uploadSchedulerInit.Device = m_device;
         uploadSchedulerInit.StagingSize = 16 * WL_MB;
         uploadSchedulerInit.MinAlignment = m_device->GetDeviceProperties().NonCoherentAtomSize;
+
+        UploadScheduler uploadScheduler;
         uploadScheduler.Init(uploadSchedulerInit);
 
         m_sponzaMesh = MakeShared<RenderMesh>(m_device);
@@ -217,41 +238,34 @@ namespace Wl
 
         Input::OnKeyRelease.Connect([this](VirtualKey key)
         {
-            switch (key)
+            if (key == VirtualKey::F2)
             {
-                case VirtualKey::F2:
-                {
-                    m_device->WaitIdle();
+                m_device->WaitIdle();
+                WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
+                m_shaderBundle->ReloadAssets();
+            }
 
-                    m_shaderBundle->ReloadAssets(m_assetManager);
+            if (key == VirtualKey::F3)
+            {
+                m_camera.LogDebug();
+            }
 
-                    HashMap<StringID, GraphicsPipelineState*> propsMap = {
-                            {GBufferPassName,  &m_shaderBundle->GBufferPipelineProperties },
-                            {LightingPassName, &m_shaderBundle->LightingPipelineProperties}
-                    };
-                    for (auto [name, props]: propsMap)
-                    {
-                        m_pipelineManager->Recreate(name, *props);
-                    }
-                    break;
-                }
-                case VirtualKey::F3:
-                {
-                    m_camera.LogDebug();
-                    break;
-                }
-                case Wl::VirtualKey::F4:
-                {
-                    m_camera = InitCamera();
-                    break;
-                }
-                case VirtualKey::Escape:
-                {
-                    Engine::GetInstance().GetApplication()->RequestStop();
-                    break;
-                }
-                default:
-                    break;
+            if (key == VirtualKey::F4)
+            {
+                m_camera = InitCamera();
+            }
+
+            if (key == VirtualKey::Escape)
+            {
+                Engine::GetInstance().GetApplication()->RequestStop();
+            }
+        });
+
+        Input::OnMouseMove.Connect([this](const MouseMove& mouseMove)
+        {
+            if (Input::ButtonIsDown(Button::Left))
+            {
+                m_camera.LookAround(mouseMove.PosRelX, -mouseMove.PosRelY);
             }
         });
 
@@ -415,7 +429,8 @@ namespace Wl
         gBufferParams.Mesh = m_sponzaMesh;
         gBufferParams.RenderViewAllocation = &viewAllocation;
 
-        FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, m_shaderBundle->GBufferPipelineProperties, gBufferParams);
+        ShaderGraphicsPass& shaderGBufferPass = m_shaderBundle->GetShaderGraphicsPass(GBufferPassName);
+        FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, shaderGBufferPass.PipelineState, gBufferParams);
 
         LightingPassParameters lightingParams = {};
         lightingParams.Color = color;
@@ -429,19 +444,20 @@ namespace Wl
         lightingParams.MeshAllocation = &sponzaAllocation;
         lightingParams.CountersAllocation = &countersAllocation;
 
-        FrameGraphPass& lightingPass = LightingPassCreate(passContext, m_shaderBundle->LightingPipelineProperties, lightingParams);
+        ShaderGraphicsPass& shaderLightingPass = m_shaderBundle->GetShaderGraphicsPass(LightingPassName);
+        FrameGraphPass& lightingPass = LightingPassCreate(passContext, shaderLightingPass.PipelineState, lightingParams);
 
         m_frameGraph->AddOutput(color);
         m_frameGraph->Compile();
 
         GetOrCreatePipeline(gBufferPass,
-                            m_shaderBundle->GBufferPipelineProperties,
+                            shaderGBufferPass.PipelineState,
                             RHICullModeFlags::Back,
                             viewport,
                             scissor);
 
         GetOrCreatePipeline(lightingPass,
-                            m_shaderBundle->LightingPipelineProperties,
+                            shaderLightingPass.PipelineState,
                             RHICullModeFlags::None,
                             viewport,
                             scissor);

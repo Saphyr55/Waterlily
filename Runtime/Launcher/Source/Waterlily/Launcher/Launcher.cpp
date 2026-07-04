@@ -80,7 +80,7 @@ namespace Wl
         MainUnloadManifest();
         PlatformShutdown();
     }
-    
+
     int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback* callback)
     {
         if (!MainPreLaunch(argc, argv))
@@ -95,7 +95,7 @@ namespace Wl
 
         return result;
     }
-    
+
     int32_t MainApplication(int32_t argc, const char* argv[])
     {
         if (!MainPreLaunch(argc, argv))

@@ -9,7 +9,6 @@
 namespace Wl
 {
     inline const StringID LudoForwardPassName = WL_SID("Forward");
-    inline const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
 
     struct ForwardPassParameters
     {

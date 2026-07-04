@@ -11,8 +11,6 @@ namespace Wl
 
     inline const StringID GBufferPassName = WL_SID("GBuffer");
 
-    inline const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.hlsl");
-
     struct GBufferPassParameters
     {
         FrameGraphTextureHandle Position;

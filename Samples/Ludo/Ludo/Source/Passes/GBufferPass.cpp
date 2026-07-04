@@ -7,7 +7,7 @@ namespace Wl
 {
 
     FrameGraphPass& GBufferPassCreate(PassContext& passContext, 
-                                      GraphicsPipelineState& pipeline,
+                                      GraphicsPipelineState& pipelineState,
                                       GBufferPassParameters& data)
     {
         FrameGraphPass& gBufferPass = passContext.FrameGraph->AddPass(GBufferPassName);
@@ -40,7 +40,7 @@ namespace Wl
 
             RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
 
-            RHIShaderResourceGroupLayout* globalSRGLayout = pipeline.SRGLayouts[GlobalSRGIndex];
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[GlobalSRGIndex];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
 
             RHIWriteBufferResource writeRenderView(GlobalSRGRenderViewBinding,
@@ -51,7 +51,7 @@ namespace Wl
             globalSRG->SetBuffer(writeRenderView);
             globalSRG->Update();
 
-            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipeline.SRGLayouts[RenderInstanceSRGIndex];
+            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipelineState.SRGLayouts[RenderInstanceSRGIndex];
             RHIShaderResourceGroup* drawItemSRG = frame.SRGPool->AllocateSRG(drawItemSRGLayout);
 
             RHIWriteBufferResource writeDrawItem(RenderInstanceSRGBinding,

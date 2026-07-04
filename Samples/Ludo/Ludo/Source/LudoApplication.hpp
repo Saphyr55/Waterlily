@@ -1,7 +1,6 @@
 #pragma once
 
 #include "LudoExports.hpp"
-#include "ShaderBundle.hpp"
 #include "Waterlily/Assets/AssetManager.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
@@ -16,6 +15,7 @@
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
+#include "Waterlily/Renderer/Shader/ShaderBundle.hpp"
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
 #include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
