@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Concepts.hpp"
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 
@@ -27,7 +26,7 @@ namespace Wl
         DeleterType m_deleter;
     };
 
-    template<typename ResourceType, CAlignedAllocator AllocatorType>
+    template<typename ResourceType, CAllocator AllocatorType>
     class Deleter
     {
     public:
@@ -57,7 +56,7 @@ namespace Wl
     using DefaultDeleter = Deleter<ResourceType, DefaultAllocator>;
 
     template<typename ResourceType>
-    inline auto CreateDeleter(CAlignedAllocator auto& allocator) -> auto
+    inline auto CreateDeleter(CAllocator auto& allocator) -> auto
     {
         return Deleter<ResourceType, decltype(allocator)>(allocator);
     }

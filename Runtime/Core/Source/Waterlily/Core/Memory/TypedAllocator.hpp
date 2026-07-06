@@ -1,62 +1,57 @@
 #pragma once
 
 
-#include "Waterlily/Core/Memory/Concepts.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 
 namespace Wl
 {
 
-    template<typename ElementType, CAlignedAllocator AllocatorType>
+    template<typename ElementType>
     class TypedAllocator
     {
     public:
-        template<typename OtherResourceType, CAlignedAllocator OtherAllocatorType = AllocatorType>
+        template<typename OtherResourceType>
         struct rebind
         {
-            using other = TypedAllocator<OtherResourceType, OtherAllocatorType>;
+            using other = TypedAllocator<OtherResourceType>;
         };
 
     public:
         constexpr ElementType* Allocate(size_t n)
         {
-            return static_cast<ElementType*>(m_allocator->Allocate(n * sizeof(ElementType), alignof(ElementType)));
+            return static_cast<ElementType*>(m_allocator.Allocate(n * sizeof(ElementType), alignof(ElementType)));
         }
 
         constexpr void Deallocate(ElementType* element, size_t n)
         {
-            m_allocator->Deallocate(element, n * sizeof(ElementType), alignof(ElementType));
+            m_allocator.Deallocate(element, n * sizeof(ElementType), alignof(ElementType));
         }
 
         constexpr ElementType* Allocate(size_t n, size_t alignment)
         {
-            return static_cast<ElementType*>(m_allocator->Allocate(n * sizeof(ElementType), alignment));
+            return static_cast<ElementType*>(m_allocator.Allocate(n * sizeof(ElementType), alignment));
         }
 
         constexpr void Deallocate(ElementType* element, size_t n, size_t alignment)
         {
-            m_allocator->Deallocate(element, n * sizeof(ElementType), alignment);
-        }
-
-        constexpr bool IsValid() const
-        {
-            return m_allocator != nullptr;
+            m_allocator.Deallocate(element, n * sizeof(ElementType), alignment);
         }
 
     protected:
-        constexpr AllocatorType* GetAllocator()
+        constexpr Allocator& GetAllocator()
         {
             return m_allocator;
         }
 
     public:
-        constexpr TypedAllocator(AllocatorType* memory)
-            : m_allocator(memory)
+        constexpr TypedAllocator(Allocator& allocator)
+            : m_allocator(allocator)
         {
         }
         constexpr ~TypedAllocator() = default;
 
     protected:
-        AllocatorType* m_allocator;
+        Allocator& m_allocator;
     };
 
 }// namespace Wl

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Waterlily/Core/CoreExports.hpp"
+#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Deleter.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"

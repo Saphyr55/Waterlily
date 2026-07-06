@@ -2,8 +2,11 @@
 
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/TypedAllocator.hpp"
 
 #include <initializer_list>
 #include <utility>
@@ -36,7 +39,7 @@ namespace Wl
     };
 
     template<typename KeyType,
-             CTypedAllocator<HashSetElement<KeyType>> AllocatorType = DefaultTypedAllocator<HashSetElement<KeyType>>,
+             CAllocator AllocatorType = AllocatorProxy,
              typename HasherType = Hasher>
     class HashSet
     {
@@ -234,7 +237,8 @@ namespace Wl
                 ElementType** tail = &m_buckets[i];
                 while (cur)
                 {
-                    ElementType* copy = m_allocator.Allocate(1);
+                    TypedAllocator<ElementType> allocator(m_allocator);
+                    ElementType* copy = allocator.Allocate(1);
                     WL_PLACEMENT_NEW(copy)
                     ElementType(cur->Key, cur->Hash);
                     *tail = copy;
@@ -374,6 +378,8 @@ namespace Wl
 
         size_t Remove(const KeyType& key)
         {
+            TypedAllocator<ElementType> allocator(m_allocator);
+
             if (!m_buckets)
             {
                 return 0;
@@ -401,7 +407,7 @@ namespace Wl
                     }
 
                     cur->~ElementType();
-                    m_allocator.Deallocate(cur, 1);
+                    allocator.Deallocate(cur, 1);
                     --m_size;
 
                     return 1;
@@ -477,6 +483,8 @@ namespace Wl
 
         void Clear()
         {
+            TypedAllocator<ElementType> allocator(m_allocator);
+
             if (!m_buckets)
             {
                 return;
@@ -490,7 +498,7 @@ namespace Wl
                 {
                     ElementType* next = cur->Next;
                     cur->~ElementType();
-                    m_allocator.Deallocate(cur, 1);
+                    allocator.Deallocate(cur, 1);
                     cur = next;
                 }
 
@@ -629,21 +637,23 @@ namespace Wl
 
         ElementType* CreateElement(const KeyType& key, size_t h)
         {
-            ElementType* raw = m_allocator.Allocate(1);
+            TypedAllocator<ElementType> allocator(m_allocator);
+            ElementType* raw = allocator.Allocate(1);
             ElementType* element = WL_PLACEMENT_NEW(raw) ElementType(key, h);
             return element;
         }
 
         ElementType* CreateElement(KeyType&& key, size_t h)
         {
-            ElementType* raw = m_allocator.Allocate(1);
+            TypedAllocator<ElementType> allocator(m_allocator);
+            ElementType* raw = allocator.Allocate(1);
             ElementType* element = WL_PLACEMENT_NEW(raw) ElementType(std::move(key), h);
             return element;
         }
 
         size_t Hash(const KeyType& key) const
         {
-            return std::hash<KeyType>{}(key);
+            return std::hash<KeyType> {}(key);
         }
 
         void InitializeBuckets()

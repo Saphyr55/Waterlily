@@ -2,7 +2,6 @@
 
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 
@@ -285,14 +284,14 @@ namespace Wl
         {
         }
 
-        template<CAlignedAllocator AllocatorType = DefaultAllocator>
+        template<CAllocator AllocatorType = DefaultAllocator>
         constexpr ArrayView(const Array<value_type, AllocatorType>& array) noexcept
             : m_data(const_cast<value_type*>(array.GetData()))
             , m_size(array.GetSize())
         {
         }
 
-        template<CAlignedAllocator AllocatorType = DefaultAllocator>
+        template<CAllocator AllocatorType = DefaultAllocator>
         constexpr ArrayView(Array<value_type, AllocatorType>& array) noexcept
             : m_data(array.GetData())
             , m_size(array.GetSize())

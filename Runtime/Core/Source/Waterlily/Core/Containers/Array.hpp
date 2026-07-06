@@ -2,8 +2,8 @@
 
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Math/Math.hpp"
+#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/TypedAllocator.hpp"
 
@@ -14,7 +14,7 @@
 namespace Wl
 {
 
-    template<typename ElementType, CAlignedAllocator AllocatorType = DefaultAllocator>
+    template<typename ElementType, CAllocator AllocatorType = AllocatorProxy>
     class Array
     {
     public:
@@ -604,18 +604,18 @@ namespace Wl
 
         ElementType* AllocatorAllocate(size_type n)
         {
-            TypedAllocator<ElementType, AllocatorType> typedAllocator(&m_allocator);
+            TypedAllocator<ElementType> typedAllocator(m_allocator);
             ElementType* elements = typedAllocator.Allocate(n);
             WL_CHECK(elements);
             return elements;
         }
 
-        void AllocatorDeallocate(ElementType* p, size_type n)
+        void AllocatorDeallocate(ElementType* elements, size_type n)
         {
-            if (p)
+            if (elements)
             {
-                TypedAllocator<ElementType, AllocatorType> typedAllocator(&m_allocator);
-                typedAllocator.Deallocate(p, n);
+                TypedAllocator<ElementType> typedAllocator(m_allocator);
+                typedAllocator.Deallocate(elements, n);
             }
         }
 

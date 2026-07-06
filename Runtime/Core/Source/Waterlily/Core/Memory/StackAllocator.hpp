@@ -1,14 +1,13 @@
 #pragma once
 
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
-#include "Waterlily/Core/Memory/TypedAllocator.hpp"
 
 namespace Wl
 {
 
-    class WL_CORE_API StackAllocator : public AlignedAllocator
+    class WL_CORE_API StackAllocator : public Allocator
     {
     public:
         virtual void* Allocate(size_t size, size_t alignment) override;
@@ -27,7 +26,7 @@ namespace Wl
 
         void Pop(size_t marker)
         {
-            WL_CHECK_MSG(marker <= m_size, "Marker is out of bounds.");
+            WL_CHECK(marker <= m_size);
             m_head = marker - 1;
         }
 
@@ -53,28 +52,6 @@ namespace Wl
         size_t m_size;
         size_t m_head;
         uint8_t* m_buffer;
-    };
-
-    template<typename Type>
-    class TypedStackAllocator : public TypedAllocator<Type, StackAllocator>
-    {
-        using Super = TypedAllocator<Type, StackAllocator>;
-
-    public:
-        void Reset()
-        {
-            Super::GetAllocator().Reset();
-        }
-
-        void PopHead()
-        {
-            Super::GetAllocator().PopHead();
-        }
-
-        void Pop(size_t marker)
-        {
-            Super::GetAllocator().Pop(marker);
-        }
     };
 
 }// namespace Wl

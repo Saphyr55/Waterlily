@@ -114,7 +114,7 @@ namespace Wl
     };
 
     template<typename ResourceType>
-    inline ResourceType* New(Wl::CAlignedAllocator auto& allocator, ResourceType&& resource) noexcept
+    inline ResourceType* New(CAllocator auto& allocator, ResourceType&& resource) noexcept
     {
         void* memory = allocator.Allocate(sizeof(ResourceType), alignof(ResourceType));
         if (!memory)
@@ -127,7 +127,7 @@ namespace Wl
 
     template<typename ResourceType, typename... Args>
         requires(std::is_constructible_v<ResourceType, Args && ...>)
-    inline ResourceType* NewArgs(Wl::CAlignedAllocator auto& allocator, Args&&... args) noexcept
+    inline ResourceType* NewArgs(CAllocator auto& allocator, Args&&... args) noexcept
     {
         void* memory = allocator.Allocate(sizeof(ResourceType), alignof(ResourceType));
         if (!memory)
@@ -139,7 +139,7 @@ namespace Wl
     }
 
     template<typename ResourceType>
-    inline void Delete(Wl::CAlignedAllocator auto& allocator, ResourceType* ptr) noexcept
+    inline void Delete(CAllocator auto& allocator, ResourceType* ptr) noexcept
     {
         WL_CHECK(ptr);
 

@@ -4,8 +4,8 @@
 #include "Waterlily/Core/Containers/Entry.hpp"
 #include "Waterlily/Core/Containers/HashMapSlot.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
+#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Traits/AlignedStorage.hpp"
 
 #include <cstddef>
@@ -17,7 +17,7 @@ namespace Wl
     template<typename KeyType,
              typename ValueType,
              typename HashType = Hash<KeyType>,
-             CAlignedAllocator AllocatorType = DefaultAllocator>
+             CAllocator AllocatorType = AllocatorProxy>
     class HashMap
     {
     public:

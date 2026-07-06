@@ -2,6 +2,7 @@
 #include <catch2/catch_approx.hpp>
 
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
+#include "Waterlily/Core/Memory/TypedAllocator.hpp"
 
 using namespace Wl;
 
@@ -51,7 +52,7 @@ TEST_CASE("LinearAllocator basic allocation", "[LinearAllocator]")
 TEST_CASE("TypedLinearAllocator usage.", "[TypedLinearAllocator]")
 {
     LinearAllocator allocator(512);
-    TypedLinearAllocator<int32_t> typedAllocator(&allocator);
+    TypedAllocator<int32_t> typedAllocator(allocator);
 
     SECTION("Allocate array of ints.")
     {
@@ -70,7 +71,7 @@ TEST_CASE("TypedLinearAllocator usage.", "[TypedLinearAllocator]")
 
     SECTION("Allocate multiple different types with same pool.")
     {
-        TypedLinearAllocator<double> float64Alloctorr(&allocator);
+        TypedAllocator<double> float64Alloctorr(allocator);
 
         int32_t* ints = typedAllocator.Allocate(4);
         REQUIRE(ints != nullptr);

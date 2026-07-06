@@ -3,7 +3,7 @@
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Core/String/stringRegistry.hpp"
+#include "Waterlily/Core/String/StringRegistry.hpp"
 #include "Waterlily/Core/hash/fnv-1a.hpp"
 
 namespace Wl

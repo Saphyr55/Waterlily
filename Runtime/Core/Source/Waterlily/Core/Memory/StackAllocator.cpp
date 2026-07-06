@@ -1,5 +1,4 @@
 #include "Waterlily/Core/Memory/StackAllocator.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 
 namespace Wl
