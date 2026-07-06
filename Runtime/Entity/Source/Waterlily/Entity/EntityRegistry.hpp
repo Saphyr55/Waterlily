@@ -50,12 +50,11 @@ namespace Wl
         template<typename ComponentType>
         bool HasComponent(Entity e) const
         {
-            auto it = m_componentPools.find(GetTypeIndex<ComponentType>());
-            if (it == m_componentPools.cend())
+            if (auto it = m_componentPools.find(GetTypeIndex<ComponentType>()); it != m_componentPools.cend())
             {
-                return false;
+                return Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->HasComponent(e);
             }
-            return Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->HasComponent(e);
+            return false;
         }
 
         template<typename... Components>
@@ -114,6 +113,7 @@ namespace Wl
 
         ~EntityRegistry()
         {
+            Dispose();
         }
 
     private:

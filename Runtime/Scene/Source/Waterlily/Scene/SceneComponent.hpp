@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Waterlily/Core/Math/Matrix4.hpp"
+#include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Entity/Entity.hpp"
-#include "Waterlily/Entity/Registry.hpp"
+#include "Waterlily/Entity/EntityRegistry.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 
 namespace Wl
@@ -16,8 +16,7 @@ namespace Wl
 
     struct TransformComponent
     {
-        Matrix4f Local;
-        Matrix4f World;
+        Vector3f Position;
     };
 
     struct HierarchyComponent

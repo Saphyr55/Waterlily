@@ -7,6 +7,7 @@
 #include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Engine/Application.hpp"
 #include "Waterlily/Engine/ApplicationDelegate.hpp"
+#include "Waterlily/Entity/EntityRegistry.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/Pipeline.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
@@ -60,11 +61,10 @@ namespace Wl
         SharedPtr<ShaderBundle> m_shaderBundle = nullptr;
 
         // Scene Data.
+        EntityRegistry m_entityRegistry;
         Model* m_sponzaModelAsset = nullptr;
         ViewData m_view;
         Camera m_camera;
-        FixedArray<PointLight, 5> m_lights;
-        FixedArray<PointLight, 5> m_originalLights;
         DirectionalLight m_directionalLight;
 
         // Render Data.

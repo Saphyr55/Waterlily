@@ -1,11 +1,11 @@
 #include "LudoApplication.hpp"
 
+#include "LightSystem.hpp"
 #include "Passes/GBufferPass.hpp"
 #include "Passes/LightingPass.hpp"
 #include "Waterlily/Assets/AssetLoader.hpp"
 #include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Core/Asserts.hpp"
-#include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
@@ -13,6 +13,7 @@
 #include "Waterlily/Core/Platform/Input.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/Engine.hpp"
+#include "Waterlily/Entity/EntityRegistry.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
@@ -24,6 +25,7 @@
 #include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PointLight.hpp"
+#include "Waterlily/Scene/SceneComponent.hpp"
 
 namespace Wl
 {
@@ -40,36 +42,27 @@ namespace Wl
     inline const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
     inline const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
 
-    static FixedArray<PointLight, 5> MakeLights()
+    static void RegisterLights(EntityRegistry& registry)
     {
-        FixedArray<PointLight, 5> lights;
+        Entity light1 = registry.Create();
+        TransformComponent light1Transform = registry.AddComponent(light1, TransformComponent({-5.76f, 1.22f, -0.82f}));
+        registry.AddComponent(light1, LightComponent({1.0f, 0.6f, 0.1f}));
+        registry.AddComponent(light1, LightAnimationComponent(light1Transform.Position));
 
-        lights[0] = {
-                {3.49f, 3.49f, -2.34f},
-                {0.1f,  0.6f,  0.9f  },
-        };
+        Entity light2 = registry.Create();
+        TransformComponent light2Transform = registry.AddComponent(light2, TransformComponent({-0.46f, 3.63f, 1.88f}));
+        registry.AddComponent(light2, LightComponent({0.4f, 1.0f, 0.2f}));
+        registry.AddComponent(light2, LightAnimationComponent(light2Transform.Position));
 
-        lights[1] = {
-                {-5.76f, 1.22f, -0.82f},
-                {1.0f,   0.6f,  0.1f  },
-        };
+        Entity light3 = registry.Create();
+        TransformComponent light3Transform = registry.AddComponent(light3, TransformComponent({-2.07f, 1.94f, 0.04f}));
+        registry.AddComponent(light3, LightComponent({0.0f, 0.5f, 1.0f}));
+        registry.AddComponent(light3, LightAnimationComponent(light3Transform.Position));
 
-        lights[2] = {
-                {-0.46f, 3.63f, 1.88f},
-                {0.4f,   1.0f,  0.2f },
-        };
-
-        lights[3] = {
-                {-2.07f, 1.94f, 0.04f},
-                {0.0f,   0.5f,  1.0f },
-        };
-
-        lights[4] = {
-                {-6.5f, 0.75f, 0.5f},
-                {0.4f,  0.8f,  0.8f},
-        };
-
-        return lights;
+        Entity light4 = registry.Create();
+        TransformComponent light4Transform = registry.AddComponent(light4, TransformComponent({-6.5f, 0.75f, 0.5f}));
+        registry.AddComponent(light4, LightComponent({0.4f, 0.8f, 0.8f}));
+        registry.AddComponent(light4, LightAnimationComponent(light4Transform.Position));
     }
 
     static Camera InitCamera()
@@ -187,7 +180,7 @@ namespace Wl
         m_textureRegistry->Upload();
         m_materialRegistry->Upload(m_device->GetGraphicsQueue());
 
-        m_device->ImediateSubmit([uploadScheduler](RHICommandBuffer* commandBuffere) mutable
+        m_device->ImediateSubmit([&uploadScheduler](RHICommandBuffer* commandBuffere) mutable
         {
             double byte = static_cast<double>(uploadScheduler.GetTotalPendingBytes());
             double megaByte = byte / static_cast<double>(WL_MB);
@@ -201,8 +194,7 @@ namespace Wl
         m_materialRegistry->UpdateSRG();
 
         m_camera = InitCamera();
-        m_originalLights = MakeLights();
-        m_lights = MakeLights();
+        RegisterLights(m_entityRegistry);
         m_directionalLight = DirectionalLight {
                 .Direction = Vector3f(0.1f, 0.1f, 0.1f),
                 .Color = Vector3f(1.0f, 0.90f, 0.75f),
@@ -287,18 +279,13 @@ namespace Wl
 
         static float elapsedTime = 0.0f;
 
-        float lightVelocity = 3.0f;
-        float lightAmplitude = 0.5f;
-
         elapsedTime += deltaTime;
 
-        for (size_t i = 0; i < m_lights.GetSize(); i++)
+        auto lightView = m_entityRegistry.View<TransformComponent, LightComponent, LightAnimationComponent>();
+        for (auto [entity, transform, light, anim] : lightView)
         {
-            PointLight& light = m_lights[i];
-            PointLight& originalLight = m_originalLights[i];
-
-            float offset = Math::Sin(elapsedTime * lightVelocity) * lightAmplitude;
-            light.Position = originalLight.Position + Wl::Vector3(offset, 0.0f, 0.0f);
+            float offset = Math::Sin(elapsedTime * anim.Velocity) * anim.Amplitude;
+            transform.Position = anim.BasePosition + anim.Axis * offset;
         }
 
         Vector3f direction(0.0f, 0.0f, 0.0f);
@@ -374,10 +361,13 @@ namespace Wl
         frame.UniformAllocator.UpdateData(viewAllocation, m_view);
 
         // Light allocation
-        RenderAllocation pointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(m_lights.GetSize());
-        for (size_t i = 0; i < m_lights.GetSize(); i++)
+        auto lightView = m_entityRegistry.View<TransformComponent, LightComponent>();
+        RenderAllocation pointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(lightView.GetSize());
+
+        size_t i = 0;
+        for (auto [entity, transform, light] : lightView)
         {
-            pointLightsAllocation.Get<PointLight>()[i] = m_lights[i];
+            pointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, light.Color);
         }
 
         RenderAllocation directionalLightAllocation = frame.UniformAllocator.Allocate<DirectionalLight>();
@@ -385,7 +375,7 @@ namespace Wl
 
         RenderAllocation countersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
         uint32_t* pointLightCount = countersAllocation.Get<uint32_t>();
-        *pointLightCount = m_lights.GetSize();
+        *pointLightCount = lightView.GetSize();
 
         // Sponza allocation
         RenderAllocation sponzaAllocation = frame.StorageAllocator.AllocateArray<RenderSubMeshData>(m_sponzaMesh->GetSubMeshCount());
