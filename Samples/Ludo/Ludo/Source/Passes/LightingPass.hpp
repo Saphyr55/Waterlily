@@ -2,6 +2,7 @@
 
 #include "Passes/PassContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
+#include "Waterlily/Renderer/FramePacket.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 
@@ -26,14 +27,14 @@ namespace Wl
         FrameGraphTextureHandle DepthStencil;
         FrameGraphBufferHandle Indirect;
 
-        RenderAllocation* MeshAllocation;
-
         RenderAllocation* PointLightsAllocation;
         RenderAllocation* DirectionalLightAllocation;
         RenderAllocation* CountersAllocation;
-        RenderAllocation* ViewAllocation;
     };
 
-    FrameGraphPass& LightingPassCreate(PassContext& passContext, GraphicsPipelineState& pipeline, LightingPassParameters& params);
+    FrameGraphPass& LightingPassCreate(PassContext& passContext,
+                                       FramePacket& packet,
+                                       GraphicsPipelineState& pipeline,
+                                       LightingPassParameters& params);
 
 }// namespace Wl

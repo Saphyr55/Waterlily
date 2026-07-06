@@ -96,6 +96,21 @@ namespace Wl
         m_device->RecreateSwapchain(m_swapchain, width, height);
     }
 
+    uint32_t FrameContext::GetWidth() const
+    {
+        return m_swapchain->GetWidth();
+    }
+
+    uint32_t FrameContext::GetHeight() const
+    {
+        return m_swapchain->GetHeight();
+    }
+
+    float FrameContext::GetAspectRatio() const
+    {
+        return static_cast<float>(m_swapchain->GetWidth()) / static_cast<float>(m_swapchain->GetHeight());
+    }
+
     void FrameContext::Destroy()
     {
         m_device->WaitIdle();

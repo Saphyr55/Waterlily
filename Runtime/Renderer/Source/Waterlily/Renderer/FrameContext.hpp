@@ -67,6 +67,10 @@ namespace Wl
 
         void Resize(uint32_t width, uint32_t height);
 
+        uint32_t GetWidth() const;
+        uint32_t GetHeight() const;
+        float GetAspectRatio() const;
+
         FrameResult BeginFrame();
         void EndFrame();
 

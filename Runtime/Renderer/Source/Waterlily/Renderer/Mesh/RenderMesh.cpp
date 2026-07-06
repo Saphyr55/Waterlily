@@ -13,8 +13,6 @@
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
 #include "Waterlily/Renderer/UploadScheduler.hpp"
-#include <cstdint>
-
 
 namespace Wl
 {
@@ -28,16 +26,16 @@ namespace Wl
     {
     }
 
-    void RenderSubMeshDataLayout::UpdateData(uint8_t* dst, const RenderSubMesh& src)
+    void RenderInstanceLayout::UpdateData(uint8_t* dst, const RenderSubMesh& src)
     {
         Memory::Copy(dst + ModelOffset, &src.Model, sizeof(decltype(src.Model)));
         Memory::Copy(dst + MaterialOffset, &src.Material, sizeof(decltype(src.Material)));
     }
 
-    RenderSubMeshDataLayout RenderSubMeshData::CreateLayout(size_t alignment)
+    RenderInstanceLayout RenderInstance::CreateLayout(size_t alignment)
     {
         size_t offset = 0;
-        RenderSubMeshDataLayout layout;
+        RenderInstanceLayout layout;
 
         offset = FieldOffsetAlignUp<Matrix4f>(offset, alignment, layout.ModelOffset);
         offset = FieldOffsetAlignUp<MaterialHandle>(offset, alignment, layout.MaterialOffset);

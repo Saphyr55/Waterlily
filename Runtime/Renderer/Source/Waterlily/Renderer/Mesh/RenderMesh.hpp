@@ -19,7 +19,7 @@ namespace Wl
     struct RenderSubMesh;
     struct RenderSubMeshData;
 
-    struct RenderSubMeshDataLayout
+    struct RenderInstanceLayout
     {
         size_t ModelOffset;
         size_t MaterialOffset;
@@ -28,12 +28,12 @@ namespace Wl
         WL_RENDERER_API void UpdateData(uint8_t* dst, const RenderSubMesh& src);
     };
 
-    struct RenderSubMeshData
+    struct RenderInstance
     {
         Matrix4f Model = Matrix4f::Identity();
         MaterialHandle Material = MaterialRegistry::InvalidHandle;
 
-        WL_RENDERER_API static RenderSubMeshDataLayout CreateLayout(size_t minAlignment);
+        WL_RENDERER_API static RenderInstanceLayout CreateLayout(size_t minAlignment);
     };
 
     struct RenderSubMesh

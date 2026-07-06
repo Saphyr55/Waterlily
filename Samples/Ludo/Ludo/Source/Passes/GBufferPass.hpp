@@ -1,9 +1,8 @@
 #pragma once
 
 #include "Passes/PassContext.hpp"
-#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
-#include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
+#include "Waterlily/Renderer/FramePacket.hpp"
 
 namespace Wl
 {
@@ -18,15 +17,10 @@ namespace Wl
         FrameGraphTextureHandle Albedo;
         FrameGraphTextureHandle DepthStencil;
         FrameGraphBufferHandle Indirect;
-
-        size_t DrawCount = 0;
-        RenderAllocation* ViewAllocation = nullptr;
-        RenderAllocation* MeshAllocation = nullptr;
-
-        SharedPtr<RenderMesh> Mesh = nullptr;
     };
 
     FrameGraphPass& GBufferPassCreate(PassContext& passContext,
+                                      FramePacket& packet,
                                       GraphicsPipelineState& pipeline,
                                       GBufferPassParameters& data);
 

@@ -80,8 +80,7 @@ namespace Wl
         commandAllocatorDescription.Count = 1;// One command buffer allocated.
         commandAllocatorDescription.CommandQueue = queue;
 
-        RHICommandAllocator* commandAllocator =
-                m_device->CreateCommandAllocatorr(commandAllocatorDescription);
+        RHICommandAllocator* commandAllocator = m_device->CreateCommandAllocatorr(commandAllocatorDescription);
 
         // Open a transfer command buffer
         RHICommandBuffer* commandBuffer = commandAllocator->OpenCommandBuffer();

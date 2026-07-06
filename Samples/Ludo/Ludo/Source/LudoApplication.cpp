@@ -11,6 +11,7 @@
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
+#include "Waterlily/Core/Platform/PlatformTime.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
@@ -18,6 +19,7 @@
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
+#include "Waterlily/Renderer/FramePacket.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
@@ -27,9 +29,10 @@
 #include "Waterlily/Scene/PointLight.hpp"
 #include "Waterlily/Scene/SceneComponent.hpp"
 
+
 namespace Wl
 {
-    // TODO: Those paths must be in fonction of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.hlsl").
+    // TODO: Those paths must be in function of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.hlsl").
     static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.hlsl");
     static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
     static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
@@ -41,29 +44,6 @@ namespace Wl
     inline const StringID GBufferFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.frag.wlca");
     inline const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
     inline const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
-
-    static void RegisterLights(EntityRegistry& registry)
-    {
-        Entity light1 = registry.Create();
-        TransformComponent light1Transform = registry.AddComponent(light1, TransformComponent({-5.76f, 1.22f, -0.82f}));
-        registry.AddComponent(light1, LightComponent({1.0f, 0.6f, 0.1f}));
-        registry.AddComponent(light1, LightAnimationComponent(light1Transform.Position));
-
-        Entity light2 = registry.Create();
-        TransformComponent light2Transform = registry.AddComponent(light2, TransformComponent({-0.46f, 3.63f, 1.88f}));
-        registry.AddComponent(light2, LightComponent({0.4f, 1.0f, 0.2f}));
-        registry.AddComponent(light2, LightAnimationComponent(light2Transform.Position));
-
-        Entity light3 = registry.Create();
-        TransformComponent light3Transform = registry.AddComponent(light3, TransformComponent({-2.07f, 1.94f, 0.04f}));
-        registry.AddComponent(light3, LightComponent({0.0f, 0.5f, 1.0f}));
-        registry.AddComponent(light3, LightAnimationComponent(light3Transform.Position));
-
-        Entity light4 = registry.Create();
-        TransformComponent light4Transform = registry.AddComponent(light4, TransformComponent({-6.5f, 0.75f, 0.5f}));
-        registry.AddComponent(light4, LightComponent({0.4f, 0.8f, 0.8f}));
-        registry.AddComponent(light4, LightAnimationComponent(light4Transform.Position));
-    }
 
     static Camera InitCamera()
     {
@@ -138,12 +118,10 @@ namespace Wl
         m_pipelineManager = MakeShared<PipelineManager>(m_device, m_frameContext->GetSRGLayoutCache(), assetsFileSystem);
         m_shaderBundle = MakeShared<ShaderBundle>(m_assetRegistry, m_assetManager, m_pipelineManager);
 
-        // This should be not done in application mode, but only in dev mode.
+        // TODO: This should be not done in application mode, but only in dev mode.
         WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
-
         m_shaderBundle->RegisterGraphicsPass(GBufferPassName, GBufferVertexShaderAssetURI, GBufferFragmentShaderAssetURI);
         m_shaderBundle->RegisterGraphicsPass(LightingPassName, LightingVertexShaderAssetURI, LightingFragmentShaderAssetURI);
-
         m_shaderBundle->LoadAssets();
 
         m_sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
@@ -177,6 +155,7 @@ namespace Wl
         m_indirectBufferCount = drawIndexedCommands.GetSize();
 
         uploadScheduler.Upload(ArrayView(drawIndexedCommands), m_indirectBuffer);
+
         m_textureRegistry->Upload();
         m_materialRegistry->Upload(m_device->GetGraphicsQueue());
 
@@ -194,11 +173,11 @@ namespace Wl
         m_materialRegistry->UpdateSRG();
 
         m_camera = InitCamera();
-        RegisterLights(m_entityRegistry);
         m_directionalLight = DirectionalLight {
                 .Direction = Vector3f(0.1f, 0.1f, 0.1f),
                 .Color = Vector3f(1.0f, 0.90f, 0.75f),
         };
+        RegisterLights(m_entityRegistry);
 
         m_frameGraph = MakeShared<FrameGraph>(m_frameContext);
 
@@ -230,13 +209,13 @@ namespace Wl
             if (key == VirtualKey::F2)
             {
                 m_device->WaitIdle();
-
-                bool success = CompileShaders();
-                WL_LOG_ERROR_WHEN(!success, "Ludo", "Failed to compile shaders.");
-
-                if (success)
+                if (CompileShaders())
                 {
                     m_shaderBundle->ReloadAssets();
+                }
+                else
+                {
+                    WL_LOG_ERROR("Ludo", "Failed to compile shaders.");
                 }
             }
 
@@ -272,19 +251,15 @@ namespace Wl
 
     void LudoApplicationDelegate::OnUpdate(double deltaTime)
     {
-        uint32_t width = m_frameContext->GetSwapchain()->GetWidth();
-        uint32_t height = m_frameContext->GetSwapchain()->GetHeight();
-
-        float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
-        static float elapsedTime = 0.0f;
-
-        elapsedTime += deltaTime;
+        float aspectRatio = m_frameContext->GetAspectRatio();
 
         auto lightView = m_entityRegistry.View<TransformComponent, LightComponent, LightAnimationComponent>();
-        for (auto [entity, transform, light, anim] : lightView)
+
+        float epsiledTime = static_cast<float>(PlatformGetHighResolutionTime());
+
+        for (const auto& [entity, transform, light, anim]: lightView)
         {
-            float offset = Math::Sin(elapsedTime * anim.Velocity) * anim.Amplitude;
+            float offset = Math::Sin(epsiledTime * anim.Velocity) * anim.Amplitude;
             transform.Position = anim.BasePosition + anim.Axis * offset;
         }
 
@@ -350,22 +325,18 @@ namespace Wl
 
         Frame& frame = m_frameContext->GetCurrentFrame();
 
-        uint32_t width = m_frameContext->GetSwapchain()->GetWidth();
-        uint32_t height = m_frameContext->GetSwapchain()->GetHeight();
+        FramePacketManager packetManager;
 
-        Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
-        Rect2D scissor(0.0f, 0.0f, width, height);
+        FramePacket packet = packetManager.ExtractPacket(m_view, m_sponzaMesh, m_indirectBufferCount);
 
-        // View Instance allocation
-        RenderAllocation viewAllocation = frame.UniformAllocator.Allocate<ViewData>();
-        frame.UniformAllocator.UpdateData(viewAllocation, m_view);
+        packetManager.PrepareFrame(packet, frame);
 
         // Light allocation
         auto lightView = m_entityRegistry.View<TransformComponent, LightComponent>();
         RenderAllocation pointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(lightView.GetSize());
 
         size_t i = 0;
-        for (auto [entity, transform, light] : lightView)
+        for (const auto& [entity, transform, light]: lightView)
         {
             pointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, light.Color);
         }
@@ -374,16 +345,7 @@ namespace Wl
         frame.UniformAllocator.UpdateData(directionalLightAllocation, m_directionalLight);
 
         RenderAllocation countersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
-        uint32_t* pointLightCount = countersAllocation.Get<uint32_t>();
-        *pointLightCount = lightView.GetSize();
-
-        // Sponza allocation
-        RenderAllocation sponzaAllocation = frame.StorageAllocator.AllocateArray<RenderSubMeshData>(m_sponzaMesh->GetSubMeshCount());
-        RenderSubMeshDataLayout layout = RenderSubMeshData::CreateLayout(frame.StorageAllocator.GetMinAligment());
-        for (size_t i = 0; i < m_sponzaMesh->GetSubMeshCount(); i++)
-        {
-            layout.UpdateData(sponzaAllocation.Get<uint8_t>() + i * layout.Stride, m_sponzaMesh->GetSubMeshes()[i]);
-        }
+        countersAllocation.Update<uint32_t>(lightView.GetSize());
 
         FrameGraphBufferHandle indirect = m_frameGraph->ImportBuffer(m_indirectBuffer, m_indirectBuffer->GetSize(), 0);
 
@@ -423,13 +385,9 @@ namespace Wl
         gBufferParams.Albedo = albedo;
         gBufferParams.DepthStencil = depthStencil;
         gBufferParams.Indirect = indirect;
-        gBufferParams.DrawCount = m_indirectBufferCount;
-        gBufferParams.MeshAllocation = &sponzaAllocation;
-        gBufferParams.Mesh = m_sponzaMesh;
-        gBufferParams.ViewAllocation = &viewAllocation;
 
         ShaderGraphicsPass& shaderGBufferPass = m_shaderBundle->GetShaderGraphicsPass(GBufferPassName);
-        FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, shaderGBufferPass.PipelineState, gBufferParams);
+        FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, packet, shaderGBufferPass.PipelineState, gBufferParams);
 
         LightingPassParameters lightingParams = {};
         lightingParams.Color = color;
@@ -438,21 +396,24 @@ namespace Wl
         lightingParams.Position = position;
         lightingParams.Indirect = indirect;
         lightingParams.DepthStencil = depthStencil;
-        lightingParams.ViewAllocation = &viewAllocation;
         lightingParams.PointLightsAllocation = &pointLightsAllocation;
         lightingParams.DirectionalLightAllocation = &directionalLightAllocation;
-        lightingParams.MeshAllocation = &sponzaAllocation;
         lightingParams.CountersAllocation = &countersAllocation;
 
         ShaderGraphicsPass& shaderLightingPass = m_shaderBundle->GetShaderGraphicsPass(LightingPassName);
-        FrameGraphPass& lightingPass = LightingPassCreate(passContext, shaderLightingPass.PipelineState, lightingParams);
+        FrameGraphPass& lightingPass = LightingPassCreate(passContext, packet, shaderLightingPass.PipelineState, lightingParams);
 
         m_frameGraph->AddOutput(color);
         m_frameGraph->Compile();
 
+        float width = static_cast<float>(m_frameContext->GetWidth());
+        float height = static_cast<float>(m_frameContext->GetHeight());
+        Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
+        Rect2D scissor(0.0f, 0.0f, width, height);
+
         GetOrCreatePipeline(gBufferPass,
                             shaderGBufferPass.PipelineState,
-                            RHICullModeFlags::None,
+                            RHICullModeFlags::Back,
                             viewport,
                             scissor);
 
