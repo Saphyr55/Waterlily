@@ -138,13 +138,10 @@ namespace Wl
         for (size_t i = 0; i < m_passes.GetSize(); i++)
         {
             FrameGraphPass& pass = m_passes[i];
+            
             pass.m_index = i;
 
-            FrameGraphPassSetupContext context;
-            context.FrameGraph = this;
-            context.FrameContext = m_frameContext;
-            context.Device = m_device;
-
+            FrameGraphPassSetupContext context(m_device, m_frameContext, this);
             FrameGraphPassBuilder builder(pass, *this);
 
             pass.Setup(context, builder);

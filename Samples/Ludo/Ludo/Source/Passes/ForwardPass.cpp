@@ -42,15 +42,15 @@ namespace Wl
 
             RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
 
-            RHIShaderResourceGroupLayout* globalSRGLayout = pipeline.SRGLayouts[GlobalSRGIndex];
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipeline.SRGLayouts[SRGIndexGlobal];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
 
-            RHIWriteBufferResource writeRenderView(GlobalSRGRenderViewBinding,
-                                                   params.RenderViewAllocation->Buffer,
-                                                   params.RenderViewAllocation->Offset,
-                                                   params.RenderViewAllocation->Size);
+            RHIWriteBufferResource writeRenderView(SRGBindingGlobalView,
+                                                   params.ViewAllocation->Buffer,
+                                                   params.ViewAllocation->Offset,
+                                                   params.ViewAllocation->Size);
 
-            RHIWriteBufferResource writeLight(GlobalSRGLightBinding,
+            RHIWriteBufferResource writeLight(SRGBindingGlobalPointLights,
                                               params.LightAllocation->Buffer,
                                               params.LightAllocation->Offset,
                                               params.LightAllocation->Size);
@@ -59,10 +59,10 @@ namespace Wl
             globalSRG->SetBuffer(writeLight);
             globalSRG->Update();
 
-            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipeline.SRGLayouts[RenderInstanceSRGIndex];
+            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipeline.SRGLayouts[SRGIndexRenderInstance];
             RHIShaderResourceGroup* drawItemSRG = frame.SRGPool->AllocateSRG(drawItemSRGLayout);
 
-            RHIWriteBufferResource writeDrawItem(RenderInstanceSRGBinding,
+            RHIWriteBufferResource writeDrawItem(SRGBindingRenderInstance,
                                                  params.MeshAllocation->Buffer,
                                                  params.MeshAllocation->Offset,
                                                  params.MeshAllocation->Size);
@@ -81,10 +81,10 @@ namespace Wl
                 commandBuffer->SetViewport(viewport);
                 commandBuffer->SetScissor(scissor);
 
-                commandBuffer->BindSRG(pipeline, {globalSRG}, GlobalSRGIndex);
-                commandBuffer->BindSRG(pipeline, {drawItemSRG}, RenderInstanceSRGIndex);
-                commandBuffer->BindSRG(pipeline, {textureSRG}, LudoTextureGRGIndex);
-                commandBuffer->BindSRG(pipeline, {materialSRG}, LudoMaterialsSRGIndex);
+                commandBuffer->BindSRG(pipeline, {globalSRG}, SRGIndexGlobal);
+                commandBuffer->BindSRG(pipeline, {drawItemSRG}, SRGIndexRenderInstance);
+                commandBuffer->BindSRG(pipeline, {textureSRG}, SRGIndexTextures);
+                commandBuffer->BindSRG(pipeline, {materialSRG}, SRGIndexMaterials);
 
                 commandBuffer->BindVertexBuffers(params.Mesh->GetVertexBuffers());
                 commandBuffer->BindIndexBuffer(params.Mesh->GetIndexBuffer());

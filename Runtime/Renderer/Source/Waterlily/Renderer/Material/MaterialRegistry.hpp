@@ -27,7 +27,7 @@ namespace Wl
         const MaterialData& GetMaterial(MaterialHandle handle);
 
         void Upload(SharedPtr<RHICommandQueue> queue);
-        void CompileShaderResource();
+        void UpdateSRG();
 
         void Destroy();
 

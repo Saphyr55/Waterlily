@@ -34,8 +34,10 @@ namespace Wl
             case Shader::Stage::Compute:
                 stageFlag = "cs_6_5";
                 break;
+            case Shader::Stage::None:
+                break;
         }
-        
+
         String cmd = "dxc";
         cmd.Append(" -spirv -T ");
         cmd.Append(stageFlag);
@@ -60,7 +62,6 @@ namespace Wl
         }
 
         WL_LOG_INFO("SPIRVShaderCompiler", "Successfully compiled shader file: %s", inputFilepath.data());
-        
         WL_LOG_INFO("SPIRVShaderCompiler", "Creating Shader Asset File...");
 
         FileSystem& fileSystem = FileSystem::GetPlatform();

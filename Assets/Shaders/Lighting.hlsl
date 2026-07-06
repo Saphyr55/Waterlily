@@ -2,28 +2,32 @@
 #include "Shared/DefaultRender.hlsli"
 #include "Shared/Lighting.hlsli"
 
-#define WLSL_MAX_LIGHTS 32
-
 WLSL_BINDING(0, 0)  
-cbuffer ViewBuffer : register(b0, space0)
+cbuffer ViewCB : register(b0, space0)
 {
-    ViewInstance View;
+    ViewData View;
 }
 
 WLSL_BINDING(1, 0)
-cbuffer PunctualLightBuffer : register(b1, space0)
+cbuffer PointLightCB : register(b1, space0)
 {
-    PunctualLight PunctualLights[WLSL_MAX_LIGHTS];
+    PointLightData PointLights[WLSL_MAX_LIGHTS];
 }
 
 WLSL_BINDING(2, 0)
-cbuffer BufferCounters : register(b2, space0)
+cbuffer DirectionalLightCB : register(b2, space0)
 {
-    uint PunctualLightCount;
+    DirectionalLightData DirectionalLight;
+}
+
+WLSL_BINDING(3, 0)
+cbuffer CountersCB : register(b3, space0)
+{
+    uint PointLightCount;
 }
 
 WLSL_BINDING(0, 1)
-RWStructuredBuffer<RenderInstance> RenderInstanceBuffer : register(u0, space1);
+RWStructuredBuffer<RenderInstanceData> RenderInstanceRWSB : register(u0, space1);
 
 WLSL_BINDING(0, 2)
 Texture2D Texture2DRegistry[] : register(t0, space2);
@@ -31,7 +35,7 @@ WLSL_BINDING(0, 2)
 SamplerState Texture2DRegistrySampler : register(s0, space2);
 
 WLSL_BINDING(0, 3) 
-RWStructuredBuffer<Material> Materials : register(u0, space3);
+RWStructuredBuffer<MaterialData> MaterialsRWSB : register(u0, space3);
 
 WLSL_BINDING(0, 4)
 Texture2D PositionTexture : register(t0, space4);
@@ -44,7 +48,6 @@ SamplerState NormalSampler : register(s1, space4);
 WLSL_BINDING(2, 4)
 Texture2D AlbedoTexture : register(t2, space4);
 SamplerState AlbedoSampler : register(s2, space4);
-
 
 struct FSOutput
 {
@@ -76,14 +79,22 @@ FSOutput FSMain(VSOutput input)
 
     float3 result = float3(0.0f, 0.0f, 0.0f);
 
-    float3 eyeDirection = normalize(View.EyePosition - position);
-    
+    float3 viewDirection = normalize(View.Position - position);
+
     float fixedDistance = 1.0f;
     float epsilon = 1.0e-5f;
 
-    for (uint i = 0; i < PunctualLightCount; i++)
+    if (dot(viewDirection, normal) < 0.0f)
     {
-        ComputedPunctualLight computedLight = ComputePunctualLight(PunctualLights[i], normal, position, eyeDirection);
+        normal = -normal;
+    }   
+
+    ComputedDirectionalLightData computedDirectionalLight = ComputeDirectionalLight(DirectionalLight, normal);
+    result += computedDirectionalLight.Result * albedo;
+
+    for (uint i = 0; i < PointLightCount; i++)
+    {
+        ComputedPointLightData computedLight = ComputePointLight(PointLights[i], normal, position);
         float attenation = InverseSquareLightAttenuation(computedLight.Distance, fixedDistance, epsilon);
         result += computedLight.Result * albedo * attenation;
     }

@@ -5,9 +5,15 @@
 namespace Wl
 {
 
-    struct PunctualLight
+    struct PointLight
     {
         alignas(16) Vector3f Position;
+        alignas(16) Vector3f Color;
+    };
+
+    struct DirectionalLight
+    {
+        alignas(16) Vector3f Direction;
         alignas(16) Vector3f Color;
     };
 

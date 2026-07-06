@@ -7,6 +7,7 @@
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
+#include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
@@ -22,10 +23,11 @@
 #include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
 #include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
-#include "Waterlily/Scene/PunctualLight.hpp"
+#include "Waterlily/Scene/PointLight.hpp"
 
 namespace Wl
 {
+    // TODO: Those paths must be in fonction of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.hlsl").
     static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.hlsl");
     static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
     static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
@@ -38,9 +40,9 @@ namespace Wl
     inline const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
     inline const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
 
-    static FixedArray<PunctualLight, 5> MakeLights()
+    static FixedArray<PointLight, 5> MakeLights()
     {
-        FixedArray<PunctualLight, 5> lights;
+        FixedArray<PointLight, 5> lights;
 
         lights[0] = {
                 {3.49f, 3.49f, -2.34f},
@@ -80,6 +82,7 @@ namespace Wl
         return camera;
     }
 
+    // Todo: This should be done in dev mode not in runtime mode.
     static bool CompileShaders()
     {
         FileSystem& fileSystem = FileSystem::GetPlatform();
@@ -106,21 +109,9 @@ namespace Wl
         return success;
     }
 
-    LudoApplicationDelegate::LudoApplicationDelegate()
-        : m_sponzaModelAsset(nullptr)
-        , m_indirectBuffer(nullptr)
-        , m_indirectBufferCount(0)
-    {
-    }
-
     void LudoApplicationDelegate::OnStartup()
     {
         m_window = Window::Create(WindowProperties("Demo Window", 1080, 720, 100, 100));
-
-        m_device = RHIDeviceFactory::Create(RHIGraphicsAPI::Vulkan);
-        m_device->Init(m_window->GetNativeWindow());
-
-        m_camera = InitCamera();
 
         FileSystem& assetsFileSystem = FileSystem::GetPlatform();
 
@@ -129,11 +120,14 @@ namespace Wl
         SharedPtr<File> fileAssetRegistry = assetRegistryFileResult.GetValue();
 
         m_assetRegistry = AssetRegistry::LoadFromFile(*fileAssetRegistry);
-        WL_CHECK(m_assetRegistry);
         fileAssetRegistry->Close();
+        WL_CHECK(m_assetRegistry);
 
         SharedPtr<AssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>(assetsFileSystem);
         m_assetManager = MakeShared<AssetManager>(m_assetRegistry, assetLoader);
+
+        m_device = RHIDeviceFactory::Create(RHIGraphicsAPI::Vulkan);
+        m_device->Init(m_window->GetNativeWindow());
 
         FrameContextInitInfo frameContextInitInfo = {};
         frameContextInitInfo.StagingBufferSize = 16 * WL_MB;
@@ -145,10 +139,10 @@ namespace Wl
         m_frameContext = MakeShared<FrameContext>(m_device);
         m_frameContext->Init(frameContextInitInfo);
 
-        m_textureRegistry = MakeShared<TextureRegistry>(m_device, *m_assetManager, LudoTexturesSRGBinding);
-        m_materialRegistry = MakeShared<MaterialRegistry>(m_device, LudoMaterialsSRGBinding);
-        m_pipelineManager = MakeShared<PipelineManager>(m_device, m_frameContext->GetSRGLayoutCache(), assetsFileSystem);
+        m_textureRegistry = MakeShared<TextureRegistry>(m_device, *m_assetManager, SRGBindingTextures);
+        m_materialRegistry = MakeShared<MaterialRegistry>(m_device, SRGBindingMaterials);
 
+        m_pipelineManager = MakeShared<PipelineManager>(m_device, m_frameContext->GetSRGLayoutCache(), assetsFileSystem);
         m_shaderBundle = MakeShared<ShaderBundle>(m_assetRegistry, m_assetManager, m_pipelineManager);
 
         // This should be not done in application mode, but only in dev mode.
@@ -186,7 +180,7 @@ namespace Wl
         }
 
         Array<RHIDrawIndexedCommand> drawIndexedCommands = m_sponzaMesh->CreateDrawIndexedCommands();
-        m_indirectBuffer = m_device->CreateIndirectBuffer(drawIndexedCommands);
+        m_indirectBuffer = m_device->CreateIndirectBuffer<RHIDrawIndexedCommand>(drawIndexedCommands);
         m_indirectBufferCount = drawIndexedCommands.GetSize();
 
         uploadScheduler.Upload(ArrayView(drawIndexedCommands), m_indirectBuffer);
@@ -203,22 +197,25 @@ namespace Wl
 
         uploadScheduler.Shutdown();
 
-        m_textureRegistry->CompileSRG();
-        m_materialRegistry->CompileShaderResource();
+        m_textureRegistry->UpdateSRG();
+        m_materialRegistry->UpdateSRG();
 
-        m_frameContext->InitializeSRGPools();
-
+        m_camera = InitCamera();
         m_originalLights = MakeLights();
         m_lights = MakeLights();
+        m_directionalLight = DirectionalLight {
+                .Direction = Vector3f(0.1f, 0.1f, 0.1f),
+                .Color = Vector3f(1.0f, 0.90f, 0.75f),
+        };
 
         m_frameGraph = MakeShared<FrameGraph>(m_frameContext);
 
-        m_window->GetEventHandler().OnMinimized.Connect([this]()
+        m_window->GetEventHandler().OnMinimized.Connect([]()
         {
             Engine::GetInstance().GetApplication()->Pause();
         });
 
-        m_window->GetEventHandler().OnExposed.Connect([this]()
+        m_window->GetEventHandler().OnExposed.Connect([]()
         {
             Engine::GetInstance().GetApplication()->Unpause();
         });
@@ -241,8 +238,14 @@ namespace Wl
             if (key == VirtualKey::F2)
             {
                 m_device->WaitIdle();
-                WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
-                m_shaderBundle->ReloadAssets();
+
+                bool success = CompileShaders();
+                WL_LOG_ERROR_WHEN(!success, "Ludo", "Failed to compile shaders.");
+
+                if (success)
+                {
+                    m_shaderBundle->ReloadAssets();
+                }
             }
 
             if (key == VirtualKey::F3)
@@ -270,6 +273,9 @@ namespace Wl
         });
 
         m_window->Show();
+
+        // This must be done after filled all SRG layout in the cache.
+        m_frameContext->InitializeSRGPools();
     }
 
     void LudoApplicationDelegate::OnUpdate(double deltaTime)
@@ -288,8 +294,8 @@ namespace Wl
 
         for (size_t i = 0; i < m_lights.GetSize(); i++)
         {
-            PunctualLight& light = m_lights[i];
-            PunctualLight& originalLight = m_originalLights[i];
+            PointLight& light = m_lights[i];
+            PointLight& originalLight = m_originalLights[i];
 
             float offset = Math::Sin(elapsedTime * lightVelocity) * lightAmplitude;
             light.Position = originalLight.Position + Wl::Vector3(offset, 0.0f, 0.0f);
@@ -368,15 +374,18 @@ namespace Wl
         frame.UniformAllocator.UpdateData(viewAllocation, m_view);
 
         // Light allocation
-        RenderAllocation punctualLightBufferAllocation = frame.UniformAllocator.AllocateArray<PunctualLight>(m_lights.GetSize());
+        RenderAllocation pointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(m_lights.GetSize());
         for (size_t i = 0; i < m_lights.GetSize(); i++)
         {
-            punctualLightBufferAllocation.Get<PunctualLight>()[i] = m_lights[i];
+            pointLightsAllocation.Get<PointLight>()[i] = m_lights[i];
         }
 
+        RenderAllocation directionalLightAllocation = frame.UniformAllocator.Allocate<DirectionalLight>();
+        frame.UniformAllocator.UpdateData(directionalLightAllocation, m_directionalLight);
+
         RenderAllocation countersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
-        uint32_t* punctualLightCount = countersAllocation.Get<uint32_t>();
-        *punctualLightCount = m_lights.GetSize();
+        uint32_t* pointLightCount = countersAllocation.Get<uint32_t>();
+        *pointLightCount = m_lights.GetSize();
 
         // Sponza allocation
         RenderAllocation sponzaAllocation = frame.StorageAllocator.AllocateArray<RenderSubMeshData>(m_sponzaMesh->GetSubMeshCount());
@@ -427,7 +436,7 @@ namespace Wl
         gBufferParams.DrawCount = m_indirectBufferCount;
         gBufferParams.MeshAllocation = &sponzaAllocation;
         gBufferParams.Mesh = m_sponzaMesh;
-        gBufferParams.RenderViewAllocation = &viewAllocation;
+        gBufferParams.ViewAllocation = &viewAllocation;
 
         ShaderGraphicsPass& shaderGBufferPass = m_shaderBundle->GetShaderGraphicsPass(GBufferPassName);
         FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, shaderGBufferPass.PipelineState, gBufferParams);
@@ -439,8 +448,9 @@ namespace Wl
         lightingParams.Position = position;
         lightingParams.Indirect = indirect;
         lightingParams.DepthStencil = depthStencil;
-        lightingParams.RenderViewAllocation = &viewAllocation;
-        lightingParams.LightAllocation = &punctualLightBufferAllocation;
+        lightingParams.ViewAllocation = &viewAllocation;
+        lightingParams.PointLightsAllocation = &pointLightsAllocation;
+        lightingParams.DirectionalLightAllocation = &directionalLightAllocation;
         lightingParams.MeshAllocation = &sponzaAllocation;
         lightingParams.CountersAllocation = &countersAllocation;
 
@@ -452,7 +462,7 @@ namespace Wl
 
         GetOrCreatePipeline(gBufferPass,
                             shaderGBufferPass.PipelineState,
-                            RHICullModeFlags::Back,
+                            RHICullModeFlags::None,
                             viewport,
                             scissor);
 
@@ -473,8 +483,8 @@ namespace Wl
                                                               const Viewport& viewport,
                                                               const Rect2D& scissor)
     {
-        state.SRGLayouts[LudoTextureGRGIndex] = m_textureRegistry->GetSRGLayout();
-        state.SRGLayouts[LudoMaterialsSRGIndex] = m_materialRegistry->GetSRGLayout();
+        state.SRGLayouts[SRGIndexTextures] = m_textureRegistry->GetSRGLayout();
+        state.SRGLayouts[SRGIndexMaterials] = m_materialRegistry->GetSRGLayout();
         state.CullMode = cullMode;
         state.Viewport = viewport;
         state.Scissor = scissor;
@@ -503,6 +513,5 @@ namespace Wl
 
         m_window->Close();
     }
-
 
 }// namespace Wl

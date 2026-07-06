@@ -1,4 +1,5 @@
 #include "Passes/LightingPass.hpp"
+#include "PassContext.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 
@@ -33,65 +34,74 @@ namespace Wl
             Rect2D area(0.0f, 0.0f, width, height);
             Vector4f color(0.01f, 0.01f, 0.01f, 1.0f);
 
-            uint32_t gBufferSRGGroup = 4;
-
-            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineProps.SRGLayouts[GlobalSRGIndex];
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineProps.SRGLayouts[SRGIndexGlobal];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
+            {
 
-            RHIWriteBufferResource writeRenderView(GlobalSRGRenderViewBinding,
-                                                   params.RenderViewAllocation->Buffer,
-                                                   params.RenderViewAllocation->Offset,
-                                                   params.RenderViewAllocation->Size);
+                RHIWriteBufferResource writeView(SRGBindingGlobalView,
+                                                 params.ViewAllocation->Buffer,
+                                                 params.ViewAllocation->Offset,
+                                                 params.ViewAllocation->Size);
 
-            RHIWriteBufferResource writeLights(GlobalSRGLightBinding,
-                                               params.LightAllocation->Buffer,
-                                               params.LightAllocation->Offset,
-                                               params.LightAllocation->Size);
+                RHIWriteBufferResource writePointLights(SRGBindingGlobalPointLights,
+                                                           params.PointLightsAllocation->Buffer,
+                                                           params.PointLightsAllocation->Offset,
+                                                           params.PointLightsAllocation->Size);
 
-            RHIWriteBufferResource writeCounters(2,
-                                                 params.CountersAllocation->Buffer,
-                                                 params.CountersAllocation->Offset,
-                                                 params.CountersAllocation->Size);
+                RHIWriteBufferResource writeDirectionalLight(SRGBindingGlobalDirectionalLight,
+                                                             params.DirectionalLightAllocation->Buffer,
+                                                             params.DirectionalLightAllocation->Offset,
+                                                             params.DirectionalLightAllocation->Size);
 
-            globalSRG->SetBuffer(writeRenderView);
-            globalSRG->SetBuffer(writeLights);
-            globalSRG->SetBuffer(writeCounters);
-            globalSRG->Update();
+                RHIWriteBufferResource writeCounters(SRGBindingGlobalCounters,
+                                                     params.CountersAllocation->Buffer,
+                                                     params.CountersAllocation->Offset,
+                                                     params.CountersAllocation->Size);
 
-            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipelineProps.SRGLayouts[RenderInstanceSRGIndex];
+                globalSRG->SetBuffer(writeView);
+                globalSRG->SetBuffer(writePointLights);
+                globalSRG->SetBuffer(writeDirectionalLight);
+                globalSRG->SetBuffer(writeCounters);
+                globalSRG->Update();
+            }
+
+            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipelineProps.SRGLayouts[SRGIndexRenderInstance];
             RHIShaderResourceGroup* renderInstanceSRG = frame.SRGPool->AllocateSRG(renderInstanceSRGLayout);
+            {
 
-            RHIWriteBufferResource writeRenderInstance(RenderInstanceSRGBinding,
-                                                       params.MeshAllocation->Buffer,
-                                                       params.MeshAllocation->Offset,
-                                                       params.MeshAllocation->Size);
+                RHIWriteBufferResource writeRenderInstance(SRGBindingRenderInstance,
+                                                           params.MeshAllocation->Buffer,
+                                                           params.MeshAllocation->Offset,
+                                                           params.MeshAllocation->Size);
 
-            renderInstanceSRG->SetBuffer(writeRenderInstance);
-            renderInstanceSRG->Update();
+                renderInstanceSRG->SetBuffer(writeRenderInstance);
+                renderInstanceSRG->Update();
+            }
 
-            RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipelineProps.SRGLayouts[gBufferSRGGroup];
+            RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipelineProps.SRGLayouts[SRGIndexGBuffer];
             RHIShaderResourceGroup* gBufferTexturesSRG = frame.SRGPool->AllocateSRG(gBufferTexturesSRGLayout);
+            {
 
-            FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(params.Position);
-            FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(params.Normal);
-            FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(params.Albedo);
+                FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(params.Position);
+                FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(params.Normal);
+                FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(params.Albedo);
 
-            RHISampler* pointSampler = context.FrameContext->GetDefaultSampler();
+                RHISampler* pointSampler = context.FrameContext->GetDefaultSampler();
 
-            RHIWriteTextureSamplerResource writePosition(0, positionResource.View, pointSampler);
-            RHIWriteTextureSamplerResource writeNormal(1, normalResource.View, pointSampler);
-            RHIWriteTextureSamplerResource writeAlbedo(2, albedoResource.View, pointSampler);
+                RHIWriteTextureSamplerResource writePosition(SRGBindingGBufferPosition, positionResource.View, pointSampler);
+                RHIWriteTextureSamplerResource writeNormal(SRGBindingGBufferNormal, normalResource.View, pointSampler);
+                RHIWriteTextureSamplerResource writeAlbedo(SRGBindingGBufferAlbedo, albedoResource.View, pointSampler);
 
-            gBufferTexturesSRG->SetTextureSampler(writePosition);
-            gBufferTexturesSRG->SetTextureSampler(writeNormal);
-            gBufferTexturesSRG->SetTextureSampler(writeAlbedo);
-            gBufferTexturesSRG->Update();
+                gBufferTexturesSRG->SetTextureSampler(writePosition);
+                gBufferTexturesSRG->SetTextureSampler(writeNormal);
+                gBufferTexturesSRG->SetTextureSampler(writeAlbedo);
+                gBufferTexturesSRG->Update();
+            }
 
             RHIShaderResourceGroup* textureSRG = passContext.TextureRegistry->GetSRG();
             RHIShaderResourceGroup* materialSRG = passContext.MaterialRegistry->GetSRG();
 
             RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
-
             commandBuffer->BeginRenderPass(renderPassBeginInfo);
             {
                 RHIPipeline* pipeline = passContext.PipelineManager->GetPipeline(LightingPassName);
@@ -101,11 +111,11 @@ namespace Wl
                 commandBuffer->SetViewport(pipelineProps.Viewport);
                 commandBuffer->SetScissor(pipelineProps.Scissor);
 
-                commandBuffer->BindSRG(pipeline, {globalSRG}, GlobalSRGIndex);
-                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, RenderInstanceSRGIndex);
-                commandBuffer->BindSRG(pipeline, {textureSRG}, LudoTextureGRGIndex);
-                commandBuffer->BindSRG(pipeline, {materialSRG}, LudoMaterialsSRGIndex);
-                commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, gBufferSRGGroup);
+                commandBuffer->BindSRG(pipeline, {globalSRG}, SRGIndexGlobal);
+                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, SRGIndexRenderInstance);
+                commandBuffer->BindSRG(pipeline, {textureSRG}, SRGIndexTextures);
+                commandBuffer->BindSRG(pipeline, {materialSRG}, SRGIndexMaterials);
+                commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, SRGIndexGBuffer);
 
                 RHIDrawCommand drawCommand = {};
                 drawCommand.FirstInstance = 0;

@@ -9,18 +9,25 @@
 namespace Wl
 {
 
-    inline constexpr uint32_t GlobalSRGIndex = 0;
-    inline constexpr uint32_t GlobalSRGRenderViewBinding = 0;
-    inline constexpr uint32_t GlobalSRGLightBinding = 1;
+    inline constexpr uint32_t SRGIndexGlobal = 0;
+    inline constexpr uint32_t SRGBindingGlobalView = 0;
+    inline constexpr uint32_t SRGBindingGlobalPointLights = 1;
+    inline constexpr uint32_t SRGBindingGlobalDirectionalLight = 2;
+    inline constexpr uint32_t SRGBindingGlobalCounters = 3;
 
-    inline constexpr uint32_t RenderInstanceSRGIndex = 1;
-    inline constexpr uint32_t RenderInstanceSRGBinding = 0;
+    inline constexpr uint32_t SRGIndexRenderInstance = 1;
+    inline constexpr uint32_t SRGBindingRenderInstance = 0;
 
-    inline constexpr uint32_t LudoTextureGRGIndex = 2;
-    inline constexpr uint32_t LudoTexturesSRGBinding = 0;
+    inline constexpr uint32_t SRGIndexTextures = 2;
+    inline constexpr uint32_t SRGBindingTextures = 0;
 
-    inline constexpr uint32_t LudoMaterialsSRGIndex = 3;
-    inline constexpr uint32_t LudoMaterialsSRGBinding = 0;
+    inline constexpr uint32_t SRGIndexMaterials = 3;
+    inline constexpr uint32_t SRGBindingMaterials = 0;
+
+    inline constexpr uint32_t SRGIndexGBuffer = 4;
+    inline constexpr uint32_t SRGBindingGBufferPosition = 0;
+    inline constexpr uint32_t SRGBindingGBufferNormal = 1;
+    inline constexpr uint32_t SRGBindingGBufferAlbedo = 2;
 
     struct PassContext
     {

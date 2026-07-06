@@ -67,10 +67,11 @@ namespace Wl
         virtual void DestroyTexture(RHITexture* texture) = 0;
 
         virtual RHIBuffer* CreateBuffer(const RHIBufferDescription& description) = 0;
-        inline RHIBuffer* CreateIndirectBuffer(ArrayView<RHIDrawIndexedCommand> commands)
+        template<typename IndirectType>
+        inline RHIBuffer* CreateIndirectBuffer(ArrayView<IndirectType> commands)
         {
             return CreateBuffer(RHIBufferDescription {
-                    .Size = sizeof(RHIDrawIndexedCommand) * commands.GetSize(),
+                    .Size = sizeof(IndirectType) * commands.GetSize(),
                     .Usage = RHIBufferUsageFlags::Indirect | RHIBufferUsageFlags::Storage | RHIBufferUsageFlags::TransferDst,
                     .MemoryUsage = RHIMemoryUsage::Device,
                     .SharingMode = RHISharingMode::Shared,

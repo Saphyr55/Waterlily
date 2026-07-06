@@ -40,21 +40,21 @@ namespace Wl
 
             RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
 
-            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[GlobalSRGIndex];
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[SRGIndexGlobal];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
 
-            RHIWriteBufferResource writeRenderView(GlobalSRGRenderViewBinding,
-                                                   data.RenderViewAllocation->Buffer,
-                                                   data.RenderViewAllocation->Offset,
-                                                   data.RenderViewAllocation->Size);
+            RHIWriteBufferResource writeRenderView(SRGBindingGlobalView,
+                                                   data.ViewAllocation->Buffer,
+                                                   data.ViewAllocation->Offset,
+                                                   data.ViewAllocation->Size);
 
             globalSRG->SetBuffer(writeRenderView);
             globalSRG->Update();
 
-            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipelineState.SRGLayouts[RenderInstanceSRGIndex];
+            RHIShaderResourceGroupLayout* drawItemSRGLayout = pipelineState.SRGLayouts[SRGIndexRenderInstance];
             RHIShaderResourceGroup* drawItemSRG = frame.SRGPool->AllocateSRG(drawItemSRGLayout);
 
-            RHIWriteBufferResource writeDrawItem(RenderInstanceSRGBinding,
+            RHIWriteBufferResource writeDrawItem(SRGBindingRenderInstance,
                                                  data.MeshAllocation->Buffer,
                                                  data.MeshAllocation->Offset,
                                                  data.MeshAllocation->Size);
@@ -62,8 +62,8 @@ namespace Wl
             drawItemSRG->SetBuffer(writeDrawItem);
             drawItemSRG->Update();
 
-            RHIShaderResourceGroup* textureSRG = passContext.TextureRegistry->GetSRG();
-            RHIShaderResourceGroup* materialSRG = passContext.MaterialRegistry->GetSRG();
+            RHIShaderResourceGroup* texturesSRG = passContext.TextureRegistry->GetSRG();
+            RHIShaderResourceGroup* materialsSRG = passContext.MaterialRegistry->GetSRG();
 
             commandBuffer->BeginRenderPass(renderPassBeginInfo);
             {
@@ -73,10 +73,10 @@ namespace Wl
                 commandBuffer->SetViewport(viewport);
                 commandBuffer->SetScissor(scissor);
 
-                commandBuffer->BindSRG(pipeline, {globalSRG}, GlobalSRGIndex);
-                commandBuffer->BindSRG(pipeline, {drawItemSRG}, RenderInstanceSRGIndex);
-                commandBuffer->BindSRG(pipeline, {textureSRG}, LudoTextureGRGIndex);
-                commandBuffer->BindSRG(pipeline, {materialSRG}, LudoMaterialsSRGIndex);
+                commandBuffer->BindSRG(pipeline, {globalSRG}, SRGIndexGlobal);
+                commandBuffer->BindSRG(pipeline, {drawItemSRG}, SRGIndexRenderInstance);
+                commandBuffer->BindSRG(pipeline, {texturesSRG}, SRGIndexTextures);
+                commandBuffer->BindSRG(pipeline, {materialsSRG}, SRGIndexMaterials);
 
                 commandBuffer->BindVertexBuffers(data.Mesh->GetVertexBuffers());
                 commandBuffer->BindIndexBuffer(data.Mesh->GetIndexBuffer());

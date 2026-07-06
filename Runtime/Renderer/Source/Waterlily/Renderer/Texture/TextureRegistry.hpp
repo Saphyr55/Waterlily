@@ -26,7 +26,7 @@ namespace Wl
 
         void Upload(bool release_image = true);
 
-        void CompileSRG();
+        void UpdateSRG();
 
         void Destroy();
 

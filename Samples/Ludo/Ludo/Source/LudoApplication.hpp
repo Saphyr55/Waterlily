@@ -19,7 +19,7 @@
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
 #include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
-#include "Waterlily/Scene/PunctualLight.hpp"
+#include "Waterlily/Scene/PointLight.hpp"
 
 namespace Wl
 {
@@ -36,11 +36,8 @@ namespace Wl
         virtual void OnShutdown() override;
 
     public:
-        LudoApplicationDelegate();
-        ~LudoApplicationDelegate()
-        {
-            WL_LOG_DEBUG("Delegate", "Test descruction");
-        }
+        LudoApplicationDelegate() = default;
+        ~LudoApplicationDelegate() = default;
 
     private:
         RHIPipeline* GetOrCreatePipeline(FrameGraphPass& pass,
@@ -51,32 +48,33 @@ namespace Wl
 
     private:
         // Rendering.
-        SharedPtr<Window> m_window;
-        SharedPtr<RHIDevice> m_device;
-        SharedPtr<FrameContext> m_frameContext;
+        SharedPtr<Window> m_window = nullptr;
+        SharedPtr<RHIDevice> m_device = nullptr;
+        SharedPtr<FrameContext> m_frameContext = nullptr;
 
         // Graphics.
-        SharedPtr<TextureRegistry> m_textureRegistry;
-        SharedPtr<MaterialRegistry> m_materialRegistry;
-        SharedPtr<PipelineManager> m_pipelineManager;
-        SharedPtr<FrameGraph> m_frameGraph;
-        SharedPtr<ShaderBundle> m_shaderBundle;
+        SharedPtr<TextureRegistry> m_textureRegistry = nullptr;
+        SharedPtr<MaterialRegistry> m_materialRegistry = nullptr;
+        SharedPtr<PipelineManager> m_pipelineManager = nullptr;
+        SharedPtr<FrameGraph> m_frameGraph = nullptr;
+        SharedPtr<ShaderBundle> m_shaderBundle = nullptr;
 
         // Scene Data.
-        Model* m_sponzaModelAsset;
+        Model* m_sponzaModelAsset = nullptr;
         ViewData m_view;
         Camera m_camera;
-        FixedArray<PunctualLight, 5> m_lights;
-        FixedArray<PunctualLight, 5> m_originalLights;
+        FixedArray<PointLight, 5> m_lights;
+        FixedArray<PointLight, 5> m_originalLights;
+        DirectionalLight m_directionalLight;
 
         // Render Data.
-        SharedPtr<RenderMesh> m_sponzaMesh;
-        RHIBuffer* m_indirectBuffer;
-        size_t m_indirectBufferCount;
+        SharedPtr<RenderMesh> m_sponzaMesh = nullptr;
+        RHIBuffer* m_indirectBuffer = nullptr;
+        size_t m_indirectBufferCount = 0;
 
         // Assets managing.
-        SharedPtr<AssetRegistry> m_assetRegistry;
-        SharedPtr<AssetManager> m_assetManager;
+        SharedPtr<AssetRegistry> m_assetRegistry = nullptr;
+        SharedPtr<AssetManager> m_assetManager = nullptr;
     };
 
 }// namespace Wl

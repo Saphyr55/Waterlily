@@ -20,7 +20,7 @@ namespace Wl
         FrameGraphBufferHandle Indirect;
 
         size_t DrawCount = 0;
-        RenderAllocation* RenderViewAllocation = nullptr;
+        RenderAllocation* ViewAllocation = nullptr;
         RenderAllocation* MeshAllocation = nullptr;
 
         SharedPtr<RenderMesh> Mesh = nullptr;

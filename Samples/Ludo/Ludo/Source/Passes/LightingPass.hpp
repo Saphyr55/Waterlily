@@ -9,7 +9,6 @@ namespace Wl
 {
     inline const StringID LightingPassName = WL_SID("Lighting");
 
-
     struct FrameGraphPass;
 
     class LightingShader
@@ -29,9 +28,10 @@ namespace Wl
 
         RenderAllocation* MeshAllocation;
 
-        RenderAllocation* LightAllocation;
+        RenderAllocation* PointLightsAllocation;
+        RenderAllocation* DirectionalLightAllocation;
         RenderAllocation* CountersAllocation;
-        RenderAllocation* RenderViewAllocation;
+        RenderAllocation* ViewAllocation;
     };
 
     FrameGraphPass& LightingPassCreate(PassContext& passContext, GraphicsPipelineState& pipeline, LightingPassParameters& params);

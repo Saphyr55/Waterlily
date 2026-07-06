@@ -21,7 +21,7 @@ namespace Wl
         RenderMesh* Mesh;
 
         RenderAllocation* LightAllocation;
-        RenderAllocation* RenderViewAllocation;
+        RenderAllocation* ViewAllocation;
     };
 
     LUDO_API FrameGraphPass& ForwardPassCreate(PassContext& passContext,

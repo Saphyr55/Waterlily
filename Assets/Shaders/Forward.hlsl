@@ -3,19 +3,19 @@
 #include "Shared/Lighting.hlsli"
 
 WLSL_BINDING(0, 0)  
-cbuffer ViewBuffer : register(b0, space0)
+cbuffer ViewCB : register(b0, space0)
 {
-    ViewInstance View;
+    ViewData View;
 }
 
 WLSL_BINDING(1, 0)
-cbuffer PunctualLightBuffer : register(b1, space0)
+cbuffer PointLightBuffer : register(b1, space0)
 {
-    PunctualLight Light;
+    PointLightData Light;
 }
 
 WLSL_BINDING(0, 1)
-RWStructuredBuffer<RenderInstance> RenderInstanceBuffer : register(u0, space1);
+RWStructuredBuffer<RenderInstanceData> RenderInstanceBuffer : register(u0, space1);
 
 WLSL_BINDING(0, 2)
 Texture2D Texture2DRegistry[] : register(t0, space2);
@@ -23,7 +23,7 @@ WLSL_BINDING(0, 2)
 SamplerState Samplers : register(s0, space2);
 
 WLSL_BINDING(0, 3) 
-RWStructuredBuffer<Material> Materials : register(u0, space3);
+RWStructuredBuffer<MaterialData> MaterialsRWSB : register(u0, space3);
 
 struct VSInput
 {
@@ -61,7 +61,7 @@ VSOutput VSMain(VSInput input, uint InstanceIndex : SV_InstanceID)
 {
     VSOutput output;
     
-    RenderInstance instance = RenderInstanceBuffer[InstanceIndex];
+    RenderInstanceData instance = RenderInstanceBuffer[InstanceIndex];
     
     float4 worldPosition = mul(instance.Model, float4(input.Position, 1.0));
     
@@ -87,8 +87,8 @@ FSOutput FSMain(VSOutput input)
 {
     FSOutput output;
     
-    RenderInstance instance = RenderInstanceBuffer[input.InstanceIndex];
-    Material material = Materials[instance.MaterialIndex];
+    RenderInstanceData instance = RenderInstanceBuffer[input.InstanceIndex];
+    MaterialData material = MaterialsRWSB[instance.MaterialIndex];
     
     Texture2D diffuseTexture = Texture2DRegistry[NonUniformResourceIndex(material.DiffuseIndex)];
     float4 diffuseColor = diffuseTexture.Sample(Samplers, input.UV);
@@ -107,13 +107,13 @@ FSOutput FSMain(VSOutput input)
         normal = normal * 2.0f - 1.0f;
         normal = normalize(mul(TBN, normal));
     }
-    
-    float3 viewDirection = normalize(View.EyePosition - input.WorldPosition);
+
+    float3 viewDirection = normalize(View.Position - input.WorldPosition);
     if (dot(viewDirection, normal) < 0.0f)
     {
         normal = -normal;
     }
-    
+
     float3 lightColor = Light.Color;
     float3 lightDirection = Light.Position - input.WorldPosition;
     float lightDistance = length(lightDirection);

@@ -1,22 +1,21 @@
-
 #include "Shared/Defines.hlsli"
 #include "Shared/DefaultRender.hlsli"
 
 WLSL_BINDING(0, 0)
-cbuffer ViewBuffer : register(b0, space0)
+cbuffer ViewCB : register(b0, space0)
 {
-    ViewInstance View;
+    ViewData View;
 }
 
 WLSL_BINDING(0, 1)
-RWStructuredBuffer<RenderInstance> RenderInstanceBuffer : register(u0, space1);
+RWStructuredBuffer<RenderInstanceData> RenderInstanceRWSB : register(u0, space1);
 
 WLSL_BINDING(0, 2)
 Texture2D Texture2DRegistry[] : register(t0, space2);
 SamplerState Samplers : register(s0, space2);
 
 WLSL_BINDING(0, 3)
-RWStructuredBuffer<Material> Materials : register(u0, space3);
+RWStructuredBuffer<MaterialData> MaterialsRWSB : register(u0, space3);
 
 struct VSInput
 {
@@ -60,17 +59,17 @@ VSOutput VSMain(VSInput input, uint InstanceIndex : SV_InstanceID)
 {
     VSOutput output;
     
-    RenderInstance instance = RenderInstanceBuffer[InstanceIndex];
+    RenderInstanceData instance = RenderInstanceRWSB[InstanceIndex];
     
     float4 worldPosition = mul(instance.Model, float4(input.Position, 1.0));
-    
+
     float3x3 worldMatrix = (float3x3) instance.Model;
-    
+
     float3 normal = normalize(mul(worldMatrix, input.Normal));
     float3 tangent = normalize(mul(worldMatrix, (float3) input.Tangent));
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     float3 bitangent = cross(normal, tangent) * input.Tangent.w;
-    
+
     output.Position = mul(View.ViewProj, worldPosition);
     output.WorldPosition = worldPosition.xyz;
     output.Normal = normal;
@@ -78,16 +77,16 @@ VSOutput VSMain(VSInput input, uint InstanceIndex : SV_InstanceID)
     output.Tangent = tangent;
     output.Bitangent = bitangent;
     output.InstanceIndex = InstanceIndex;
-    
+
     return output;
 }
 
 FSOutput FSMain(VSOutput input)
 {
     FSOutput output;
-   
-    RenderInstance instance = RenderInstanceBuffer[input.InstanceIndex];
-    Material material = Materials[instance.MaterialIndex];
+
+    RenderInstanceData instance = RenderInstanceRWSB[input.InstanceIndex];
+    MaterialData material = MaterialsRWSB[instance.MaterialIndex];
     
     output.Position = float4(input.WorldPosition, 1.0f);
     
@@ -114,7 +113,6 @@ FSOutput FSMain(VSOutput input)
     {
         output.Albedo = material.DiffuseFactor;
     }
-    
     
     return output;
 }
