@@ -91,7 +91,6 @@ namespace Wl
 
     void FrameContext::Resize(uint32_t width, uint32_t height)
     {
-
         m_device->WaitIdle();
         m_device->RecreateSwapchain(m_swapchain, width, height);
     }
@@ -125,6 +124,7 @@ namespace Wl
 
             m_device->DestroyBuffer(static_cast<RHIBuffer*>(frame.UniformAllocator.GetBuffer()));
             m_device->DestroyBuffer(static_cast<RHIBuffer*>(frame.StorageAllocator.GetBuffer()));
+
             frame.Uploader.Shutdown();
 
             m_device->DestroySRGPool(frame.SRGPool);

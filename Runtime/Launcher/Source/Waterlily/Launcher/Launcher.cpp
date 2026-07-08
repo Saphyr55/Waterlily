@@ -2,6 +2,9 @@
 
 #include "Waterlily/Core/Logging/ConsoleLoggerWriter.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
+#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/LinearAllocator.hpp"
+#include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"

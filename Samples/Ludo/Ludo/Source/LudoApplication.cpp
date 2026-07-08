@@ -8,6 +8,8 @@
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
+#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
+#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
@@ -23,7 +25,6 @@
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
-#include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
 #include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PointLight.hpp"
@@ -32,55 +33,6 @@
 
 namespace Wl
 {
-    // TODO: Those paths must be in function of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.hlsl").
-    static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.hlsl");
-    static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
-    static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
-
-    static const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
-    static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
-
-    inline const StringID GBufferVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.vert.wlca");
-    inline const StringID GBufferFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.frag.wlca");
-    inline const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
-    inline const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
-
-    static Camera InitCamera()
-    {
-        Camera camera(Vector3f(-6.5f, 0.75f, 0.5f));
-        camera.MovementSpeed = 10.0f;
-        camera.LookAt(Vector3f(0.0f, 1.0f, 0.0f));
-        camera.UpdateView();
-        camera.UpdateVectors();
-        return camera;
-    }
-
-    // Todo: This should be done in dev mode not in runtime mode.
-    static bool CompileShaders()
-    {
-        FileSystem& fileSystem = FileSystem::GetPlatform();
-
-        bool success = SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
-                                                        GBufferVertexShaderAssetURI.GetText(),
-                                                        "VSMain",
-                                                        Shader::Stage::Vertex);
-
-        success = success && SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
-                                                              GBufferFragmentShaderAssetURI.GetText(),
-                                                              "FSMain",
-                                                              Shader::Stage::Fragment);
-
-        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
-                                                              LightingVertexShaderAssetURI.GetText(),
-                                                              "VSMain",
-                                                              Shader::Stage::Vertex);
-
-        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
-                                                              LightingFragmentShaderAssetURI.GetText(),
-                                                              "FSMain",
-                                                              Shader::Stage::Fragment);
-        return success;
-    }
 
     void LudoApplicationDelegate::OnStartup()
     {
@@ -127,7 +79,10 @@ namespace Wl
         m_sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
         WL_CHECK_MSG(m_sponzaModelAsset, "Failed to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
 
-        Array<StaticMesh*> modelStaticMeshesAsset(m_sponzaModelAsset->Meshes.GetSize());
+        Array<StaticMesh*, AllocatorProxy> modelStaticMeshesAsset;
+        modelStaticMeshesAsset.GetAllocator().SetDelegate(&DefaultAllocator::GetInstance());
+        modelStaticMeshesAsset.Reserve(m_sponzaModelAsset->Meshes.GetSize());
+
         for (const AssetHandle& meshAssetHandle: m_sponzaModelAsset->Meshes)
         {
             modelStaticMeshesAsset.Append(m_assetManager->GetAsset<StaticMesh>(meshAssetHandle));
@@ -312,12 +267,6 @@ namespace Wl
 
     void LudoApplicationDelegate::OnRender()
     {
-        PassContext passContext = {};
-        passContext.FrameGraph = m_frameGraph;
-        passContext.MaterialRegistry = m_materialRegistry;
-        passContext.TextureRegistry = m_textureRegistry;
-        passContext.PipelineManager = m_pipelineManager;
-
         FrameResult result = m_frameContext->BeginFrame();
         WL_CHECK(result == FrameResult::Success);
 
@@ -346,6 +295,12 @@ namespace Wl
 
         RenderAllocation countersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
         countersAllocation.Update<uint32_t>(lightView.GetSize());
+
+        PassContext passContext = {};
+        passContext.FrameGraph = m_frameGraph;
+        passContext.MaterialRegistry = m_materialRegistry;
+        passContext.TextureRegistry = m_textureRegistry;
+        passContext.PipelineManager = m_pipelineManager;
 
         FrameGraphBufferHandle indirect = m_frameGraph->ImportBuffer(m_indirectBuffer, m_indirectBuffer->GetSize(), 0);
 

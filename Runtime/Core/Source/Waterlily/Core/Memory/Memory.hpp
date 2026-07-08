@@ -112,7 +112,7 @@ namespace Wl
         Memory& operator=(Memory&&) = delete;
         Memory& operator=(const Memory&&) = delete;
     };
-
+    
     template<typename ResourceType>
     inline ResourceType* New(CAllocator auto& allocator, ResourceType&& resource) noexcept
     {
@@ -139,16 +139,28 @@ namespace Wl
     }
 
     template<typename ResourceType>
-    inline void Delete(CAllocator auto& allocator, ResourceType* ptr) noexcept
+    inline void SafeDestruct(ResourceType* resource)
     {
-        WL_CHECK(ptr);
-
-        if constexpr (std::is_destructible_v<ResourceType>)
+        if (!resource)
         {
-            ptr->~ResourceType();
+            return;
         }
-
-        allocator.Deallocate(ptr, sizeof(ResourceType), alignof(ResourceType));
+        
+        if constexpr (std::is_trivially_destructible_v<ResourceType>)
+        {
+            resource->~ResourceType();
+        }
     }
+
+    template<typename ResourceType>
+    inline void Delete(CAllocator auto& allocator, ResourceType* resource) noexcept
+    {
+        WL_CHECK(resource);
+
+        SafeDestruct(resource);
+
+        allocator.Deallocate(resource, sizeof(ResourceType), alignof(ResourceType));
+    }
+
 
 }// namespace Wl

@@ -3,7 +3,7 @@
 #include "LudoExports.hpp"
 #include "Passes/PassContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
-#include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
+#include "Waterlily/Renderer/FramePacket.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 
 namespace Wl
@@ -15,16 +15,12 @@ namespace Wl
         FrameGraphTextureHandle Color;
         FrameGraphTextureHandle DepthStencil;
         FrameGraphBufferHandle Indirect;
-        size_t DrawCount;
-
-        RenderAllocation* MeshAllocation;
-        RenderMesh* Mesh;
 
         RenderAllocation* LightAllocation;
-        RenderAllocation* ViewAllocation;
     };
 
     LUDO_API FrameGraphPass& ForwardPassCreate(PassContext& passContext,
+                                               FramePacket& packet,
                                                GraphicsPipelineState& pipeline,
                                                ForwardPassParameters& params);
 

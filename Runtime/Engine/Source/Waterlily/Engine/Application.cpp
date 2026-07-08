@@ -1,5 +1,8 @@
 #include "Waterlily/Engine/Application.hpp"
 #include "ApplicationDelegate.hpp"
+#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/LinearAllocator.hpp"
+#include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/Core/Platform/PlatformTime.hpp"
 

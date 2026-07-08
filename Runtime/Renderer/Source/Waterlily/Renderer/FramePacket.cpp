@@ -1,12 +1,13 @@
 #include "Waterlily/Renderer/FramePacket.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
+#include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
+#include "Waterlily/Renderer/Proxy/RenderProxy.hpp"
 
 namespace Wl
 {
 
-    FramePacket FramePacketManager::ExtractPacket(const ViewData& view, SharedPtr<RenderMesh> mesh,
-                                                  uint32_t drawCount)
+    FramePacket FramePacketManager::ExtractPacket(const ViewData& view, const SharedPtr<RenderMesh>& mesh, uint32_t drawCount)
     {
         FramePacket packet;
 

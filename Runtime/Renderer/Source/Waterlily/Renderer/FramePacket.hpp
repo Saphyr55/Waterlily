@@ -1,15 +1,16 @@
 #pragma once
 
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
 #include "Waterlily/Renderer/View.hpp"
-#include <cstdint>
 
 namespace Wl
 {
+
+    class RenderProxy;
+    class Frame;
 
     struct FramePacket
     {
@@ -25,9 +26,7 @@ namespace Wl
     class WL_RENDERER_API FramePacketManager
     {
     public:
-        FramePacket ExtractPacket(const ViewData& view,
-                                  SharedPtr<RenderMesh> mesh,
-                                  uint32_t drawCount);
+        FramePacket ExtractPacket(const ViewData& view, const SharedPtr<RenderMesh>& mesh, uint32_t drawCount);
 
         void PrepareFrame(FramePacket& packet, Frame& frame);
     };

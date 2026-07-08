@@ -139,10 +139,7 @@ namespace Wl
             return;
         }
 
-        if constexpr (std::is_destructible_v<ResourceType>)
-        {
-            resource->~ResourceType();
-        }
+        SafeDestruct<ResourceType>(resource);
 
         Deallocate(resource);
     }
@@ -152,7 +149,10 @@ namespace Wl
     {
         for (Block* block: m_blocks)
         {
-            m_allocator->Deallocate(block, m_blockCount * sizeof(Block));
+            if (block)
+            {
+                m_allocator->Deallocate(block, m_blockCount * sizeof(Block));
+            }
         }
         m_blocks.Clear();
         m_freeBlock = nullptr;

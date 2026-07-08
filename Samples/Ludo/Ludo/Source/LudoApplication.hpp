@@ -17,6 +17,7 @@
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 #include "Waterlily/Renderer/Shader/ShaderBundle.hpp"
+#include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
 #include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
@@ -24,6 +25,19 @@
 
 namespace Wl
 {
+
+    // TODO: Those paths must be in function of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.hlsl").
+    static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.hlsl");
+    static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
+    static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
+
+    static const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
+    static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
+
+    inline const StringID GBufferVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.vert.wlca");
+    inline const StringID GBufferFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.frag.wlca");
+    inline const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
+    inline const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
 
     class LUDO_API LudoApplicationDelegate : public ApplicationDelegate
     {
@@ -76,5 +90,42 @@ namespace Wl
         SharedPtr<AssetRegistry> m_assetRegistry = nullptr;
         SharedPtr<AssetManager> m_assetManager = nullptr;
     };
+
+    inline Camera InitCamera()
+    {
+        Camera camera(Vector3f(-6.5f, 0.75f, 0.5f));
+        camera.MovementSpeed = 10.0f;
+        camera.LookAt(Vector3f(0.0f, 1.0f, 0.0f));
+        camera.UpdateView();
+        camera.UpdateVectors();
+        return camera;
+    }
+
+    // Todo: This should be done in dev mode not in runtime mode.
+    inline bool CompileShaders()
+    {
+        FileSystem& fileSystem = FileSystem::GetPlatform();
+
+        bool success = SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
+                                                        GBufferVertexShaderAssetURI.GetText(),
+                                                        "VSMain",
+                                                        Shader::Stage::Vertex);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
+                                                              GBufferFragmentShaderAssetURI.GetText(),
+                                                              "FSMain",
+                                                              Shader::Stage::Fragment);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
+                                                              LightingVertexShaderAssetURI.GetText(),
+                                                              "VSMain",
+                                                              Shader::Stage::Vertex);
+
+        success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
+                                                              LightingFragmentShaderAssetURI.GetText(),
+                                                              "FSMain",
+                                                              Shader::Stage::Fragment);
+        return success;
+    }
 
 }// namespace Wl

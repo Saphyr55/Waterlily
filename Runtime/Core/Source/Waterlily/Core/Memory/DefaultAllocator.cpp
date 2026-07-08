@@ -3,6 +3,7 @@
 
 namespace Wl
 {
+    
     DefaultAllocator& DefaultAllocator::GetInstance()
     {
         static DefaultAllocator s_defaultAllocator;

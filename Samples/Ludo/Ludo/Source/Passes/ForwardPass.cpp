@@ -11,6 +11,7 @@ namespace Wl
 {
 
     FrameGraphPass& ForwardPassCreate(PassContext& passContext,
+                                      FramePacket& packet,
                                       GraphicsPipelineState& pipeline,
                                       ForwardPassParameters& params)
     {
@@ -46,9 +47,9 @@ namespace Wl
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
 
             RHIWriteBufferResource writeRenderView(SRGBindingGlobalView,
-                                                   params.ViewAllocation->Buffer,
-                                                   params.ViewAllocation->Offset,
-                                                   params.ViewAllocation->Size);
+                                                   packet.ViewAllocation.Buffer,
+                                                   packet.ViewAllocation.Offset,
+                                                   packet.ViewAllocation.Size);
 
             RHIWriteBufferResource writeLight(SRGBindingGlobalPointLights,
                                               params.LightAllocation->Buffer,
@@ -63,9 +64,9 @@ namespace Wl
             RHIShaderResourceGroup* drawItemSRG = frame.SRGPool->AllocateSRG(drawItemSRGLayout);
 
             RHIWriteBufferResource writeDrawItem(SRGBindingRenderInstance,
-                                                 params.MeshAllocation->Buffer,
-                                                 params.MeshAllocation->Offset,
-                                                 params.MeshAllocation->Size);
+                                                 packet.MeshAllocation.Buffer,
+                                                 packet.MeshAllocation.Offset,
+                                                 packet.MeshAllocation.Size);
 
             drawItemSRG->SetBuffer(writeDrawItem);
             drawItemSRG->Update();
@@ -86,15 +87,15 @@ namespace Wl
                 commandBuffer->BindSRG(pipeline, {textureSRG}, SRGIndexTextures);
                 commandBuffer->BindSRG(pipeline, {materialSRG}, SRGIndexMaterials);
 
-                commandBuffer->BindVertexBuffers(params.Mesh->GetVertexBuffers());
-                commandBuffer->BindIndexBuffer(params.Mesh->GetIndexBuffer());
+                commandBuffer->BindVertexBuffers(packet.Mesh->GetVertexBuffers());
+                commandBuffer->BindIndexBuffer(packet.Mesh->GetIndexBuffer());
 
                 FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(params.Indirect);
 
                 RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand;
                 drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalTexture.Handle;
                 drawIndexedIndirectCommand.Offset = 0;
-                drawIndexedIndirectCommand.DrawCount = params.DrawCount;
+                drawIndexedIndirectCommand.DrawCount = packet.DrawCount;
                 drawIndexedIndirectCommand.Stride = sizeof(RHIDrawIndexedCommand);
 
                 commandBuffer->Draw(drawIndexedIndirectCommand);

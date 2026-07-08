@@ -32,10 +32,7 @@ namespace Wl
 
             void Destroy()
             {
-                if constexpr (std::is_destructible_v<T>)
-                {
-                    GetRef().~T();
-                }
+                SafeDestruct<T>(GetPtr());
             }
 
             T* GetPtr()
