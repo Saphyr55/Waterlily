@@ -8,7 +8,8 @@
 #include <type_traits>
 
 #define WL_NEW ::new
-#define WL_PLACEMENT_NEW WL_NEW
+#define WL_PLACEMENT_NEW(memory, type) ::new (memory) type
+#define WL_DELETE ::delete
 #define WL_KB (1024ul)
 #define WL_MB (1024ul * WL_KB)
 #define WL_GB (1024ul * WL_MB)
@@ -112,7 +113,7 @@ namespace Wl
         Memory& operator=(Memory&&) = delete;
         Memory& operator=(const Memory&&) = delete;
     };
-    
+
     template<typename ResourceType>
     inline ResourceType* New(CAllocator auto& allocator, ResourceType&& resource) noexcept
     {
@@ -121,7 +122,7 @@ namespace Wl
         {
             return nullptr;
         }
-        WL_PLACEMENT_NEW (memory) ResourceType(std::move(resource));
+        WL_PLACEMENT_NEW(memory, ResourceType(std::move(resource)));
         return static_cast<ResourceType*>(memory);
     }
 
@@ -134,7 +135,8 @@ namespace Wl
         {
             return nullptr;
         }
-        WL_PLACEMENT_NEW (memory) ResourceType(std::forward<Args>(args)...);
+
+        WL_PLACEMENT_NEW(memory, ResourceType(std::forward<Args>(args)...));
         return static_cast<ResourceType*>(memory);
     }
 
@@ -145,7 +147,7 @@ namespace Wl
         {
             return;
         }
-        
+
         if constexpr (std::is_trivially_destructible_v<ResourceType>)
         {
             resource->~ResourceType();

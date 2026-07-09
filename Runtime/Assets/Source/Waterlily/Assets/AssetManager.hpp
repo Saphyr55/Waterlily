@@ -8,6 +8,7 @@
 #include "Waterlily/Assets/AssetsExports.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Memory/Cast.hpp"
+#include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 
@@ -51,15 +52,14 @@ namespace Wl
             }
             else if (asset && reload)
             {
-                asset->~AssetType();
+                SafeDestruct<AssetType>(asset);
                 pool->Deallocate(uuid);
             }
             
             asset = pool->Allocate(uuid);
             if (SharedPtr<Stream> stream = m_loader->OpenAndValidate(metadata))
             {
-                WL_PLACEMENT_NEW(asset)
-                AssetType();
+                WL_PLACEMENT_NEW(asset, AssetType());
                 AssetSerializer::Deserialize(*stream, *asset);
                 return asset;
             }

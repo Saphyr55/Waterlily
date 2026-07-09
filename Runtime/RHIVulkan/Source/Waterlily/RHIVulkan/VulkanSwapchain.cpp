@@ -186,7 +186,7 @@ namespace Wl
         {
             VkImage image = m_images[i];
 
-            VulkanTextureView* textureView = Wl::New(DefaultAllocator::GetInstance(), VulkanTextureView());
+            VulkanTextureView* textureView = Wl::New(DefaultAllocator::GetDefault(), VulkanTextureView());
 
             VkImageViewCreateInfo imageViewCreateInfo = {};
             imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

@@ -62,9 +62,10 @@ namespace Wl
             return m_referenceCounter->IsUnique();
         }
 
-        template<typename DeleterType = DefaultDeleter<ResourceType>>
+        template<typename DeleterType = Deleter<ResourceType>>
         void Reset(ResourceType* resource = nullptr, DeleterType deleter = DeleterType())
         {
+            
             ReleaseSharedReference();
 
             m_resource = resource;
@@ -270,7 +271,7 @@ namespace Wl
         requires(std::is_constructible_v<ResourceType, Args && ...>)
     inline SharedPtr<ResourceType> MakeShared(Args&&... args) noexcept
     {
-        return SharedPtr<ResourceType>(NewArgs<ResourceType>(DefaultAllocator::GetInstance(), args...));
+        return SharedPtr<ResourceType>(NewArgs<ResourceType>(DefaultAllocator::GetDefault(), args...));
     }
 
     template<typename ResourceType>

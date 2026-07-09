@@ -26,8 +26,7 @@ namespace Wl
         constexpr Option(const T& value)
             : m_isSome(true)
         {
-            WL_PLACEMENT_NEW(&m_storage)
-            T(value);
+            WL_PLACEMENT_NEW(&m_storage, T(value));
         }
 
         constexpr Option()
@@ -40,8 +39,7 @@ namespace Wl
         {
             if (m_isSome)
             {
-                WL_PLACEMENT_NEW(&m_storage)
-                T(*other.GetData());
+                WL_PLACEMENT_NEW(&m_storage, T(*other.GetData()));
             }
         }
 
@@ -51,13 +49,12 @@ namespace Wl
             {
                 if (m_isSome)
                 {
-                    GetData()->~T();
+                    SafeDestruct<T>(GetData());
                 }
                 m_isSome = other.m_isSome;
                 if (m_isSome)
                 {
-                    WL_PLACEMENT_NEW(&m_storage)
-                    T(*other.GetData());
+                    WL_PLACEMENT_NEW(&m_storage, T(*other.GetData()));
                 }
             }
             return *this;
@@ -67,7 +64,7 @@ namespace Wl
         {
             if (m_isSome)
             {
-                GetData()->~T();
+                SafeDestruct<T>(GetData());
             }
         }
 

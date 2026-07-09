@@ -29,7 +29,7 @@ struct TestObject
 TEST_CASE("MemoryPool basic allocation and deallocation.", "[MemoryPool]")
 {
     MemoryPool<TestObject> pool;
-    pool.InitPool(&DefaultAllocator::GetInstance(), 4);
+    pool.InitPool(&DefaultAllocator::GetDefault(), 4);
 
     SECTION("Allocate and deallocate resources")
     {

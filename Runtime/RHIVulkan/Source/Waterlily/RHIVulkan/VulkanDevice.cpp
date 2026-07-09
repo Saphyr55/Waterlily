@@ -389,7 +389,7 @@ namespace Wl
 
     VulkanDevice::VulkanDevice()
         : m_context(VulkanContextGet())
-        , m_allocator(DefaultAllocator::GetInstance())
+        , m_allocator(DefaultAllocator::GetDefault())
     {
     }
 

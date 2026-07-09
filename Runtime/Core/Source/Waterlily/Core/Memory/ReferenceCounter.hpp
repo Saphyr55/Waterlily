@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
+
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Deleter.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
@@ -48,7 +48,7 @@ namespace Wl
                 std::atomic_thread_fence(std::memory_order_acquire);
 
                 DestroyResource();
-                Wl::Delete(DefaultAllocator::GetInstance(), this);
+                Wl::Delete(DefaultAllocator::GetDefault(), this);
             }
         }
 
@@ -105,14 +105,13 @@ namespace Wl
     inline ReferenceCounter* NewRefCounterDeleter(ResourceType* resource, const DeleterType& deleter) noexcept
     {
         using RefCounter = ReferenceCounterWithDeleter<ResourceType, DeleterType>;
-        return NewArgs<RefCounter>(DefaultAllocator::GetInstance(), resource, deleter);
+        return NewArgs<RefCounter>(DefaultAllocator::GetDefault(), resource, deleter);
     }
 
     template<typename ResourceType>
     inline ReferenceCounter* NewDefaultRefCounter(ResourceType* resource) noexcept
     {
-        using DeleterType = DefaultDeleter<ResourceType>;
-        return NewRefCounterDeleter(resource, DeleterType(DefaultAllocator::GetInstance()));
+        return NewRefCounterDeleter(resource, Deleter<ResourceType>(DefaultAllocator::GetDefault()));
     }
 
 }// namespace Wl

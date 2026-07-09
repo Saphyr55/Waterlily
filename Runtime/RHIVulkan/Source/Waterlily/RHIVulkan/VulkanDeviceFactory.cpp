@@ -6,5 +6,5 @@
 
 extern "C" Wl::RHIDevice* RHIDeviceCreateImpl()
 {
-    return Wl::New(Wl::DefaultAllocator::GetInstance(), Wl::VulkanDevice());
+    return Wl::New(Wl::DefaultAllocator::GetDefault(), Wl::VulkanDevice());
 }

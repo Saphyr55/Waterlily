@@ -20,14 +20,12 @@ namespace Wl
 
             void Emplace(const T& value)
             {
-                WL_PLACEMENT_NEW(Storage)
-                T(value);
+                WL_PLACEMENT_NEW(Storage, T(value));
             }
 
             void Emplace(T&& value)
             {
-                WL_PLACEMENT_NEW(Storage)
-                T(std::move(value));
+                WL_PLACEMENT_NEW(Storage, T(std::move(value)));
             }
 
             void Destroy()

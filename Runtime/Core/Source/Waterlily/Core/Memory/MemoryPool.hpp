@@ -72,7 +72,7 @@ namespace Wl
 
     template<typename ResourceType>
     MemoryPool<ResourceType>::MemoryPool()
-        : m_allocator(&DefaultAllocator::GetInstance())
+        : m_allocator(&DefaultAllocator::GetDefault())
         , m_freeBlock(nullptr)
         , m_blockCount(64)
         , m_blocks()
@@ -126,8 +126,7 @@ namespace Wl
     ResourceType* MemoryPool<ResourceType>::NewResource(Args&&... args)
     {
         ResourceType* resource = Allocate();
-        WL_PLACEMENT_NEW(resource)
-        ResourceType(std::forward<Args>(args)...);
+        WL_PLACEMENT_NEW(resource, ResourceType(std::forward<Args>(args)...));
         return resource;
     }
 

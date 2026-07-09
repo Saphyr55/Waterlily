@@ -101,7 +101,7 @@ namespace Wl
 
     private:
         RHIDeviceProperties m_properties;
-        HeapAllocator& m_allocator;
+        Allocator& m_allocator;
         VulkanContext& m_context;
         size_t m_countTextureAllocation = 0;
         size_t m_countBufferAllocation = 0;

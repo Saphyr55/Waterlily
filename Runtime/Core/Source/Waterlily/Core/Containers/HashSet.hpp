@@ -2,8 +2,6 @@
 
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
-#include "Waterlily/Core/Memory/Allocator.hpp"
-#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/TypedAllocator.hpp"
@@ -39,7 +37,7 @@ namespace Wl
     };
 
     template<typename KeyType,
-             CAllocator AllocatorType = AllocatorProxy,
+             CAllocator AllocatorType = DefaultAllocator,
              typename HasherType = Hasher>
     class HashSet
     {
@@ -239,8 +237,7 @@ namespace Wl
                 {
                     TypedAllocator<ElementType> allocator(m_allocator);
                     ElementType* copy = allocator.Allocate(1);
-                    WL_PLACEMENT_NEW(copy)
-                    ElementType(cur->Key, cur->Hash);
+                    WL_PLACEMENT_NEW(copy, ElementType(cur->Key, cur->Hash));
                     *tail = copy;
                     tail = &((*tail)->Next);
                     cur = cur->Next;
@@ -406,7 +403,7 @@ namespace Wl
                         m_buckets[idx] = cur->Next;
                     }
 
-                    cur->~ElementType();
+                    SafeDestruct<ElementType>(cur);
                     allocator.Deallocate(cur, 1);
                     --m_size;
 
@@ -497,7 +494,7 @@ namespace Wl
                 while (cur)
                 {
                     ElementType* next = cur->Next;
-                    cur->~ElementType();
+                    SafeDestruct<ElementType>(cur);
                     allocator.Deallocate(cur, 1);
                     cur = next;
                 }
@@ -639,7 +636,7 @@ namespace Wl
         {
             TypedAllocator<ElementType> allocator(m_allocator);
             ElementType* raw = allocator.Allocate(1);
-            ElementType* element = WL_PLACEMENT_NEW(raw) ElementType(key, h);
+            ElementType* element = WL_PLACEMENT_NEW(raw, ElementType(key, h));
             return element;
         }
 
@@ -647,7 +644,7 @@ namespace Wl
         {
             TypedAllocator<ElementType> allocator(m_allocator);
             ElementType* raw = allocator.Allocate(1);
-            ElementType* element = WL_PLACEMENT_NEW(raw) ElementType(std::move(key), h);
+            ElementType* element = WL_PLACEMENT_NEW(raw, ElementType(std::move(key), h));
             return element;
         }
 

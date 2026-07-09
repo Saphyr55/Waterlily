@@ -75,7 +75,7 @@ namespace Wl
         {
             ModuleRegistry::GetInstance().RegisterModule(uniqueName, []() -> Module*
             {
-                return Wl::New(DefaultAllocator::GetInstance(), ModuleType());
+                return Wl::New(DefaultAllocator::GetDefault(), ModuleType());
             });
         }
     };

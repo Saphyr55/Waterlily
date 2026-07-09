@@ -8,7 +8,7 @@
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
-#include "Waterlily/Core/Memory/AllocatorProxy.hpp"
+
 #include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
@@ -79,8 +79,7 @@ namespace Wl
         m_sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
         WL_CHECK_MSG(m_sponzaModelAsset, "Failed to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
 
-        Array<StaticMesh*, AllocatorProxy> modelStaticMeshesAsset;
-        modelStaticMeshesAsset.GetAllocator().SetDelegate(&DefaultAllocator::GetInstance());
+        Array<StaticMesh*> modelStaticMeshesAsset;
         modelStaticMeshesAsset.Reserve(m_sponzaModelAsset->Meshes.GetSize());
 
         for (const AssetHandle& meshAssetHandle: m_sponzaModelAsset->Meshes)
