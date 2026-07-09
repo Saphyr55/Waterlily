@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Allocator.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
@@ -115,9 +116,9 @@ namespace Wl
     };
 
     template<typename ResourceType>
-    inline ResourceType* New(CAllocator auto& allocator, ResourceType&& resource) noexcept
+    inline ResourceType* New(Allocator* allocator, ResourceType&& resource) noexcept
     {
-        void* memory = allocator.Allocate(sizeof(ResourceType), alignof(ResourceType));
+        void* memory = allocator->Allocate(sizeof(ResourceType), alignof(ResourceType));
         if (!memory)
         {
             return nullptr;
@@ -128,9 +129,9 @@ namespace Wl
 
     template<typename ResourceType, typename... Args>
         requires(std::is_constructible_v<ResourceType, Args && ...>)
-    inline ResourceType* NewArgs(CAllocator auto& allocator, Args&&... args) noexcept
+    inline ResourceType* NewArgs(Allocator* allocator, Args&&... args) noexcept
     {
-        void* memory = allocator.Allocate(sizeof(ResourceType), alignof(ResourceType));
+        void* memory = allocator->Allocate(sizeof(ResourceType), alignof(ResourceType));
         if (!memory)
         {
             return nullptr;
@@ -155,13 +156,13 @@ namespace Wl
     }
 
     template<typename ResourceType>
-    inline void Delete(CAllocator auto& allocator, ResourceType* resource) noexcept
+    inline void Delete(Allocator* allocator, ResourceType* resource) noexcept
     {
         WL_CHECK(resource);
 
         SafeDestruct(resource);
 
-        allocator.Deallocate(resource, sizeof(ResourceType), alignof(ResourceType));
+        allocator->Deallocate(resource, sizeof(ResourceType), alignof(ResourceType));
     }
 
 

@@ -31,7 +31,6 @@ namespace Wl
     static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
     static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
 
-    static const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
     static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
 
     inline const StringID GBufferVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.vert.wlca");

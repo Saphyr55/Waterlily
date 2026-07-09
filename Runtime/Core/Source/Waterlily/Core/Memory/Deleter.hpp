@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Allocator.hpp"
-#include "Concepts.hpp"
-
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Concepts.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 
 namespace Wl
@@ -40,10 +38,10 @@ namespace Wl
         void Destroy(ResourceType* resource) noexcept
         {
             WL_CHECK(resource);
-            Delete(m_allocator, resource);
+            Wl::Delete(m_allocator, resource);
         }
 
-        Deleter(Allocator& allocator)
+        Deleter(Allocator* allocator)
             : m_allocator(allocator)
         {
         }
@@ -51,7 +49,7 @@ namespace Wl
         virtual ~Deleter() = default;
 
     private:
-        Allocator& m_allocator;
+        Allocator* m_allocator;
     };
 
     template<typename ResourceType, CAllocator AllocatorType>

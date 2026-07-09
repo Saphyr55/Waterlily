@@ -1,9 +1,12 @@
 #include <catch2/catch_all.hpp>
 
 #include "Waterlily/Core/Containers/Array.hpp"
+#include "Waterlily/Core/Memory/HeapAllocator.hpp"
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
 
 using namespace Wl;
+
+thread_local static HeapAllocator heap; 
 
 TEST_CASE("Array with LinearAllocator basic behavior.", "[Array][LinearAllocator]")
 {
@@ -13,7 +16,7 @@ TEST_CASE("Array with LinearAllocator basic behavior.", "[Array][LinearAllocator
         int32_t second;
     };
 
-    LinearAllocator alloc(1024);// 1 KB
+    LinearAllocator alloc(&heap, 1 * WL_KB);// 1 KB
 
     SECTION("Construct array with linear allocator and Append elements.")
     {

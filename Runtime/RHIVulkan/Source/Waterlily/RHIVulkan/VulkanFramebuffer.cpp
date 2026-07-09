@@ -59,8 +59,7 @@ namespace Wl
         createInfo.height = m_description.Height;
         createInfo.layers = m_description.Layers;
 
-        WL_VULKAN_CHECK(
-                VulkanAPI::vkCreateFramebuffer(m_context.Device, &createInfo, m_context.Allocator, &m_handle));
+        WL_VULKAN_CHECK(VulkanAPI::vkCreateFramebuffer(m_context.Device, &createInfo, m_context.Allocator, &m_handle));
     }
 
     void VulkanFramebuffer::Destroy()

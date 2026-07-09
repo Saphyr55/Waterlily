@@ -1,6 +1,6 @@
 #include "Waterlily/Core/Memory/MemoryPool.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/String/String.hpp"
 
 #include <catch2/catch_all.hpp>
@@ -28,8 +28,9 @@ struct TestObject
 
 TEST_CASE("MemoryPool basic allocation and deallocation.", "[MemoryPool]")
 {
+    DefaultAllocator allocator;
     MemoryPool<TestObject> pool;
-    pool.InitPool(&DefaultAllocator::GetDefault(), 4);
+    pool.InitPool(&allocator, 4);
 
     SECTION("Allocate and deallocate resources")
     {

@@ -94,14 +94,14 @@ namespace Wl
         virtual Array<SharedPtr<RHICommandQueue>> GetCommandQueues() override;
 
     public:
-        VulkanDevice();
+        VulkanDevice(Allocator* allocator);
         ~VulkanDevice() override
         {
         }
 
     private:
         RHIDeviceProperties m_properties;
-        Allocator& m_allocator;
+        Allocator* m_allocator;
         VulkanContext& m_context;
         size_t m_countTextureAllocation = 0;
         size_t m_countBufferAllocation = 0;

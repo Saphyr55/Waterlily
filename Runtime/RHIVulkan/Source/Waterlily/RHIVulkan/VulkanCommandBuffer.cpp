@@ -4,6 +4,7 @@
 #include "Waterlily/Core/Memory/Cast.hpp"
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
@@ -340,7 +341,7 @@ namespace Wl
                                             1,
                                             &barrier);
 
-            VkImageBlit blit{};
+            VkImageBlit blit {};
             blit.srcOffsets[0] = {0, 0, 0};
             blit.srcOffsets[1] = {mipWidth, mipHeight, 1};
             blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -474,7 +475,7 @@ namespace Wl
 
         for (const RHITextureBarrier& barrier: barriers)
         {
-            VkImageMemoryBarrier vulkanBarrier{};
+            VkImageMemoryBarrier vulkanBarrier {};
             vulkanBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 
             vulkanBarrier.oldLayout = VulkanTextureLayoutGet(barrier.OldLayout);
@@ -666,9 +667,9 @@ namespace Wl
         vkBeginInfo.renderPass = vulkanRenderPass->GetHandle();
         vkBeginInfo.framebuffer = vulkanFramebuffer->GetHandle();
         vkBeginInfo.renderArea.offset = {static_cast<int32_t>(beginInfo.Area.X),
-                                       static_cast<int32_t>(beginInfo.Area.Y)};
+                                         static_cast<int32_t>(beginInfo.Area.Y)};
         vkBeginInfo.renderArea.extent = {static_cast<uint32_t>(beginInfo.Area.Width),
-                                       static_cast<uint32_t>(beginInfo.Area.Height)};
+                                         static_cast<uint32_t>(beginInfo.Area.Height)};
 
         vkBeginInfo.clearValueCount = clearValues.GetSize();
         vkBeginInfo.pClearValues = clearValues.GetData();
@@ -764,7 +765,7 @@ namespace Wl
         for (size_t i = 0; i < m_count; i++)
         {
             m_upperCommandBuffers[i] =
-                    Wl::New(m_upperCommandBufferAllocator, VulkanCommandBuffer(m_commandBuffers[i], m_queueType));
+                    Wl::New(&m_upperCommandBufferAllocator, VulkanCommandBuffer(m_commandBuffers[i], m_queueType));
         }
     }
 
@@ -772,6 +773,11 @@ namespace Wl
     {
         m_upperCommandBufferAllocator.Destroy();
         VulkanAPI::vkDestroyCommandPool(m_context.Device, m_handle, m_context.Allocator);
+
+        for (VulkanCommandBuffer* cmd: m_upperCommandBuffers)
+        {
+            Wl::Delete(&m_upperCommandBufferAllocator, cmd);
+        }
     }
 
     VulkanCommandAllocator::VulkanCommandAllocator(VulkanContext& context,
@@ -782,10 +788,10 @@ namespace Wl
         , m_queueFamilyIndex(1)
         , m_handle(VK_NULL_HANDLE)
         , m_commandBuffers()
+        , m_upperCommandBufferAllocator(MemoryStack::GetInstance().GetCurrentAllocator(), m_count * sizeof(VulkanCommandBuffer))
     {
         m_commandBuffers.Resize(m_count);
         m_upperCommandBuffers.Resize(m_count);
-        m_upperCommandBufferAllocator.Init(m_count * sizeof(VulkanCommandBuffer));
         m_queueFamilyIndex = Wl::StaticPtrCast<VulkanCommandQueue>(description.CommandQueue)->GetQueueFamilyIndex();
     }
 

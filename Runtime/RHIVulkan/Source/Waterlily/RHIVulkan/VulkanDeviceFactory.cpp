@@ -1,10 +1,10 @@
 #include "Waterlily/RHIVulkan/VulkanDeviceFactory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/RHIVulkan/VulkanDevice.hpp"
-#include "Waterlily/RHIVulkan/VulkanContext.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 
 extern "C" Wl::RHIDevice* RHIDeviceCreateImpl()
 {
-    return Wl::New(Wl::DefaultAllocator::GetDefault(), Wl::VulkanDevice());
+    Wl::Allocator* allocator = Wl::MemoryStack::GetInstance().GetCurrentAllocator();
+    return Wl::New(allocator, Wl::VulkanDevice(allocator));
 }

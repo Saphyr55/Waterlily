@@ -3,7 +3,7 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 
 namespace Wl
 {

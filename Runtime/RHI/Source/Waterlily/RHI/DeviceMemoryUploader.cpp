@@ -1,6 +1,6 @@
 #include "Waterlily/RHI/DeviceMemoryUploader.hpp"
 
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/RHI/BufferPool.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/CommandQueue.hpp"

@@ -1,7 +1,8 @@
 #include "Waterlily/RHIVulkan/vulkanDevice.hpp"
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
@@ -387,9 +388,9 @@ namespace Wl
         return m_context.CommandQueues;
     }
 
-    VulkanDevice::VulkanDevice()
+    VulkanDevice::VulkanDevice(Allocator* allocator)
         : m_context(VulkanContextGet())
-        , m_allocator(DefaultAllocator::GetDefault())
+        , m_allocator(allocator)
     {
     }
 

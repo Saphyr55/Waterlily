@@ -2,9 +2,8 @@
 
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
-#include "Waterlily/Core/Memory/TypedAllocator.hpp"
 
 #include <initializer_list>
 #include <utility>
@@ -235,8 +234,7 @@ namespace Wl
                 ElementType** tail = &m_buckets[i];
                 while (cur)
                 {
-                    TypedAllocator<ElementType> allocator(m_allocator);
-                    ElementType* copy = allocator.Allocate(1);
+                    ElementType* copy = static_cast<ElementType*>(m_allocator.Allocate(sizeof(ElementType), alignof(ElementType)));
                     WL_PLACEMENT_NEW(copy, ElementType(cur->Key, cur->Hash));
                     *tail = copy;
                     tail = &((*tail)->Next);
@@ -375,8 +373,6 @@ namespace Wl
 
         size_t Remove(const KeyType& key)
         {
-            TypedAllocator<ElementType> allocator(m_allocator);
-
             if (!m_buckets)
             {
                 return 0;
@@ -404,7 +400,7 @@ namespace Wl
                     }
 
                     SafeDestruct<ElementType>(cur);
-                    allocator.Deallocate(cur, 1);
+                    m_allocator.Deallocate(cur, sizeof(ElementType), alignof(ElementType));
                     --m_size;
 
                     return 1;
@@ -480,8 +476,6 @@ namespace Wl
 
         void Clear()
         {
-            TypedAllocator<ElementType> allocator(m_allocator);
-
             if (!m_buckets)
             {
                 return;
@@ -495,7 +489,7 @@ namespace Wl
                 {
                     ElementType* next = cur->Next;
                     SafeDestruct<ElementType>(cur);
-                    allocator.Deallocate(cur, 1);
+                    m_allocator.Deallocate(cur, sizeof(ElementType), alignof(ElementType));
                     cur = next;
                 }
 
@@ -634,16 +628,14 @@ namespace Wl
 
         ElementType* CreateElement(const KeyType& key, size_t h)
         {
-            TypedAllocator<ElementType> allocator(m_allocator);
-            ElementType* raw = allocator.Allocate(1);
+            ElementType* raw = static_cast<ElementType*>(m_allocator.Allocate(sizeof(ElementType), alignof(ElementType)));
             ElementType* element = WL_PLACEMENT_NEW(raw, ElementType(key, h));
             return element;
         }
 
         ElementType* CreateElement(KeyType&& key, size_t h)
         {
-            TypedAllocator<ElementType> allocator(m_allocator);
-            ElementType* raw = allocator.Allocate(1);
+            ElementType* raw = static_cast<ElementType*>(m_allocator.Allocate(sizeof(ElementType), alignof(ElementType)));
             ElementType* element = WL_PLACEMENT_NEW(raw, ElementType(std::move(key), h));
             return element;
         }

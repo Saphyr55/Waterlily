@@ -1,9 +1,9 @@
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/Asset.hpp"
-#include "Waterlily/Assets/assetMetadata.hpp"
+#include "Waterlily/Assets/AssetMetadata.hpp"
 #include "Waterlily/Core/Containers/HashSet.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/IO/File.hpp"
+#include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 
 namespace Wl
@@ -75,57 +75,69 @@ namespace Wl
         parentMetadata.GetDependencies().Add(childMetadata.GetUUID());
     }
 
-    SharedPtr<AssetRegistry> AssetRegistry::CreateFromFile(File& file)
+    SharedPtr<AssetRegistry> AssetRegistry::CreateFromFile(SharedPtr<File> file)
     {
         SharedPtr<AssetRegistry> registry = MakeShared<AssetRegistry>();
 
-        file.Seek(0);
+        file->Seek(0);
 
         WLARHeader header;
-        file << header;
+        *file << header;
 
         return registry;
     }
 
-    SharedPtr<AssetRegistry> AssetRegistry::LoadFromFile(File& file)
+    SharedPtr<AssetRegistry> AssetRegistry::LoadFromFile(SharedPtr<File> file)
     {
         SharedPtr<AssetRegistry> assetRegistry = MakeShared<AssetRegistry>();
 
-        file.Seek(0);
+        file->Seek(0);
 
         WLARHeader header;
-        file >> header;
+        *file >> header;
 
         if (header.Filetype != WLAR_FILETYPE)
         {
             return nullptr;
         }
 
-        file.Seek(header.AssetOffset);
+        file->Seek(header.AssetOffset);
         for (uint64_t i = 0; i < header.AssetCount; i++)
         {
             AssetMetadata metadata;
-            file >> metadata;
+            *file >> metadata;
             assetRegistry->RegisterMetadata(metadata);
         }
 
-        file.Seek(0);
+        file->Seek(0);
 
         return assetRegistry;
     }
 
-    void AssetRegistry::PersistFile(SharedPtr<AssetRegistry>& registry, File& file)
+    SharedPtr<AssetRegistry> AssetRegistry::LoadDefault(FileSystem& fs)
     {
-        file.Seek(0);
+        FileResult assetRegistryFileResult = fs.OpenRead(AssetRegistryURI.GetText());
+        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", AssetRegistryURI.GetText().GetData());
+
+        SharedPtr<File> fileAssetRegistry = assetRegistryFileResult.GetValue();
+        SharedPtr<AssetRegistry> registry = LoadFromFile(fileAssetRegistry);
+        fileAssetRegistry->Close();
+
+        return registry;
+    }
+
+    void AssetRegistry::PersistFile(SharedPtr<AssetRegistry> registry, SharedPtr<File> file)
+    {
+        file->Seek(0);
 
         WLARHeader header;
         header.AssetCount = registry->m_registry.GetSize();
-        file << header;
+        *file << header;
 
-        file.Seek(header.AssetOffset);
+        file->Seek(header.AssetOffset);
         for (const AssetMetadata& metadata: registry->m_registry)
         {
-            file << metadata;
+            *file << metadata;
         }
     }
 

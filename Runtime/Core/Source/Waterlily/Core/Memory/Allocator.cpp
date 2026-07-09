@@ -1,0 +1,24 @@
+#include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
+
+namespace Wl
+{
+
+    void* DefaultAllocator::Allocate(size_t size, size_t alignment)
+    {
+        return m_allocator->Allocate(size, alignment);
+    }
+
+    void DefaultAllocator::Deallocate(void* memory, size_t size, size_t alignment)
+    {
+        MemoryStack& stack = MemoryStack::GetInstance();
+        m_allocator->Deallocate(memory, size, alignment);
+    }
+
+    DefaultAllocator::DefaultAllocator()
+    {
+        MemoryStack& stack = MemoryStack::GetInstance();
+        m_allocator = stack.GetCurrentAllocator();
+    }
+
+}// namespace Wl

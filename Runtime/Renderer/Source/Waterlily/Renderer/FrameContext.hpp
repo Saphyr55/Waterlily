@@ -4,6 +4,7 @@
 #include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
+#include "Waterlily/Core/Memory/MemoryPool.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/DeviceFactory.hpp"

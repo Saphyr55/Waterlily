@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Allocator.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
-
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Deleter.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 
 #include <atomic>
 #include <utility>
@@ -48,7 +49,7 @@ namespace Wl
                 std::atomic_thread_fence(std::memory_order_acquire);
 
                 DestroyResource();
-                Wl::Delete(DefaultAllocator::GetDefault(), this);
+                Wl::Delete( MemoryStack::GetInstance().GetCurrentAllocator(), this);
             }
         }
 
@@ -57,7 +58,8 @@ namespace Wl
     };
 
     template<typename ResourceType, typename DeleterType>
-    class ReferenceCounterWithDeleter : private DeleterDelegate<DeleterType> , public ReferenceCounter
+    class ReferenceCounterWithDeleter : private DeleterDelegate<DeleterType>
+        , public ReferenceCounter
     {
     public:
         virtual void DestroyResource() override
@@ -105,13 +107,15 @@ namespace Wl
     inline ReferenceCounter* NewRefCounterDeleter(ResourceType* resource, const DeleterType& deleter) noexcept
     {
         using RefCounter = ReferenceCounterWithDeleter<ResourceType, DeleterType>;
-        return NewArgs<RefCounter>(DefaultAllocator::GetDefault(), resource, deleter);
+        Allocator* allocator = MemoryStack::GetInstance().GetCurrentAllocator();
+        return Wl::NewArgs<RefCounter>(allocator, resource, deleter);
     }
 
     template<typename ResourceType>
     inline ReferenceCounter* NewDefaultRefCounter(ResourceType* resource) noexcept
     {
-        return NewRefCounterDeleter(resource, Deleter<ResourceType>(DefaultAllocator::GetDefault()));
+        Allocator* allocator = MemoryStack::GetInstance().GetCurrentAllocator();
+        return NewRefCounterDeleter(resource, Deleter<ResourceType>(allocator));
     }
 
 }// namespace Wl

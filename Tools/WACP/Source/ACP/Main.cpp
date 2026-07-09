@@ -73,12 +73,12 @@ static int32_t StartConsole()
         return EXIT_FAILURE;
     }
 
-    File& larFile = *larFileResult.GetValue();
+    SharedPtr<File> larFile = larFileResult.GetValue();
 
     SharedPtr<AssetRegistry> registry =
-            larFile.GetSize() == 0 ? AssetRegistry::CreateFromFile(larFile) : AssetRegistry::LoadFromFile(larFile);
+            larFile->GetSize() == 0 ? AssetRegistry::CreateFromFile(larFile) : AssetRegistry::LoadFromFile(larFile);
 
-    larFile.Close();
+    larFile->Close();
 
     if (!registry)
     {
@@ -130,7 +130,7 @@ static int32_t StartConsole()
 
         larFileResult = fileSystem.Open(larFilepathText.data(), FileAccess::ReadWrite, FileMode::CreateNew);
 
-        AssetRegistry::PersistFile(registry, *larFileResult.GetValue());
+        AssetRegistry::PersistFile(registry, larFileResult.GetValue());
 
         larFileResult.GetValue()->Close();
     }

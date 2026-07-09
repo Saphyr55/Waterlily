@@ -1,5 +1,4 @@
 #include "Waterlily/Renderer/FrameContext.hpp"
-
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
@@ -112,6 +111,9 @@ namespace Wl
 
     void FrameContext::Destroy()
     {
+        MemoryStack& stack = MemoryStack::GetInstance();
+        Allocator* currentAllocator = stack.GetCurrentAllocator();
+
         m_device->WaitIdle();
         m_device->DestroySampler(m_defaultSampler);
 

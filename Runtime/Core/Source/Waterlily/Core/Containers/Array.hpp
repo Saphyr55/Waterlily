@@ -2,10 +2,10 @@
 
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Math/Math.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
-#include "Waterlily/Core/Memory/TypedAllocator.hpp"
+
 
 #include <algorithm>
 #include <memory>
@@ -589,8 +589,7 @@ namespace Wl
 
         ElementType* AllocatorAllocate(size_type n)
         {
-            TypedAllocator<ElementType> typedAllocator(m_allocator);
-            ElementType* elements = typedAllocator.Allocate(n);
+            ElementType* elements = static_cast<ElementType*>(m_allocator.Allocate(n * sizeof(ElementType), alignof(ElementType)));
             WL_CHECK(elements);
             return elements;
         }
@@ -599,8 +598,7 @@ namespace Wl
         {
             if (elements)
             {
-                TypedAllocator<ElementType> typedAllocator(m_allocator);
-                typedAllocator.Deallocate(elements, n);
+                m_allocator.Deallocate(elements, n * sizeof(ElementType), alignof(ElementType));
             }
         }
 

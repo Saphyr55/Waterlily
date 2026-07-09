@@ -16,8 +16,6 @@ namespace Wl
         virtual void Deallocate(void* block, size_t size, size_t alignment = 1) override;
 
     public:
-        void Init(size_t size);
-
         void Destroy();
 
         void Reset();
@@ -38,11 +36,11 @@ namespace Wl
         }
 
     public:
-        explicit LinearAllocator(size_t size);
-        LinearAllocator();
+        LinearAllocator(Allocator* parent, size_t size);
         ~LinearAllocator();
 
     private:
+        Allocator* m_parent;
         uint8_t* m_buffer;
         size_t m_size;
         size_t m_offset;

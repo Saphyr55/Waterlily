@@ -3,6 +3,7 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Traits/AlignedStorage.hpp"
 
 namespace Wl
@@ -72,7 +73,7 @@ namespace Wl
 
     template<typename ResourceType>
     MemoryPool<ResourceType>::MemoryPool()
-        : m_allocator(&DefaultAllocator::GetDefault())
+        : m_allocator(MemoryStack::GetInstance().GetCurrentAllocator())
         , m_freeBlock(nullptr)
         , m_blockCount(64)
         , m_blocks()

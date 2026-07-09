@@ -5,7 +5,7 @@
 #include "Waterlily/Core/Containers/HashMapSlot.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Memory/Concepts.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Traits/AlignedStorage.hpp"
 
 #include <cstddef>

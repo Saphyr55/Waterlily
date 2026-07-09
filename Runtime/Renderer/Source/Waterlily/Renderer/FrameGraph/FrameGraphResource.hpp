@@ -26,7 +26,7 @@ namespace Wl
 
     struct FrameGraphTextureInfo
     {
-        StringRef Name;
+        String Name;
         RHIFormat Format;
         SizeClass SizeClass = SizeClass::Swapchain;
         uint32_t Width = 1'024;
@@ -44,7 +44,7 @@ namespace Wl
 
     struct FrameGraphBufferInfo
     {
-        StringRef Name;
+        String Name;
         size_t Size;
         size_t Offset = 0;
     };

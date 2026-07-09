@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
+#include <cstdint>
+#include <type_traits>
 
 namespace Wl
 {

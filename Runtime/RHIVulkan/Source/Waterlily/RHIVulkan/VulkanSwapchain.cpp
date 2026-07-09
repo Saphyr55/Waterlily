@@ -1,6 +1,9 @@
 #include "Waterlily/RHIVulkan/VulkanSwapchain.hpp"
 #include "Waterlily/Core/Math/Math.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Cast.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Semaphore.hpp"
 #include "Waterlily/RHI/Texture.hpp"
@@ -186,7 +189,8 @@ namespace Wl
         {
             VkImage image = m_images[i];
 
-            VulkanTextureView* textureView = Wl::New(DefaultAllocator::GetDefault(), VulkanTextureView());
+            Allocator* allocator = MemoryStack::GetInstance().GetCurrentAllocator();
+            VulkanTextureView* textureView = Wl::New(allocator, VulkanTextureView());
 
             VkImageViewCreateInfo imageViewCreateInfo = {};
             imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

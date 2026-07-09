@@ -8,12 +8,9 @@
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
-
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
-#include "Waterlily/Core/Platform/PlatformTime.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
@@ -40,13 +37,7 @@ namespace Wl
 
         FileSystem& assetsFileSystem = FileSystem::GetPlatform();
 
-        FileResult assetRegistryFileResult = assetsFileSystem.OpenRead(AssetRegistryURI.GetText());
-        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", AssetRegistryURI.GetText().GetData());
-        SharedPtr<File> fileAssetRegistry = assetRegistryFileResult.GetValue();
-
-        m_assetRegistry = AssetRegistry::LoadFromFile(*fileAssetRegistry);
-        fileAssetRegistry->Close();
-        WL_CHECK(m_assetRegistry);
+        m_assetRegistry = AssetRegistry::LoadDefault(assetsFileSystem);
 
         SharedPtr<AssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>(assetsFileSystem);
         m_assetManager = MakeShared<AssetManager>(m_assetRegistry, assetLoader);
@@ -207,15 +198,7 @@ namespace Wl
     {
         float aspectRatio = m_frameContext->GetAspectRatio();
 
-        auto lightView = m_entityRegistry.View<TransformComponent, LightComponent, LightAnimationComponent>();
-
-        float epsiledTime = static_cast<float>(PlatformGetHighResolutionTime());
-
-        for (const auto& [entity, transform, light, anim]: lightView)
-        {
-            float offset = Math::Sin(epsiledTime * anim.Velocity) * anim.Amplitude;
-            transform.Position = anim.BasePosition + anim.Axis * offset;
-        }
+        UpdateLights(m_entityRegistry, deltaTime);
 
         Vector3f direction(0.0f, 0.0f, 0.0f);
 
@@ -252,7 +235,7 @@ namespace Wl
         if (Vector3f::Length(direction) > 0.0f)
         {
             direction = Vector3f::Normalize(direction);
-            m_camera.Position += direction * m_camera.MovementSpeed * deltaTime;
+            m_camera.Position += direction * m_camera.MovementSpeed * static_cast<float>(deltaTime);
             m_camera.UpdateVectors();
         }
 
@@ -274,9 +257,7 @@ namespace Wl
         Frame& frame = m_frameContext->GetCurrentFrame();
 
         FramePacketManager packetManager;
-
         FramePacket packet = packetManager.ExtractPacket(m_view, m_sponzaMesh, m_indirectBufferCount);
-
         packetManager.PrepareFrame(packet, frame);
 
         // Light allocation

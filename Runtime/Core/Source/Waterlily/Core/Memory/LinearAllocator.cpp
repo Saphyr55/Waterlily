@@ -1,5 +1,7 @@
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {
@@ -27,20 +29,6 @@ namespace Wl
         // Deallocation is done by resetting the entire allocator.
     }
 
-    void LinearAllocator::Init(size_t size)
-    {
-        m_size = size;
-        if (m_buffer)
-        {
-            Destroy();
-        }
-        m_buffer = Memory::Allocate(m_size);
-        if (m_buffer)
-        {
-            Memory::Write(m_buffer, 0, m_size);
-        }
-    }
-
     void LinearAllocator::Destroy()
     {
         if (m_buffer)
@@ -48,7 +36,7 @@ namespace Wl
             return;
         }
 
-        Memory::Deallocate(m_buffer, m_size);
+        m_parent->Deallocate(m_buffer, m_size);
         m_buffer = nullptr;
         m_size = 0;
         m_offset = 0;
@@ -59,17 +47,23 @@ namespace Wl
         m_offset = 0;
     }
 
-    LinearAllocator::LinearAllocator(size_t size)
-        : LinearAllocator()
-    {
-        Init(size);
-    }
-
-    LinearAllocator::LinearAllocator()
-        : m_size(32)
+    LinearAllocator::LinearAllocator(Allocator* parent, size_t size)
+        : m_parent(parent)
+        , m_size(size)
         , m_offset(0)
         , m_buffer(nullptr)
     {
+        WL_CHECK(parent);
+
+        if (m_buffer)
+        {
+            Destroy();
+        }
+        m_buffer = reinterpret_cast<uint8_t*>(m_parent->Allocate(m_size));
+        if (m_buffer)
+        {
+            Memory::Write(m_buffer, 0, m_size);
+        }
     }
 
     LinearAllocator::~LinearAllocator()

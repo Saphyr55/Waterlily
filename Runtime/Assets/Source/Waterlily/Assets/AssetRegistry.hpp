@@ -1,14 +1,13 @@
 #pragma once
 
-#include <unordered_map>
-
 #include "Waterlily/Assets/Asset.hpp"
-#include "Waterlily/Assets/assetMetadata.hpp"
-#include "Waterlily/Assets/assetsExports.hpp"
+#include "Waterlily/Assets/AssetMetadata.hpp"
+#include "Waterlily/Assets/AssetsExports.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/IO/File.hpp"
+#include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/String.hpp"
@@ -16,10 +15,13 @@
 
 namespace Wl
 {
+
     inline constexpr StringRef WLAR_EXTENSION = ".wlar";
+    inline constexpr StringRef WLAR_FILENAME = "Registry.wlar";
     inline constexpr uint64_t WLAR_FILETYPE = Wl::CStringPack64("WLAR    ");
     inline constexpr uint32_t WLAR_VERSION = 1;
-    inline constexpr StringRef WLAR_FILENAME = "Registry.wlar";
+
+    inline const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
 
     struct WLARHeader
     {
@@ -48,9 +50,11 @@ namespace Wl
     class WL_ASSETS_API AssetRegistry
     {
     public:
-        static SharedPtr<AssetRegistry> CreateFromFile(File& file);
-        static SharedPtr<AssetRegistry> LoadFromFile(File& file);
-        static void PersistFile(SharedPtr<AssetRegistry>& registry, File& file);
+        static SharedPtr<AssetRegistry> CreateFromFile(SharedPtr<File> file);
+        static SharedPtr<AssetRegistry> LoadFromFile(SharedPtr<File> file);
+        static SharedPtr<AssetRegistry> LoadDefault(FileSystem& fs);
+        
+        static void PersistFile(SharedPtr<AssetRegistry> registry, SharedPtr<File> file);
 
     public:
         AssetHandle CreateAsset(StringID assetType, StringID uri);
