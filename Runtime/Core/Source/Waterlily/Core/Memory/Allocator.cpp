@@ -11,14 +11,12 @@ namespace Wl
 
     void DefaultAllocator::Deallocate(void* memory, size_t size, size_t alignment)
     {
-        MemoryStack& stack = MemoryStack::GetInstance();
         m_allocator->Deallocate(memory, size, alignment);
     }
 
     DefaultAllocator::DefaultAllocator()
     {
-        MemoryStack& stack = MemoryStack::GetInstance();
-        m_allocator = stack.GetCurrentAllocator();
+        m_allocator = MemoryStack::GetCurrentAllocator();
     }
 
 }// namespace Wl

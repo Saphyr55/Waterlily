@@ -8,9 +8,13 @@
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
+#include "Waterlily/Core/Memory/LinearAllocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
+#include "Waterlily/Core/Platform/WindowHandle.hpp"
+#include "Waterlily/Core/String/Format.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
@@ -46,13 +50,14 @@ namespace Wl
         m_device->Init(m_window->GetNativeWindow());
 
         FrameContextInitInfo frameContextInitInfo = {};
+        frameContextInitInfo.FrameAllocationSize = 16 * WL_MB;
         frameContextInitInfo.StagingBufferSize = 16 * WL_MB;
         frameContextInitInfo.StorageBufferSize = 16 * WL_MB;
         frameContextInitInfo.UniformBufferSize = 16 * WL_MB;
         frameContextInitInfo.FrameWidth = m_window->GetProperties().Width;
         frameContextInitInfo.FrameHeight = m_window->GetProperties().Height;
 
-        m_frameContext = MakeShared<FrameContext>(m_device);
+        m_frameContext = MakeShared<FrameContext>( m_device);
         m_frameContext->Init(frameContextInitInfo);
 
         m_textureRegistry = MakeShared<TextureRegistry>(m_device, *m_assetManager, SRGBindingTextures);
@@ -191,7 +196,7 @@ namespace Wl
         m_window->Show();
 
         // This must be done after filled all SRG layout in the cache.
-        m_frameContext->InitializeSRGPools();
+        m_frameContext->InitSRGPools();
     }
 
     void LudoApplicationDelegate::OnUpdate(double deltaTime)
@@ -245,6 +250,11 @@ namespace Wl
         m_view.Proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
         m_view.ViewProj = m_view.Proj * m_view.View;
         m_view.Eye = m_camera.Position;
+
+        WindowProperties properties = m_window->GetProperties();
+        String format = Format("%0.8lf", deltaTime);
+        properties.Title = format;
+        m_window->SetProperties(properties);
     }
 
     void LudoApplicationDelegate::OnRender()

@@ -14,9 +14,13 @@ namespace Wl
         
         m_frameCount = m_frameContext->GetFrameCount();
         GarbageCollect(maxFrameLifetime);
-         
+        
         for (const PendingRelease& pendingRelease: m_pendingReleases)
         {
+            if (!m_freeList.Contains(pendingRelease.Key))
+            {
+                m_freeList[pendingRelease.Key] = Array<PooledPhysicalTextureHandle>(m_freeList.GetAllocator());
+            }
             m_freeList[pendingRelease.Key].Append(pendingRelease.Handle);
         }
         m_pendingReleases.Clear();

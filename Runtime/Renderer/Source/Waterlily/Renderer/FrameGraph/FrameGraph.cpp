@@ -27,7 +27,7 @@ namespace Wl
         : m_device(frameContext->GetDevice())
         , m_frameContext(frameContext)
         , m_framebufferCache(m_device)
-        , m_renderPassCache(m_device)
+        , m_renderPassRegistry(m_device)
         , m_texturePool(frameContext)
     {
     }
@@ -111,7 +111,7 @@ namespace Wl
 
     RHIRenderPass* FrameGraph::GetRenderPass(const StringID& name)
     {
-        return m_renderPassCache.GetRenderPass(name);
+        return m_renderPassRegistry.GetRenderPass(name);
     }
 
     void FrameGraph::BeginFrame()
@@ -395,7 +395,7 @@ namespace Wl
         {
             FrameGraphPass& pass = m_passes[passIndex];
 
-            if (m_renderPassCache.GetRenderPass(pass.GetName()))
+            if (GetRenderPass(pass))
             {
                 continue;
             }
@@ -435,7 +435,7 @@ namespace Wl
                 renderPassDescription.DepthAttachmentDescription = depthStencilAttachmentDescription;
             }
 
-            m_renderPassCache.Create(pass.GetName(), renderPassDescription);
+            m_renderPassRegistry.Create(pass.GetName(), renderPassDescription);
         }
     }
 
@@ -589,7 +589,7 @@ namespace Wl
     RHIFramebuffer* FrameGraph::BuildFramebuffer(FrameGraphPass& pass)
     {
         RHIFramebufferDescription description = {};
-        description.RenderPass = m_renderPassCache.GetRenderPass(pass.GetName());
+        description.RenderPass = m_renderPassRegistry.GetRenderPass(pass.GetName());
         description.Width = 0;
         description.Height = 0;
         description.Layers = 1;
@@ -646,7 +646,7 @@ namespace Wl
     {
         m_passNames.Clear();
         m_passes.Clear();
-        m_renderPassCache.Clear();
+        m_renderPassRegistry.Clear();
         m_sortedPasses.Clear();
     }
 

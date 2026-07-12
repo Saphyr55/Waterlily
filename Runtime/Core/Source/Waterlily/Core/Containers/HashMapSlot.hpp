@@ -28,8 +28,8 @@ namespace Wl
             {
                 Key.Destroy();
                 Value.Destroy();
+                State = SlotState::Removed;
             }
-            State = SlotState::Removed;
         }
 
         void EmplaceValue(const ValueType& value)

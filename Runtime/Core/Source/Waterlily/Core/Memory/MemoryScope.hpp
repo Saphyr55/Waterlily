@@ -2,6 +2,7 @@
 
 #include "Waterlily/Core/CoreExports.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
+#include <cstdint>
 
 namespace Wl
 {
@@ -15,34 +16,22 @@ namespace Wl
         ~MemoryScope();
     };
 
-    class WL_CORE_API MemoryControl
-    {
-    public:
-        void Open(Allocator* allocator);
-        void Close();
-        
-        MemoryControl() = default;
-        ~MemoryControl() = default;
-    };
-
     class WL_CORE_API MemoryStack
     {
         friend MemoryScope;
-        friend MemoryControl;
         
     public:
-        static MemoryStack& GetInstance();
-
-        Allocator* GetCurrentAllocator();
-        Allocator* GetPreviousAllocator();
-        Allocator* GetAllocatorAt(size_t depth);
-
-        MemoryStack();
-        ~MemoryStack() = default;
+        static Allocator* GetCurrentAllocator();
+        static Allocator* GetPreviousAllocator();
+        static Allocator* GetAllocatorAt(size_t depth);
+        
+        static void Push(Allocator* allocator);
+        static void Pop();
 
     private:
-        Allocator* m_allocators[15];
-        size_t m_depth = 0;
+        static constexpr size_t MaxAllocator = 15; 
+        static Allocator* s_allocators[MaxAllocator];
+        static size_t s_depth;
     };
 
 }// namespace Wl

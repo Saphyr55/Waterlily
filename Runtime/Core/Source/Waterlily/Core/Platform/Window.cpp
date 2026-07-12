@@ -114,6 +114,12 @@ namespace Wl
         return m_properties;
     }
 
+    void Window::SetProperties(const WindowProperties& properties)
+    {
+        m_display.SetWindowProperties(m_handle, properties);
+        m_properties = properties;
+    }
+
     const WindowProperties& Window::QueryProperties()
     {
         m_properties = m_display.QueryWindowProperties(m_handle);

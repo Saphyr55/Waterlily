@@ -338,7 +338,7 @@ namespace Wl
 
     RHISemaphore* VulkanDevice::CreateSemaphore()
     {
-        VulkanSemaphore* vulkanSemaphore = Wl::New(m_allocator, VulkanSemaphore());
+        VulkanSemaphore* vulkanSemaphore = Wl::NewArgs<VulkanSemaphore>(m_allocator);
         VkSemaphoreCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 

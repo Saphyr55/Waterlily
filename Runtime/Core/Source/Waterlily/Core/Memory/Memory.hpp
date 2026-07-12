@@ -123,6 +123,7 @@ namespace Wl
         {
             return nullptr;
         }
+
         WL_PLACEMENT_NEW(memory, ResourceType(std::move(resource)));
         return static_cast<ResourceType*>(memory);
     }
@@ -149,7 +150,7 @@ namespace Wl
             return;
         }
 
-        if constexpr (std::is_trivially_destructible_v<ResourceType>)
+        if constexpr (std::is_destructible_v<ResourceType>)
         {
             resource->~ResourceType();
         }
@@ -161,7 +162,6 @@ namespace Wl
         WL_CHECK(resource);
 
         SafeDestruct(resource);
-
         allocator->Deallocate(resource, sizeof(ResourceType), alignof(ResourceType));
     }
 

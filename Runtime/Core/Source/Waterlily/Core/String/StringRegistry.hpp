@@ -3,6 +3,7 @@
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
+#include "Waterlily/Core/Memory/HeapAllocator.hpp"
 
 #include <shared_mutex>
 

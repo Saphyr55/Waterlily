@@ -28,9 +28,6 @@ namespace Wl
         {
             Memory::Deallocate(memory, size, alignment);
         }
-
-        HeapAllocator() = default;
-        ~HeapAllocator() = default;
     };
 
 }// namespace Wl

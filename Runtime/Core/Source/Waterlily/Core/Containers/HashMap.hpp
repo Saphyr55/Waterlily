@@ -4,9 +4,10 @@
 #include "Waterlily/Core/Containers/Entry.hpp"
 #include "Waterlily/Core/Containers/HashMapSlot.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
-#include "Waterlily/Core/Memory/Concepts.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/Concepts.hpp"
 #include "Waterlily/Core/Traits/AlignedStorage.hpp"
+
 
 #include <cstddef>
 #include <type_traits>
@@ -190,7 +191,7 @@ namespace Wl
 
         HashMap() noexcept
             : m_size(0)
-            , m_slots(16, AllocatorType())
+            , m_slots(2, AllocatorType())
         {
         }
 
@@ -409,6 +410,16 @@ namespace Wl
             return const_iterator(this, GetCapacity());
         }
 
+        AllocatorType& GetAllocator()
+        {
+            return m_slots.GetAllocator();
+        }
+
+        const AllocatorType& GetAllocator() const
+        {
+            return m_slots.GetAllocator();
+        }
+
     private:
         SlotType& InsertImpl(const ImmutableEntryType& entry)
         {
@@ -582,8 +593,8 @@ namespace Wl
             m_size = 0;
 
             size_type capacity = newCapacity;
-            m_slots = SlotArray();
-            m_slots.Resize(capacity);
+            m_slots.Clear();
+            m_slots.Resize(capacity, SlotType());
 
             for (size_type i = 0; i < capacity; i++)
             {

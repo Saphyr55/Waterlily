@@ -5,6 +5,6 @@
 
 extern "C" Wl::RHIDevice* RHIDeviceCreateImpl()
 {
-    Wl::Allocator* allocator = Wl::MemoryStack::GetInstance().GetCurrentAllocator();
+    Wl::Allocator* allocator = Wl::MemoryStack::GetCurrentAllocator();
     return Wl::New(allocator, Wl::VulkanDevice(allocator));
 }

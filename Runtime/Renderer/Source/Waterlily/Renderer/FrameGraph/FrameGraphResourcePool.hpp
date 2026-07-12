@@ -9,6 +9,7 @@
 
 namespace Wl
 {
+
     using PooledPhysicalTextureHandle = size_t;
 
     struct PooledPhysicalTexture
@@ -59,7 +60,7 @@ namespace Wl
         SharedPtr<FrameContext> m_frameContext;
 
         using KeyType = FrameGraphPhysicalTextureKey;
-        HashMap<KeyType, Array<size_t>, FrameGraphPhysicalTextureKeyHash> m_freeList;
+        HashMap<KeyType, Array<PooledPhysicalTextureHandle>, FrameGraphPhysicalTextureKeyHash> m_freeList;
 
         struct PendingRelease
         {

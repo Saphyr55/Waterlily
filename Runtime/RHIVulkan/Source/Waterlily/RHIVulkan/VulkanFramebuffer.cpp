@@ -41,6 +41,7 @@ namespace Wl
     void VulkanFramebuffer::Create()
     {
         VulkanRenderPass* vulkanRenderPass = static_cast<VulkanRenderPass*>(m_description.RenderPass);
+        WL_CHECK(vulkanRenderPass);
 
         Array<VkImageView> attachments(m_description.Attachments.size());
         for (RHITextureView* textureView: m_description.Attachments)

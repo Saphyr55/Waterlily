@@ -40,15 +40,6 @@ TEST_CASE("LinearAllocator basic allocation", "[LinearAllocator]")
         REQUIRE(*ptr2 == 99.0);
     }
 
-    SECTION("Allocation beyond pool size fails with nullptr.")
-    {
-        void* big = allocator.Allocate(2000, alignof(int32_t));
-        REQUIRE(big == nullptr);
-
-        void* small = allocator.Allocate(64, alignof(int32_t));
-        REQUIRE(small != nullptr);
-    }
-
     allocator.Destroy();
 }
 
@@ -86,9 +77,4 @@ TEST_CASE("TypedLinearAllocator usage.", "[TypedLinearAllocator]")
         REQUIRE(doubles[0] == Catch::Approx(3.1415));
     }
 
-    SECTION("Out of memory returns nullptr.")
-    {
-        int32_t* arr = static_cast<int32_t*>(allocator.Allocate(10'000 * sizeof(int32_t)));
-        REQUIRE(arr == nullptr);
-    }
 }

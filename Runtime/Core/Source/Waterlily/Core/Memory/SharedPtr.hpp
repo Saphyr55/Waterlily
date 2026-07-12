@@ -271,7 +271,7 @@ namespace Wl
         requires(std::is_constructible_v<ResourceType, Args && ...>)
     inline SharedPtr<ResourceType> MakeShared(Args&&... args) noexcept
     {
-        return SharedPtr<ResourceType>(Wl::NewArgs<ResourceType>(MemoryStack::GetInstance().GetCurrentAllocator(), args...));
+        return SharedPtr<ResourceType>(Wl::NewArgs<ResourceType>(MemoryStack::GetCurrentAllocator(), args...));
     }
 
     template<typename ResourceType>

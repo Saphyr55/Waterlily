@@ -14,7 +14,7 @@ namespace Wl
 
         if (!alignedBlock || alignedBlock + size > m_buffer + m_size)
         {
-            // Not enough space.
+            WL_CRASH("LinearAllocator overflow.");
             return nullptr;
         }
 

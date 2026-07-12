@@ -75,7 +75,7 @@ namespace Wl
         {
             ModuleRegistry::GetInstance().RegisterModule(uniqueName, []() -> Module*
             {
-                return Wl::New(MemoryStack::GetInstance().GetCurrentAllocator(), ModuleType());
+                return Wl::New(MemoryStack::GetCurrentAllocator(), ModuleType());
             });
         }
     };

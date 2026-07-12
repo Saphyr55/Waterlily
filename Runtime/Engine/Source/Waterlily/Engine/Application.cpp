@@ -2,16 +2,23 @@
 #include "Waterlily/Engine/ApplicationDelegate.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/Core/Platform/PlatformTime.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
+#include "Waterlily/Core/Memory/LinearAllocator.hpp"
 
 namespace Wl
 {
 
     void Application::Run()
     {
+        LinearAllocator allocator(MemoryStack::GetCurrentAllocator(), 32 * WL_MB);
+
         double lastTime = PlatformGetHighResolutionTime();
 
         while (IsRunning())
         {
+            MemoryScope memoryScope(&allocator);
+            allocator.Reset();
+            
             Display::GetDefault().HandleEvents();
 
             double nowTime = PlatformGetHighResolutionTime();
@@ -26,6 +33,7 @@ namespace Wl
                     m_delegate->OnRender();
                 }
             }
+            
         }
     }
 

@@ -21,7 +21,7 @@ namespace Wl
     SharedPtr<DynamicLibrary> DynamicLibraryLoader::Load(StringRef name)
     {
         WString wname = UTF8ToWString(name.data());
-        HMODULE handle = ::LoadLibraryW(wname.GetData());
+        HMODULE handle = ::LoadLibraryW(wname.data());
 
         if (!handle)
         {

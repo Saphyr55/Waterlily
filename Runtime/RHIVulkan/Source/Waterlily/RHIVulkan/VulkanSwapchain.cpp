@@ -189,7 +189,7 @@ namespace Wl
         {
             VkImage image = m_images[i];
 
-            Allocator* allocator = MemoryStack::GetInstance().GetCurrentAllocator();
+            Allocator* allocator = MemoryStack::GetCurrentAllocator();
             VulkanTextureView* textureView = Wl::New(allocator, VulkanTextureView());
 
             VkImageViewCreateInfo imageViewCreateInfo = {};

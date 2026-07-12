@@ -788,7 +788,7 @@ namespace Wl
         , m_queueFamilyIndex(1)
         , m_handle(VK_NULL_HANDLE)
         , m_commandBuffers()
-        , m_upperCommandBufferAllocator(MemoryStack::GetInstance().GetCurrentAllocator(), m_count * sizeof(VulkanCommandBuffer))
+        , m_upperCommandBufferAllocator(MemoryStack::GetCurrentAllocator(), m_count * sizeof(VulkanCommandBuffer))
     {
         m_commandBuffers.Resize(m_count);
         m_upperCommandBuffers.Resize(m_count);

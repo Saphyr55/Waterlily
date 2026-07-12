@@ -31,6 +31,7 @@ namespace Wl
         void* GetNativeWindow() const;
 
         const WindowProperties& GetProperties() const;
+        void SetProperties(const WindowProperties& properties);
         const WindowProperties& QueryProperties();
 
     public:

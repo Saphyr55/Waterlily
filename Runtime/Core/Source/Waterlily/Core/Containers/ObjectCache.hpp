@@ -75,11 +75,15 @@ namespace Wl
         {
             m_destroyCallback(resource);
         }
+
+        m_registry.Clear();
+        m_cache.Clear();
     }
 
     template<typename KeyType, typename ResourceType, typename HashType>
     inline ObjectCache<KeyType, ResourceType, HashType>::~ObjectCache()
     {
+        Dispose();
     }
 
 }// namespace Wl

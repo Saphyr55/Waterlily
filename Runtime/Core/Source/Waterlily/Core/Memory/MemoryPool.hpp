@@ -73,7 +73,7 @@ namespace Wl
 
     template<typename ResourceType>
     MemoryPool<ResourceType>::MemoryPool()
-        : m_allocator(MemoryStack::GetInstance().GetCurrentAllocator())
+        : m_allocator(MemoryStack::GetCurrentAllocator())
         , m_freeBlock(nullptr)
         , m_blockCount(64)
         , m_blocks()

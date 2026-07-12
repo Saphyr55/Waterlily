@@ -2,9 +2,10 @@
 
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
-#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Memory/MemoryPool.hpp"
+#include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/DeviceFactory.hpp"
@@ -15,6 +16,8 @@
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
 #include "Waterlily/Renderer/UploadScheduler.hpp"
+#include <cstddef>
+
 
 namespace Wl
 {
@@ -51,6 +54,7 @@ namespace Wl
         size_t UniformBufferSize;
         size_t StorageBufferSize;
         size_t StagingBufferSize;
+        size_t FrameAllocationSize;
         uint32_t GraphicsCommandBufferCount = 1;
     };
 
@@ -65,7 +69,7 @@ namespace Wl
 
         // TODO: This is a temporary solution, we should have a better way to handle shader resource group pool in the
         // future.
-        void InitializeSRGPools();
+        void InitSRGPools();
 
         void Resize(uint32_t width, uint32_t height);
 
@@ -78,16 +82,15 @@ namespace Wl
 
         RHISampler* GetDefaultSampler();
 
-        inline SharedPtr<RHIDevice> GetDevice() const;
-        inline Frame& GetCurrentFrame();
-        inline void NextFrame();
+        SharedPtr<RHIDevice> GetDevice() const;
+        Frame& GetCurrentFrame();
 
-        inline uint64_t GetFrameIndex();
-        inline uint64_t GetMaxFrameInFlight();
-        inline uint64_t GetFrameCount();
+        uint64_t GetFrameIndex();
+        uint64_t GetMaxFrameInFlight();
+        uint64_t GetFrameCount();
 
-        inline RHISwapchain* GetSwapchain();
-        inline SharedPtr<RHIShaderResourceGroupLayoutCache> GetSRGLayoutCache();
+        RHISwapchain* GetSwapchain();
+        SharedPtr<RHIShaderResourceGroupLayoutCache> GetSRGLayoutCache();
 
     public:
         FrameContext(const SharedPtr<RHIDevice>& device)
@@ -95,6 +98,9 @@ namespace Wl
         {
         }
         ~FrameContext() = default;
+
+    private:
+        void NextFrame();
 
     private:
         SharedPtr<RHIDevice> m_device;
@@ -112,45 +118,5 @@ namespace Wl
         uint64_t m_frameCount = 0;
     };
 
-    inline SharedPtr<RHIDevice> FrameContext::GetDevice() const
-    {
-        return m_device;
-    }
-
-    inline SharedPtr<RHIShaderResourceGroupLayoutCache> FrameContext::GetSRGLayoutCache()
-    {
-        return m_srgLayoutCache;
-    }
-
-    inline uint64_t FrameContext::GetFrameIndex()
-    {
-        return m_frameIndex;
-    }
-
-    inline uint64_t FrameContext::GetMaxFrameInFlight()
-    {
-        return m_maxFrameInFlight;
-    }
-
-    inline uint64_t FrameContext::GetFrameCount()
-    {
-        return m_frameCount;
-    }
-
-    inline Frame& FrameContext::GetCurrentFrame()
-    {
-        return m_frames[m_frameIndex];
-    }
-
-    inline void FrameContext::NextFrame()
-    {
-        m_frameIndex = (m_frameIndex + 1) % m_maxFrameInFlight;
-        m_frameCount++;
-    }
-
-    inline RHISwapchain* FrameContext::GetSwapchain()
-    {
-        return m_swapchain;
-    }
 
 }// namespace Wl

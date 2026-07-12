@@ -1,63 +1,58 @@
 #include "Waterlily/Core/Memory/MemoryScope.hpp"
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Memory/HeapAllocator.hpp"
 
 namespace Wl
 {
+
     static HeapAllocator s_heap;
+
+    size_t MemoryStack::s_depth = 0;
+    Allocator* MemoryStack::s_allocators[MemoryStack::MaxAllocator] = {&s_heap};
 
     Allocator* MemoryStack::GetCurrentAllocator()
     {
-        return GetAllocatorAt(m_depth);
+        return GetAllocatorAt(s_depth);
     }
 
     Allocator* MemoryStack::GetPreviousAllocator()
     {
-        if (m_depth == 0)
+        if (s_depth == 0)
         {
             return nullptr;
         }
 
-        return GetAllocatorAt(m_depth - 1);
+        return GetAllocatorAt(s_depth - 1);
     }
 
     Allocator* MemoryStack::GetAllocatorAt(size_t depth)
     {
-        return m_allocators[depth];
-    }
-
-    MemoryStack::MemoryStack()
-    {
-        m_allocators[m_depth] = &s_heap;
-    }
-
-    MemoryStack& MemoryStack::GetInstance()
-    {
-        static thread_local MemoryStack s_stack;
-        return s_stack;
+        return s_allocators[depth];
     }
 
     MemoryScope::MemoryScope(Allocator* allocator)
     {
-        MemoryControl control;
-        control.Open(allocator);
+        MemoryStack::Push(allocator);
     }
 
     MemoryScope::~MemoryScope()
     {
-        MemoryControl control;
-        control.Close();
+        MemoryStack::Pop();
     }
 
-    void MemoryControl::Open(Allocator* allocator)
+    void MemoryStack::Push(Allocator* allocator)
     {
-        MemoryStack& stack = MemoryStack::GetInstance();
-        stack.m_allocators[++stack.m_depth] = allocator;
+        WL_CHECK(MemoryStack::s_depth + 1 < MemoryStack::MaxAllocator);
+
+        MemoryStack::s_depth++;
+        MemoryStack::s_allocators[MemoryStack::s_depth] = allocator;
     }
 
-    void MemoryControl::Close()
+    void MemoryStack::Pop()
     {
-        MemoryStack& stack = MemoryStack::GetInstance();
-        stack.m_depth--;
+        WL_CHECK(MemoryStack::s_depth > 0);
+
+        MemoryStack::s_depth--;
     }
 
 }// namespace Wl

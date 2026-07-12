@@ -20,7 +20,7 @@ namespace Wl
         Display& display = Display::GetDefault();
 
         m_defaultSampler = m_device->CreateSampler(RHISamplerDescription());
-        
+
         m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_maxFrameInFlight);
 
         m_frameInFlightFences.Resize(m_swapchain->GetTextureViews().GetSize(), nullptr);
@@ -70,7 +70,7 @@ namespace Wl
         }
     }
 
-    void FrameContext::InitializeSRGPools()
+    void FrameContext::InitSRGPools()
     {
         for (Frame& frame: m_frames)
         {
@@ -111,9 +111,6 @@ namespace Wl
 
     void FrameContext::Destroy()
     {
-        MemoryStack& stack = MemoryStack::GetInstance();
-        Allocator* currentAllocator = stack.GetCurrentAllocator();
-
         m_device->WaitIdle();
         m_device->DestroySampler(m_defaultSampler);
 
@@ -185,4 +182,44 @@ namespace Wl
         return m_defaultSampler;
     }
 
+    SharedPtr<RHIDevice> FrameContext::GetDevice() const
+    {
+        return m_device;
+    }
+
+    SharedPtr<RHIShaderResourceGroupLayoutCache> FrameContext::GetSRGLayoutCache()
+    {
+        return m_srgLayoutCache;
+    }
+
+    uint64_t FrameContext::GetFrameIndex()
+    {
+        return m_frameIndex;
+    }
+
+    uint64_t FrameContext::GetMaxFrameInFlight()
+    {
+        return m_maxFrameInFlight;
+    }
+
+    uint64_t FrameContext::GetFrameCount()
+    {
+        return m_frameCount;
+    }
+
+    Frame& FrameContext::GetCurrentFrame()
+    {
+        return m_frames[m_frameIndex];
+    }
+
+    void FrameContext::NextFrame()
+    {
+        m_frameIndex = (m_frameIndex + 1) % m_maxFrameInFlight;
+        m_frameCount++;
+    }
+
+    RHISwapchain* FrameContext::GetSwapchain()
+    {
+        return m_swapchain;
+    }
 }// namespace Wl
