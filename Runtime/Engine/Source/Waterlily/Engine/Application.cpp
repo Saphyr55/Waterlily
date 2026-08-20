@@ -10,30 +10,21 @@ namespace Wl
 
     void Application::Run()
     {
-        LinearAllocator allocator(MemoryStack::GetCurrentAllocator(), 32 * WL_MB);
-
         double lastTime = PlatformGetHighResolutionTime();
 
         while (IsRunning())
         {
-            MemoryScope memoryScope(&allocator);
-            allocator.Reset();
-            
             Display::GetDefault().HandleEvents();
 
             double nowTime = PlatformGetHighResolutionTime();
             double deltaTime = nowTime - lastTime;
             lastTime = nowTime;
 
-            if (m_delegate)
+            if (m_delegate && !IsPaused())
             {
                 m_delegate->OnUpdate(deltaTime);
-                if (!IsPaused())
-                {                       
-                    m_delegate->OnRender();
-                }
+                m_delegate->OnRender();
             }
-            
         }
     }
 

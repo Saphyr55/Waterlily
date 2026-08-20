@@ -4,6 +4,7 @@
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 
 #include <initializer_list>
 #include <utility>
@@ -36,7 +37,6 @@ namespace Wl
     };
 
     template<typename KeyType,
-             CAllocator AllocatorType = DefaultAllocator,
              typename HasherType = Hasher>
     class HashSet
     {
@@ -198,20 +198,20 @@ namespace Wl
         using const_iterator = ConstIterator;
 
     public:
-        HashSet(size_t capacity = 8)
+        HashSet(size_t capacity = 8, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_size(0)
             , m_capacity(capacity)
             , m_buckets(nullptr)
-            , m_allocator()
+            , m_allocator(allocator)
         {
             InitializeBuckets();
         }
 
-        HashSet(std::initializer_list<KeyType> init)
+        HashSet(std::initializer_list<KeyType> init, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_size(0)
             , m_capacity(8)
             , m_buckets(nullptr)
-            , m_allocator()
+            , m_allocator(allocator)
         {
             InitializeBuckets();
             for (const auto& key: init)
@@ -220,11 +220,11 @@ namespace Wl
             }
         }
 
-        HashSet(const HashSet& other)
+        HashSet(const HashSet& other, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_size(0)
             , m_capacity(other.m_capacity)
             , m_buckets(nullptr)
-            , m_allocator()
+            , m_allocator(allocator)
         {
             InitializeBuckets();
 
@@ -248,7 +248,7 @@ namespace Wl
             : m_size(other.m_size)
             , m_capacity(other.m_capacity)
             , m_buckets(other.m_buckets)
-            , m_allocator(std::move(other.m_allocator))
+            , m_allocator(other.m_allocator)
         {
             other.m_size = 0;
             other.m_capacity = 0;
@@ -661,12 +661,11 @@ namespace Wl
             std::swap(m_buckets, other.m_buckets);
             std::swap(m_size, other.m_size);
             std::swap(m_capacity, other.m_capacity);
-            std::swap(m_allocator, other.m_allocator);
         }
 
     private:
+        Allocator& m_allocator;
         ElementType** m_buckets;
-        AllocatorType m_allocator;
         size_t m_size = 0;
         size_t m_capacity = 1;
     };

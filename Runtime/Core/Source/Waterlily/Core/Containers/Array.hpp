@@ -3,9 +3,8 @@
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Math/Math.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
-#include "Waterlily/Core/Memory/Concepts.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
-
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -14,7 +13,7 @@
 namespace Wl
 {
 
-    template<typename ElementType, CAllocator AllocatorType = DefaultAllocator>
+    template<typename ElementType>
     class Array
     {
     public:
@@ -121,8 +120,7 @@ namespace Wl
             }
         }
 
-        template<typename OtherAllocatorType>
-        void AppendRange(const Array<ElementType, OtherAllocatorType>& array)
+        void AppendRange(const Array<ElementType>& array)
         {
             AppendRange(array.begin(), array.end());
         }
@@ -199,7 +197,9 @@ namespace Wl
             {
                 SafeDestruct(&m_data[i]);
             }
+
             AllocatorDeallocate(m_data, m_size);
+            
             m_capacity = 2;
             m_data = AllocatorAllocate(m_capacity);
             m_size = 0;
@@ -286,7 +286,6 @@ namespace Wl
             std::swap(m_data, other.m_data);
             std::swap(m_size, other.m_size);
             std::swap(m_capacity, other.m_capacity);
-            std::swap(m_allocator, other.m_allocator);
         }
 
         constexpr const ElementType* GetData() const
@@ -336,35 +335,30 @@ namespace Wl
             return nullptr;
         }
 
-        AllocatorType& GetAllocator()
-        {
-            return m_allocator;
-        }
-
-        const AllocatorType& GetAllocator() const
+        Allocator& GetAllocator() const
         {
             return m_allocator;
         }
 
     public:
-        Array(const AllocatorType& allocator = {}) noexcept
-            : m_data(nullptr)
+        Array(Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
+            : m_allocator(allocator)
+            , m_data(nullptr)
             , m_size(0)
             , m_capacity(2)
-            , m_allocator(allocator)
         {
         }
 
-        Array(size_t capacity, const AllocatorType& allocator = {}) noexcept
-            : m_data(nullptr)
+        Array(size_t capacity, Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
+            : m_allocator(allocator)
+            , m_data(nullptr)
             , m_size(0)
             , m_capacity(capacity)
-            , m_allocator(allocator)
         {
             m_data = AllocatorAllocate(m_capacity);
         }
 
-        Array(std::initializer_list<ElementType> init, const AllocatorType& allocator = {})
+        Array(std::initializer_list<ElementType> init, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_allocator(allocator)
             , m_data(nullptr)
             , m_size(init.size())
@@ -374,7 +368,9 @@ namespace Wl
             {
                 m_capacity = 2;
             }
+
             m_data = AllocatorAllocate(m_capacity);
+
             size_type i = 0;
             for (const ElementType& item: init)
             {
@@ -382,7 +378,7 @@ namespace Wl
             }
         }
 
-        Array(ElementType* elements, size_type size, const AllocatorType& allocator = {})
+        Array(ElementType* elements, size_type size, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_data(nullptr)
             , m_size(size)
             , m_capacity(size)
@@ -401,10 +397,10 @@ namespace Wl
         }
 
         Array(Array&& other) noexcept
-            : m_data(other.m_data)
+            : m_allocator(other.m_allocator)
+            , m_data(other.m_data)
             , m_size(other.m_size)
             , m_capacity(other.m_capacity)
-            , m_allocator(std::move(other.m_allocator))
         {
             other.m_data = nullptr;
             other.m_size = 0;
@@ -547,6 +543,7 @@ namespace Wl
             }
 
             m_data = AllocatorAllocate(m_capacity);
+
             for (size_type i = 0; i < m_size; i++)
             {
                 WL_PLACEMENT_NEW(m_data + i, ElementType(source[i]));
@@ -603,15 +600,15 @@ namespace Wl
         }
 
     private:
+        Allocator& m_allocator;
         ElementType* m_data;
         size_type m_size;
         size_type m_capacity;
-        AllocatorType m_allocator;
         static constexpr size_type s_GrowFactor = 2;
     };
 
-    template<typename ElementType, typename AllocatorType>
-    inline bool operator==(const Array<ElementType, AllocatorType>& lhs, const Array<ElementType, AllocatorType>& rhs)
+    template<typename ElementType>
+    inline bool operator==(const Array<ElementType>& lhs, const Array<ElementType>& rhs)
     {
         if (lhs.GetSize() != rhs.GetSize())
         {
@@ -629,17 +626,10 @@ namespace Wl
         return true;
     }
 
-    template<typename ElementType, typename AllocatorType>
-    inline bool operator!=(const Array<ElementType, AllocatorType>& lhs, const Array<ElementType, AllocatorType>& rhs)
+    template<typename ElementType>
+    inline bool operator!=(const Array<ElementType>& lhs, const Array<ElementType>& rhs)
     {
         return !(lhs == rhs);
-    }
-
-    template<typename ElementType, typename AllocatorType>
-    inline void swap(Array<ElementType, AllocatorType>& lhs,
-                     Array<ElementType, AllocatorType>& rhs) noexcept(noexcept(lhs.Swap(rhs)))
-    {
-        lhs.Swap(rhs);
     }
 
 }// namespace Wl

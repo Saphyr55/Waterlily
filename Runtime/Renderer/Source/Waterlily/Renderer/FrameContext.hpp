@@ -85,9 +85,9 @@ namespace Wl
         SharedPtr<RHIDevice> GetDevice() const;
         Frame& GetCurrentFrame();
 
-        uint64_t GetFrameIndex();
-        uint64_t GetMaxFrameInFlight();
-        uint64_t GetFrameCount();
+        uint64_t GetFrameIndex() const;
+        uint64_t GetMaxFrameInFlight() const;
+        uint64_t GetFrameCount() const;
 
         RHISwapchain* GetSwapchain();
         SharedPtr<RHIShaderResourceGroupLayoutCache> GetSRGLayoutCache();

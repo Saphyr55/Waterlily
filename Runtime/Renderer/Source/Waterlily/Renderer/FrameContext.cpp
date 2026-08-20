@@ -192,17 +192,17 @@ namespace Wl
         return m_srgLayoutCache;
     }
 
-    uint64_t FrameContext::GetFrameIndex()
+    uint64_t FrameContext::GetFrameIndex() const
     {
         return m_frameIndex;
     }
 
-    uint64_t FrameContext::GetMaxFrameInFlight()
+    uint64_t FrameContext::GetMaxFrameInFlight() const
     {
         return m_maxFrameInFlight;
     }
 
-    uint64_t FrameContext::GetFrameCount()
+    uint64_t FrameContext::GetFrameCount() const
     {
         return m_frameCount;
     }

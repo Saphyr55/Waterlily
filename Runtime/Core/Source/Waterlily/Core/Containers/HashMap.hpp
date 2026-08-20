@@ -5,7 +5,7 @@
 #include "Waterlily/Core/Containers/HashMapSlot.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
-#include "Waterlily/Core/Memory/Concepts.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Traits/AlignedStorage.hpp"
 
 
@@ -17,8 +17,7 @@ namespace Wl
 
     template<typename KeyType,
              typename ValueType,
-             typename HashType = Hash<KeyType>,
-             CAllocator AllocatorType = DefaultAllocator>
+             typename HashType = Hash<KeyType>>
     class HashMap
     {
     public:
@@ -29,7 +28,7 @@ namespace Wl
         using EntryType = Entry<const KeyType&, ValueType&>;
         using ImmutableEntryType = Entry<const KeyType&, const ValueType&>;
         using SlotType = BufferedSlot<KeyType, ValueType>;
-        using SlotArray = Array<SlotType, AllocatorType>;
+        using SlotArray = Array<SlotType>;
 
     public:
         using size_type = size_t;
@@ -182,21 +181,22 @@ namespace Wl
         using const_iterator = ImmutableEntryIterator;
 
     public:
-        HashMap(size_type capacity, AllocatorType allocator = {}) noexcept
+        HashMap(size_type capacity, Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
             : m_slots(allocator)
             , m_size(0)
         {
             m_slots.Resize(capacity);
         }
 
-        HashMap() noexcept
+        HashMap(Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
             : m_size(0)
-            , m_slots(2, AllocatorType())
+            , m_slots(allocator)
         {
         }
 
-        HashMap(std::initializer_list<ImmutableEntryType> init) noexcept
+        HashMap(std::initializer_list<ImmutableEntryType> init, Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
             : m_size(0)
+            , m_slots(allocator)
         {
             for (const ImmutableEntryType& entry: init)
             {
@@ -410,12 +410,7 @@ namespace Wl
             return const_iterator(this, GetCapacity());
         }
 
-        AllocatorType& GetAllocator()
-        {
-            return m_slots.GetAllocator();
-        }
-
-        const AllocatorType& GetAllocator() const
+        Allocator& GetAllocator() const
         {
             return m_slots.GetAllocator();
         }

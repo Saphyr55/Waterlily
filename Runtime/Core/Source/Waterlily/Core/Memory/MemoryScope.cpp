@@ -5,10 +5,15 @@
 namespace Wl
 {
 
-    static HeapAllocator s_heap;
+    static HeapAllocator s_globalAllocator;
 
     size_t MemoryStack::s_depth = 0;
-    Allocator* MemoryStack::s_allocators[MemoryStack::MaxAllocator] = {&s_heap};
+    Allocator* MemoryStack::s_allocators[MemoryStack::MaxAllocator] = {&s_globalAllocator};
+    
+    Allocator* MemoryStack::GetGlobalAllocator()
+    {
+        return &s_globalAllocator;
+    }
 
     Allocator* MemoryStack::GetCurrentAllocator()
     {
@@ -53,6 +58,21 @@ namespace Wl
         WL_CHECK(MemoryStack::s_depth > 0);
 
         MemoryStack::s_depth--;
+    }
+
+    void* ContextAllocator::Allocate(size_t size, size_t alignment)
+    {
+        return m_allocator->Allocate(size, alignment);
+    }
+
+    void ContextAllocator::Deallocate(void* memory, size_t size, size_t alignment)
+    {
+        m_allocator->Deallocate(memory, size, alignment);
+    }
+
+    ContextAllocator::ContextAllocator()
+    {
+        m_allocator = MemoryStack::GetCurrentAllocator();
     }
 
 }// namespace Wl

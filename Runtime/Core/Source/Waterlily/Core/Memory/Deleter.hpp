@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Memory/Concepts.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 
@@ -52,10 +51,10 @@ namespace Wl
         Allocator* m_allocator;
     };
 
-    template<typename ResourceType, CAllocator AllocatorType>
-    inline Deleter<ResourceType> CreateDeleter(AllocatorType& allocator)
+    template<typename ResourceType>
+    inline Deleter<ResourceType> CreateDeleter(Allocator& allocator)
     {
-        return Deleter<ResourceType>(allocator);
+        return Deleter<ResourceType>(&allocator);
     }
 
 }// namespace Wl
