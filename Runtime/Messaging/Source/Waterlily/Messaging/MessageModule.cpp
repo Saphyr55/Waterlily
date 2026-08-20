@@ -7,11 +7,6 @@ namespace Wl
 
     WL_REGISTER_MODULE(MessagingModule, "Waterlily.Messaging");
 
-    void MessagingModule::OnLoad()
-    {
-        WL_LOG_INFO("MessagingModule", "Messaging module loaded.");
-    }
-
     void MessagingModule::OnStartup()
     {
         WL_LOG_INFO("MessagingModule", "Messaging module started.");
@@ -20,11 +15,6 @@ namespace Wl
     void MessagingModule::OnShutdown()
     {
         WL_LOG_INFO("MessagingModule", "Messaging module stopped.");
-    }
-
-    void MessagingModule::OnUnload()
-    {
-        WL_LOG_INFO("MessagingModule", "Messaging module unloaded.");
     }
 
 }// namespace Wl
