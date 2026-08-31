@@ -42,6 +42,16 @@ namespace Wl
             UpdateVectors();
         }
         ~Camera() = default;
+
+        static Camera Create(const Vector3f& position, const Vector3f& target, float movementSpeed, const Vector3f& worldUp = Vector3f(0.0f, 1.0f, 0.0f))
+        {
+            Camera camera(position, worldUp);
+            camera.MovementSpeed = movementSpeed;
+            camera.LookAt(target);
+            camera.UpdateView();
+            camera.UpdateVectors();
+            return camera;
+        }
     };
 
 }// namespace Wl

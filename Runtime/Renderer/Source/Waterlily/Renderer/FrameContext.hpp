@@ -16,8 +16,6 @@
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
 #include "Waterlily/Renderer/UploadScheduler.hpp"
-#include <cstddef>
-
 
 namespace Wl
 {

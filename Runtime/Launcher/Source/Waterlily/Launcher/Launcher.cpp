@@ -7,8 +7,6 @@
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Platform.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Engine/Application.hpp"
-#include "Waterlily/Engine/ApplicationDelegate.hpp"
 #include "Waterlily/Engine/Engine.hpp"
 
 namespace Wl
@@ -54,7 +52,6 @@ namespace Wl
         {
             const ModuleInformation* info = engine.GetOrderedModuleInformations()[i];
             ModuleRegistry::GetInstance().UnloadModule(info->Name);
-            WL_LOG_INFO("Launcher", "Unloaded module: %s", info->Name.GetData());
         }
     }
 
@@ -69,21 +66,17 @@ namespace Wl
             return false;
         }
 
-        Engine::GetInstance().Startup();
-
         return true;
     }
 
     void MainPostLaunch()
     {
-        Engine::GetInstance().Shutdown();
         MainUnloadManifest();
         PlatformShutdown();
     }
 
     int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback* callback)
     {
-
         if (!MainPreLaunch(argc, argv))
         {
             return EXIT_FAILURE;
@@ -104,18 +97,9 @@ namespace Wl
             return EXIT_FAILURE;
         }
 
-        ApplicationDelegate* delegate = Engine::GetInstance().GetApplicationDelegate();
-        WL_CHECK(delegate);
-
-        Application app(delegate);
-        Engine::GetInstance().SetApplication(&app);
-
-        app.Start();
-        app.Run();
-        app.Stop();
-
-        Engine::GetInstance().SetApplication(nullptr);
-        Engine::GetInstance().SetApplicationDelegate(nullptr);
+        Engine::GetInstance().Startup();
+        Engine::GetInstance().Run();
+        Engine::GetInstance().Shutdown();
 
         MainPostLaunch();
         PlatformShutdown();

@@ -15,6 +15,8 @@
 namespace Wl
 {
 
+    const inline StringID AssetManagerName = WL_SID("AssetManager"); 
+
     class WL_ASSETS_API AssetManager
     {
     public:
@@ -127,7 +129,16 @@ namespace Wl
             return Wl::StaticPtrCast<AssetPool<AssetType>>(*base_pool);
         }
 
-    private:
+        SharedPtr<AssetRegistry> GetRegistry() const
+        {
+            return m_registry;
+        }
+
+        SharedPtr<AssetLoader> GetLoader() const
+        {
+            return m_loader;
+        }
+
     public:
         AssetManager(const SharedPtr<AssetRegistry>& registry, const SharedPtr<AssetLoader>& loader)
             : m_registry(registry)

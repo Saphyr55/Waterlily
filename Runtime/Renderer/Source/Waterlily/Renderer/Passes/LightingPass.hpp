@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Passes/PassContext.hpp"
+#include "Waterlily/Renderer/Passes/PassContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
 #include "Waterlily/Renderer/FramePacket.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
@@ -32,7 +32,7 @@ namespace Wl
         RenderAllocation* CountersAllocation;
     };
 
-    FrameGraphPass& LightingPassCreate(PassContext& passContext,
+    WL_RENDERER_API FrameGraphPass& LightingPassCreate(PassContext& passContext,
                                        FramePacket& packet,
                                        GraphicsPipelineState& pipeline,
                                        LightingPassParameters& params);

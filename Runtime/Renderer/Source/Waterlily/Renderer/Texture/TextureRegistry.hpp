@@ -24,7 +24,7 @@ namespace Wl
     public:
         TextureHandle ObtainTexture(AssetHandle asset, bool normalize = false);
 
-        void Upload(bool release_image = true);
+        void Upload(bool releaseImage = true);
 
         void UpdateSRG();
 

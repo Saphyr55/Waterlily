@@ -1,5 +1,6 @@
-#include "Passes/GBufferPass.hpp"
+#include "Waterlily/Renderer/Passes/GBufferPass.hpp"
 
+#include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"

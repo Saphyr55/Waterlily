@@ -99,7 +99,7 @@ namespace Wl
 
     FrameGraphPass& FrameGraph::GetPass(const StringID& name)
     {
-        WL_CHECK_MSG(m_passNames.Contains(name), "No pass named %s found in FrameGraph!", name.GetText().data());
+        WL_CHECK_MSG(m_passNames.Contains(name), "No pass named %s found in FrameGraph.", name.GetText().data());
         size_t index = m_passNames[name];
         return m_passes[index];
     }

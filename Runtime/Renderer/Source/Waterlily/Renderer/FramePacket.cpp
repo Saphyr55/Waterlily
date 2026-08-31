@@ -2,7 +2,6 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
-#include "Waterlily/Renderer/Proxy/RenderProxy.hpp"
 
 namespace Wl
 {

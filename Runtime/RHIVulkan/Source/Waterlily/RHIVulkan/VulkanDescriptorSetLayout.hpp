@@ -20,7 +20,7 @@ namespace Wl
             return m_bindings;
         }
 
-        virtual RHIShaderResourceType GetResourceType(size_t binding) const override;
+        virtual RHIShaderResourceType GetResourceType(SRGBinding binding) const override;
 
         void Create(const Array<RHIShaderResourceBinding>& bindings);
         void Destroy();

@@ -15,6 +15,7 @@ RendererModule.Group = "Engine"
 RendererModule.XMakePackages = XMakePackages
 RendererModule.Deps = {
     "Waterlily.Core",
+    "Waterlily.Engine",
     "Waterlily.RHI",
     "Waterlily.Assets",
     "Waterlily.Scene"

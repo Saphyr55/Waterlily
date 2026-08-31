@@ -21,7 +21,7 @@ namespace Wl
         return layout;
     };
 
-    RHIShaderResourceType VulkanShaderResourceGroupLayout::GetResourceType(size_t binding) const
+    RHIShaderResourceType VulkanShaderResourceGroupLayout::GetResourceType(SRGBinding binding) const
     {
         for (const RHIShaderResourceBinding& shaderResourceBinding: m_bindings)
         {

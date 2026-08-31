@@ -1,5 +1,4 @@
-#include "Passes/ForwardPass.hpp"
-
+#include "Waterlily/Renderer/Passes/ForwardPass.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
