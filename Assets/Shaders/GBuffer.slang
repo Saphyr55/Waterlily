@@ -1,72 +1,58 @@
-#include "Shared/Defines.hlsli"
-#include "Shared/DefaultRender.hlsli"
+#include "Shared/Defines.slang"
+#include "Shared/DefaultRender.slang"
 
 WLSL_BINDING(0, 0)
-cbuffer ViewCB : register(b0, space0)
-{
-    ViewData View;
-}
+ConstantBuffer<ViewData> View;
 
 WLSL_BINDING(0, 1)
-RWStructuredBuffer<RenderInstanceData> RenderInstanceRWSB : register(u0, space1);
+StructuredBuffer<RenderInstanceData> RenderInstance;
 
 WLSL_BINDING(0, 2)
-Texture2D Texture2DRegistry[] : register(t0, space2);
-SamplerState Samplers : register(s0, space2);
+Texture2D Texture2DRegistry[];
+SamplerState TextureSampler;
 
 WLSL_BINDING(0, 3)
-RWStructuredBuffer<MaterialData> MaterialsRWSB : register(u0, space3);
+StructuredBuffer<MaterialData> Materials;
 
 struct VSInput
 {
-    WLSL_LOCATION(0)  
     float3 Position : POSITION0;
-    
-    WLSL_LOCATION(1)  
     float3 Normal : NORMAL0;
-    
-    WLSL_LOCATION(2)   
     float2 UV : TEXCOORD0;
-    
-    WLSL_LOCATION(3)  
     float4 Tangent : TANGENT0;
 };
 
 struct VSOutput
 {
-    float4 Position : SV_POSITION;
+    float4 Position : SV_Position;
     float3 WorldPosition : POSITION0;
     float3 Normal : NORMAL0;
     float2 UV : TEXCOORD0;
     float3 Tangent : TANGENT0;
     float3 Bitangent : TEXCOORD1;
-    uint InstanceIndex : SV_INSTANCEID;
+    uint InstanceIndex : SV_InstanceID;
 };
 
 struct FSOutput
 {
-    WLSL_LOCATION(0)  
     float4 Position : SV_TARGET0;
-    
-    WLSL_LOCATION(1)  
     float4 Normal : SV_TARGET1;
-    
-    WLSL_LOCATION(2)  
     float4 Albedo : SV_TARGET2;
 };
 
+[shader("vertex")]
 VSOutput VSMain(VSInput input, uint InstanceIndex : SV_InstanceID)
 {
     VSOutput output;
     
-    RenderInstanceData instance = RenderInstanceRWSB[InstanceIndex];
+    RenderInstanceData instance = RenderInstance[InstanceIndex];
     
     float4 worldPosition = mul(instance.Model, float4(input.Position, 1.0));
 
     float3x3 worldMatrix = (float3x3) instance.Model;
 
     float3 normal = normalize(mul(worldMatrix, input.Normal));
-    float3 tangent = normalize(mul(worldMatrix, (float3) input.Tangent));
+    float3 tangent = normalize(mul(worldMatrix, input.Tangent.xyz));
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     float3 bitangent = cross(normal, tangent) * input.Tangent.w;
 
@@ -81,12 +67,13 @@ VSOutput VSMain(VSInput input, uint InstanceIndex : SV_InstanceID)
     return output;
 }
 
+[shader("fragment")]
 FSOutput FSMain(VSOutput input)
 {
     FSOutput output;
 
-    RenderInstanceData instance = RenderInstanceRWSB[input.InstanceIndex];
-    MaterialData material = MaterialsRWSB[instance.MaterialIndex];
+    RenderInstanceData instance = RenderInstance[input.InstanceIndex];
+    MaterialData material = Materials[instance.MaterialIndex];
     
     output.Position = float4(input.WorldPosition, 1.0f);
     
@@ -96,9 +83,9 @@ FSOutput FSMain(VSOutput input)
         float3 tangent = normalize(input.Tangent);
         float3 bitangent = normalize(input.Bitangent);
         float3x3 TBN = transpose(float3x3(tangent, bitangent, normal));
-    
+
         Texture2D normalTexture = Texture2DRegistry[NonUniformResourceIndex(material.NormalIndex)];
-        normal = normalTexture.Sample(Samplers, input.UV).rgb;
+        normal = normalTexture.Sample(TextureSampler, input.UV).rgb;
         normal = normal * 2.0f - 1.0f;
         normal = normalize(mul(TBN, normal));
     }
@@ -107,7 +94,7 @@ FSOutput FSMain(VSOutput input)
     if (material.DiffuseIndex != WLSL_INVALID_TEXTURE_INDEX)
     {
         Texture2D diffuseTexture = Texture2DRegistry[NonUniformResourceIndex(material.DiffuseIndex)];
-        output.Albedo = diffuseTexture.Sample(Samplers, input.UV) * material.DiffuseFactor;
+        output.Albedo = diffuseTexture.Sample(TextureSampler, input.UV) * material.DiffuseFactor;
     }
     else
     {

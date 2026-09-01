@@ -1,57 +1,40 @@
-#include "Shared/Defines.hlsli"
-#include "Shared/DefaultRender.hlsli"
-#include "Shared/Lighting.hlsli"
+#include "Shared/Defines.slang"
+#include "Shared/DefaultRender.slang"
+#include "Shared/Lighting.slang"
 
-WLSL_BINDING(0, 0)  
-cbuffer ViewCB : register(b0, space0)
-{
-    ViewData View;
-}
+WLSL_BINDING(0, 0)
+ConstantBuffer<ViewData> View;
 
 WLSL_BINDING(1, 0)
-cbuffer PointLightCB : register(b1, space0)
-{
-    PointLightData PointLights[WLSL_MAX_LIGHTS];
-}
+ConstantBuffer<PointLightData[WLSL_MAX_LIGHTS]> PointLights;
 
 WLSL_BINDING(2, 0)
-cbuffer DirectionalLightCB : register(b2, space0)
-{
-    DirectionalLightData DirectionalLight;
-}
+ConstantBuffer<DirectionalLightData> DirectionalLight;
 
 WLSL_BINDING(3, 0)
-cbuffer CountersCB : register(b3, space0)
-{
-    uint PointLightCount;
-}
+ConstantBuffer<uint> PointLightCount;
 
 WLSL_BINDING(0, 1)
-RWStructuredBuffer<RenderInstanceData> RenderInstanceRWSB : register(u0, space1);
+StructuredBuffer<RenderInstanceData> RenderInstance;
 
 WLSL_BINDING(0, 2)
-Texture2D Texture2DRegistry[] : register(t0, space2);
-WLSL_BINDING(0, 2)
-SamplerState Texture2DRegistrySampler : register(s0, space2);
+Texture2D Texture2DRegistry[];
+SamplerState TextureSampler;
 
-WLSL_BINDING(0, 3) 
-RWStructuredBuffer<MaterialData> MaterialsRWSB : register(u0, space3);
+WLSL_BINDING(0, 3)
+StructuredBuffer<MaterialData> Materials;
 
 WLSL_BINDING(0, 4)
-Texture2D PositionTexture : register(t0, space4);
-SamplerState PositionSampler : register(s0, space4);
+Texture2D PositionTexture;
 
 WLSL_BINDING(1, 4)
-Texture2D NormalTexture : register(t1, space4);
-SamplerState NormalSampler : register(s1, space4);
+Texture2D NormalTexture;
 
 WLSL_BINDING(2, 4)
-Texture2D AlbedoTexture : register(t2, space4);
-SamplerState AlbedoSampler : register(s2, space4);
+Texture2D AlbedoTexture;
 
 struct FSOutput
 {
-    WLSL_LOCATION(0)
     float4 Color : SV_Target0;
 };
 
@@ -61,6 +44,7 @@ struct VSOutput
     float2 UV : TEXCOORD0;
 };
 
+[shader("vertex")]
 VSOutput VSMain(uint vertexID : SV_VertexID)
 {
     VSOutput output;
@@ -69,13 +53,14 @@ VSOutput VSMain(uint vertexID : SV_VertexID)
     return output;
 }
 
+[shader("fragment")]
 FSOutput FSMain(VSOutput input)
 {
     FSOutput output;
 
-    float3 position = PositionTexture.Sample(PositionSampler, input.UV).rgb;
-    float3 normal = NormalTexture.Sample(NormalSampler, input.UV).rgb;
-    float3 albedo = AlbedoTexture.Sample(AlbedoSampler, input.UV).rgb;
+    float3 position = PositionTexture.Sample(TextureSampler, input.UV).rgb;
+    float3 normal = NormalTexture.Sample(TextureSampler, input.UV).rgb;
+    float3 albedo = AlbedoTexture.Sample(TextureSampler, input.UV).rgb;
 
     float3 result = float3(0.0f, 0.0f, 0.0f);
 
@@ -87,7 +72,7 @@ FSOutput FSMain(VSOutput input)
     if (dot(viewDirection, normal) < 0.0f)
     {
         normal = -normal;
-    }   
+    }
 
     ComputedDirectionalLightData computedDirectionalLight = ComputeDirectionalLight(DirectionalLight, normal);
     result += computedDirectionalLight.Result * albedo;

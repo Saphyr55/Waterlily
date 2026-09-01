@@ -163,10 +163,10 @@ namespace Wl
         return 0;
     }
 
-    static RHIShaderResourceType spirv_descriptor_type_to_RHI(SpvReflectDescriptorType spv_type)
+    static RHIShaderResourceType SpirvDescriptorTypeToRHI(SpvReflectDescriptorType spvType)
     {
         RHIShaderResourceType fallback = RHIShaderResourceType::Uniform;
-        switch (spv_type)
+        switch (spvType)
         {
             case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
                 return RHIShaderResourceType::Uniform;
@@ -199,10 +199,9 @@ namespace Wl
         return fallback;
     }
 
-    HashMap<uint32_t, RHIShaderResourceGroupLayout*> SPIRVPipelineReflector::BuildLayouts(
-            const SPIRVPipelineReflection& reflect,
-            SharedPtr<RHIShaderResourceGroupLayoutCache> cache,
-            ArrayView<uint32_t> externGroups)
+    HashMap<uint32_t, RHIShaderResourceGroupLayout*> SPIRVPipelineReflector::BuildLayouts(const SPIRVPipelineReflection& reflect,
+                                                                                          SharedPtr<RHIShaderResourceGroupLayoutCache> cache,
+                                                                                          ArrayView<uint32_t> externGroups)
     {
         Array<uint32_t> groupIndices;
         for (auto [group, _]: reflect.Groups)
@@ -298,7 +297,7 @@ namespace Wl
             binding.Binding = spvBinding->binding;
             binding.Count = spvBinding->count;
             binding.Set = spvBinding->set;
-            binding.Type = spirv_descriptor_type_to_RHI(spvBinding->descriptor_type);
+            binding.Type = SpirvDescriptorTypeToRHI(spvBinding->descriptor_type);
             binding.Stage = shader.GetStage();
 
             if (!outReflect.Groups.Contains(binding.Set))

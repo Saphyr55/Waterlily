@@ -71,42 +71,42 @@ namespace Wl
         RHIPipeline* GetOrCreatePipeline(FrameGraphPass& pass, GraphicsPipelineState& state);
 
     public:
-        inline SharedPtr<RHIDevice> GetDevice()
+        inline SharedPtr<RHIDevice> GetDevice() const
         {
             return m_device;
         }
 
-        inline SharedPtr<FrameContext> GetFrameContext()
+        inline SharedPtr<FrameContext> GetFrameContext() const
         {
             return m_frameContext;
         }
 
-        inline SharedPtr<FrameGraph> GetFrameGraph()
+        inline SharedPtr<FrameGraph> GetFrameGraph() const
         {
             return m_frameGraph;
         }
 
-        inline SharedPtr<PipelineManager> GetPipelineManager()
+        inline SharedPtr<PipelineManager> GetPipelineManager() const
         {
             return m_pipelineManager;
         }
 
-        inline SharedPtr<ShaderBundle> GetShaderBundle()
+        inline SharedPtr<ShaderBundle> GetShaderBundle() const 
         {
             return m_shaderBundle;
         }
 
-        inline SharedPtr<TextureRegistry> GetTextureRegistry()
+        inline SharedPtr<TextureRegistry> GetTextureRegistry() const
         {
             return m_textureRegistry;
         }
 
-        inline SharedPtr<MaterialRegistry> GetMaterialRegistry()
+        inline SharedPtr<MaterialRegistry> GetMaterialRegistry() const
         {
             return m_materialRegistry;
         }
 
-        inline SharedPtr<Window> GetWindow()
+        inline SharedPtr<Window> GetWindow() const
         {
             return m_config.RenderWindow;
         }

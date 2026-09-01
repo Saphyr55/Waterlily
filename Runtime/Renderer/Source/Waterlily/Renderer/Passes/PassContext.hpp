@@ -8,7 +8,6 @@
 
 namespace Wl
 {
-
     inline constexpr SRGIndex SRGIndexGlobal = 0;
     inline constexpr SRGBinding SRGBindingGlobalView = 0;
     inline constexpr SRGBinding SRGBindingGlobalPointLights = 1;

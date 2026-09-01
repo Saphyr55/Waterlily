@@ -3,6 +3,7 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
+#include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/Proxies/RenderInstance.hpp"
 #include "Waterlily/Renderer/Proxies/RenderLight.hpp"
 #include "Waterlily/Renderer/Proxies/RenderView.hpp"
@@ -13,12 +14,17 @@ namespace Wl
 
     class Frame;
     class RenderService;
-    class RenderMesh;
+    class Model;
 
     class RenderScene
     {
     public:
-        void Extract(EntityRegistry& registry, Frame& frame, const Camera& camera, RenderMesh* mesh);
+        // TODO: Must pass the scene.
+        void Activate(SharedPtr<AssetManager> assetManager, ArrayView<Model*> models);
+
+        void Desactivate();
+
+        void PrepareFrame(EntityRegistry& registry, Frame& frame, const Camera& camera);
 
     public:
         ArrayView<RenderInstance> GetInstances() const
@@ -41,16 +47,6 @@ namespace Wl
             return m_view;
         }
 
-        ArrayView<RHIBuffer*> GetVertexBuffers() const
-        {
-            return m_vertexBuffers;
-        }
-
-        RHIBuffer* GetIndexBuffer() const
-        {
-            return m_indexBuffer;
-        }
-
         RHIBuffer* GetIndirectBuffer() const
         {
             return m_indirectBuffer;
@@ -62,18 +58,16 @@ namespace Wl
         }
 
     public:
-        RenderScene(const SharedPtr<RenderService>& renderService)
-            : m_renderService(renderService)
-        {
-        }
+        RenderScene(const SharedPtr<RenderService>& renderService);
         ~RenderScene() = default;
 
     private:
         SharedPtr<RenderService> m_renderService;
 
+        // Scene Mesh.
+        RenderMesh m_mesh;
+
         // Indirect draw calls.
-        Array<RHIBuffer*> m_vertexBuffers;
-        RHIBuffer* m_indexBuffer;
         RHIBuffer* m_indirectBuffer = nullptr;
         size_t m_indirectBufferCount = 0;
 

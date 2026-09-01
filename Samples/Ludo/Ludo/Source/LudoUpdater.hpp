@@ -13,10 +13,10 @@ namespace Wl
 {
     class RenderService;
 
-    // TODO: Those paths must be in function of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.hlsl").
-    static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.hlsl");
-    static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.hlsl");
-    static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.hlsl");
+    // TODO: Those paths must be in function of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.slang").
+    static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.slang");
+    static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.slang");
+    static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.slang");
 
     static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
 
@@ -46,22 +46,22 @@ namespace Wl
         {
             FileSystem& fileSystem = FileSystem::GetPlatform();
 
-            bool success = SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
+            bool success = SPIRVShaderCompiler::CompileSlang(GBufferShaderAssetURI.GetText(),
                                                             GBufferVertexShaderAssetURI.GetText(),
                                                             "VSMain",
                                                             Shader::Stage::Vertex);
 
-            success = success && SPIRVShaderCompiler::CompileHLSL(GBufferShaderAssetURI.GetText(),
+            success = success && SPIRVShaderCompiler::CompileSlang(GBufferShaderAssetURI.GetText(),
                                                                   GBufferFragmentShaderAssetURI.GetText(),
                                                                   "FSMain",
                                                                   Shader::Stage::Fragment);
 
-            success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
+            success = success && SPIRVShaderCompiler::CompileSlang(LightingShaderAssetPath.GetText(),
                                                                   LightingVertexShaderAssetURI.GetText(),
                                                                   "VSMain",
                                                                   Shader::Stage::Vertex);
 
-            success = success && SPIRVShaderCompiler::CompileHLSL(LightingShaderAssetPath.GetText(),
+            success = success && SPIRVShaderCompiler::CompileSlang(LightingShaderAssetPath.GetText(),
                                                                   LightingFragmentShaderAssetURI.GetText(),
                                                                   "FSMain",
                                                                   Shader::Stage::Fragment);

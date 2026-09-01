@@ -98,16 +98,10 @@ namespace Wl
         m_vertexBuffers[2] = createVertexBuffer(mesh->UVTextures);
         m_vertexBuffers[3] = createVertexBuffer(mesh->Tangents);
 
-        RenderAllocation positionsAllocation =
-                uploader.Upload(mesh->Positions.GetData(), mesh->Positions.GetSize(), m_vertexBuffers[0], 0);
-
-        RenderAllocation normalsAllocation = uploader.Upload(mesh->Normals.GetData(), mesh->Normals.GetSize(), m_vertexBuffers[1], 0);
-
-        RenderAllocation usvAllocation =
-                uploader.Upload(mesh->UVTextures.GetData(), mesh->UVTextures.GetSize(), m_vertexBuffers[2], 0);
-
-        RenderAllocation tangentsAllocation =
-                uploader.Upload(mesh->Tangents.GetData(), mesh->Tangents.GetSize(), m_vertexBuffers[3], 0);
+        uploader.Upload(mesh->Positions.GetData(), mesh->Positions.GetSize(), m_vertexBuffers[0], 0);
+        uploader.Upload(mesh->Normals.GetData(), mesh->Normals.GetSize(), m_vertexBuffers[1], 0);
+        uploader.Upload(mesh->UVTextures.GetData(), mesh->UVTextures.GetSize(), m_vertexBuffers[2], 0);
+        uploader.Upload(mesh->Tangents.GetData(), mesh->Tangents.GetSize(), m_vertexBuffers[3], 0);
 
         RHIBufferDescription indexBufferDescription = {};
         indexBufferDescription.Size = mesh->Indices.GetSize() * sizeof(uint32_t);

@@ -1,5 +1,5 @@
 
-#ifdef __spirv__
+#ifdef WLSL_SPIRV
     #define WLSL_BINDING(Binding, Set) [[vk::binding(Binding, Set)]]
     #define WLSL_LOCATION(Location) [[vk::location(Location)]]
 #else
