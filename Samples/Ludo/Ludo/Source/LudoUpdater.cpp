@@ -2,15 +2,15 @@
 #include "LightSystem.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
+#include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
-#include "Waterlily/Core/Platform/WindowHandle.hpp"
-#include "Waterlily/Core/String/Format.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/Engine.hpp"
-#include "Waterlily/RHI/CommandQueue.hpp"
+#include "Waterlily/Entity/Entity.hpp"
+#include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
@@ -19,14 +19,16 @@
 #include "Waterlily/Renderer/FramePacket.hpp"
 #include "Waterlily/Renderer/Material/MaterialRegistry.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
+#include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Passes/GBufferPass.hpp"
 #include "Waterlily/Renderer/Passes/LightingPass.hpp"
+#include "Waterlily/Renderer/Proxies/RenderView.hpp"
+#include "Waterlily/Renderer/Proxies/RenderInstance.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RenderService.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 #include "Waterlily/Renderer/Shader/ShaderBundle.hpp"
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
-#include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PointLight.hpp"
 #include "Waterlily/Scene/SceneComponent.hpp"
@@ -48,17 +50,10 @@ namespace Wl
         shaderBundle->RegisterGraphicsPass(LightingPassName, LightingVertexShaderAssetURI, LightingFragmentShaderAssetURI);
         shaderBundle->LoadAssets();
 
-        m_sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
-        WL_CHECK_MSG(m_sponzaModelAsset, "Failed to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
+        Model* sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
+        WL_CHECK_MSG(sponzaModelAsset, "Failed to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
 
-        Array<StaticMesh*> modelStaticMeshesAsset;
-        modelStaticMeshesAsset.Reserve(m_sponzaModelAsset->Meshes.GetSize());
-
-        for (const AssetHandle& meshAssetHandle: m_sponzaModelAsset->Meshes)
-        {
-            StaticMesh* staticMesh = m_assetManager->GetAsset<StaticMesh>(meshAssetHandle);
-            modelStaticMeshesAsset.Append(staticMesh);
-        }
+        Array<StaticMesh*> modelStaticMeshesAsset = Model::GetMeshes(sponzaModelAsset, m_assetManager);
 
         UploadSchedulerInitInfo uploadSchedulerInit = {};
         uploadSchedulerInit.Device = device;
@@ -80,7 +75,6 @@ namespace Wl
         Array<RHIDrawIndexedCommand> drawIndexedCommands = m_sponzaMesh->CreateDrawIndexedCommands();
         m_indirectBuffer = device->CreateIndirectBuffer<RHIDrawIndexedCommand>(drawIndexedCommands);
         m_indirectBufferCount = drawIndexedCommands.GetSize();
-
         uploadScheduler.Upload(ArrayView(drawIndexedCommands), m_indirectBuffer);
 
         textureRegistry->Upload();
@@ -100,12 +94,7 @@ namespace Wl
         materialRegistry->UpdateSRG();
 
         m_camera = CreateCamera();
-
-        m_directionalLight = DirectionalLight {
-                .Direction = Vector3f(0.1f, 0.1f, 0.1f),
-                .Color = Vector3f(1.0f, 0.90f, 0.75f),
-        };
-
+        
         RegisterLights(m_entityRegistry);
 
         Input::OnKeyRelease.Connect([this, device, shaderBundle](VirtualKey key) mutable
@@ -207,16 +196,6 @@ namespace Wl
 
         m_camera.UpdateView();
 
-        m_view.View = m_camera.View;
-        m_view.Proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
-        m_view.ViewProj = m_view.Proj * m_view.View;
-        m_view.Eye = m_camera.Position;
-
-        WindowProperties properties = m_renderService->GetWindow()->GetProperties();
-        String format = Format("%0.8lf", deltaTime);
-        properties.Title = format;
-        m_renderService->GetWindow()->SetProperties(properties);
-
         FrameResult result = frameContext->BeginFrame();
         WL_CHECK(result == FrameResult::Success);
 
@@ -224,27 +203,45 @@ namespace Wl
 
         Frame& frame = frameContext->GetCurrentFrame();
 
-        FramePacketManager packetManager;
+        FramePacket packet;
 
-        FramePacket packet = packetManager.ExtractPacket(m_view, m_sponzaMesh, m_indirectBufferCount);
+        Matrix4f proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
+        RenderView view = RenderView::CreateFromCamera(m_camera, proj);
 
-        packetManager.PrepareFrame(packet, frame);
+        packet.VertexBuffers = m_sponzaMesh->GetVertexBuffers();
+        packet.IndexBuffers = m_sponzaMesh->GetIndexBuffer();
+        packet.DrawCount = m_indirectBufferCount;
+
+        packet.ViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
+        frame.UniformAllocator.UpdateData(packet.ViewAllocation, view);
+
+        packet.InstanceAllocation = frame.StorageAllocator.AllocateArray<RenderInstance>(m_sponzaMesh->GetSubMeshCount());
+        RenderInstanceLayout layout = RenderInstance::CreateLayout(frame.StorageAllocator.GetMinAligment());
+        for (size_t i = 0; i < m_sponzaMesh->GetSubMeshCount(); i++)
+        {
+            const RenderSubMesh& renderSubMesh = m_sponzaMesh->GetSubMeshes()[i];
+            layout.UpdateData(packet.InstanceAllocation.Get<uint8_t>() + i * layout.Stride, renderSubMesh);
+        }
 
         // Light allocation
-        EntityView<TransformComponent, LightComponent> lightView = m_entityRegistry.View<TransformComponent, LightComponent>();
-        RenderAllocation pointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(lightView.GetSize());
+        auto lightView = m_entityRegistry.View<TransformComponent, LightComponent>();
+        packet.PointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(lightView.GetSize());
 
         size_t i = 0;
         for (const auto [entity, transform, light]: lightView)
         {
-            pointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, light.Color);
+            packet.PointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, light.Color);
         }
 
-        RenderAllocation directionalLightAllocation = frame.UniformAllocator.Allocate<DirectionalLight>();
-        frame.UniformAllocator.UpdateData(directionalLightAllocation, m_directionalLight);
+        auto directionalLightEntityView = m_entityRegistry.View<DirectionalLight>();
+        Entity directionalLightEntity = directionalLightEntityView.First();
+        auto [_, directionalLightComponent] = directionalLightEntityView.GetComponents(directionalLightEntity);
 
-        RenderAllocation countersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
-        countersAllocation.Update<uint32_t>(lightView.GetSize());
+        packet.DirectionalLightAllocation = frame.UniformAllocator.Allocate<DirectionalLight>();
+        frame.UniformAllocator.UpdateData(packet.DirectionalLightAllocation, directionalLightComponent);
+
+        packet.CountersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
+        packet.CountersAllocation.Update<uint32_t>(lightView.GetSize());
 
         Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
         Rect2D scissor(0.0f, 0.0f, width, height);
@@ -308,9 +305,6 @@ namespace Wl
         lightingParams.Position = position;
         lightingParams.Indirect = indirect;
         lightingParams.DepthStencil = depthStencil;
-        lightingParams.PointLightsAllocation = &pointLightsAllocation;
-        lightingParams.DirectionalLightAllocation = &directionalLightAllocation;
-        lightingParams.CountersAllocation = &countersAllocation;
 
         ShaderGraphicsPass& shaderLightingPass = shaderBundle->GetShaderGraphicsPass(LightingPassName);
         shaderLightingPass.PipelineState.CullMode = RHICullModeFlags::None;

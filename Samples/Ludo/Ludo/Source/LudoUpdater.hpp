@@ -5,14 +5,9 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Engine/EngineUpdater.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
-#include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
-#include "Waterlily/Renderer/Model/Model.hpp"
-#include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 #include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
-#include "Waterlily/Renderer/View.hpp"
 #include "Waterlily/Scene/Camera.hpp"
-#include "Waterlily/Scene/PointLight.hpp"
 
 namespace Wl
 {
@@ -86,10 +81,7 @@ namespace Wl
 
         // Scene Data.
         EntityRegistry m_entityRegistry;
-        Model* m_sponzaModelAsset = nullptr;
-        ViewData m_view;
         Camera m_camera;
-        DirectionalLight m_directionalLight;
 
         // Render Data.
         SharedPtr<RenderMesh> m_sponzaMesh = nullptr;

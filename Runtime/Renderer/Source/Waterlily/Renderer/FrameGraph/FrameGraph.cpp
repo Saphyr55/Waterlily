@@ -50,7 +50,7 @@ namespace Wl
 
         m_buffers.Append(FrameGraphBufferResource {
                 .Info = info,
-                .PhysicalTexture = {},
+                .PhysicalBuffer = {},
                 .IsTransient = true,
         });
 

@@ -62,7 +62,7 @@ namespace Wl
 
             frame.StorageAllocator.Initialize(storageBuffer, properties.MinStorageBufferOffsetAlignment);
 
-            frame.Uploader.Init({
+            frame.Uploader.Init(UploadSchedulerInitInfo {
                     .Device = m_device,
                     .StagingSize = info.StagingBufferSize,
                     .MinAlignment = properties.NonCoherentAtomSize,

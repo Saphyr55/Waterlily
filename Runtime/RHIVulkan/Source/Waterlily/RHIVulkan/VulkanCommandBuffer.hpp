@@ -2,8 +2,6 @@
 
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
-#include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/Memory/HeapAllocator.hpp"
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
@@ -34,7 +32,7 @@ namespace Wl
 
         virtual void SetShaderConstants(RHIPipeline* pipeline, const RHIShaderConstants& shader_constants) override;
 
-        virtual void BindVertexBuffers(const Array<RHIBuffer*>& buffers) override;
+        virtual void BindVertexBuffers(const ArrayView<RHIBuffer*> buffers) override;
 
         virtual void BindIndexBuffer(RHIBuffer* buffer) override;
 

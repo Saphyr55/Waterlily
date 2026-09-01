@@ -104,7 +104,7 @@ namespace Wl
     struct FrameGraphBufferResource
     {
         FrameGraphBufferInfo Info;
-        FrameGraphPhysicalBuffer PhysicalTexture;
+        FrameGraphPhysicalBuffer PhysicalBuffer;
         RHIBufferUsageFlags Usage;
         FrameGraphResourceLifetime Lifetime;
         bool IsTransient = false;

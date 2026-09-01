@@ -35,22 +35,22 @@ namespace Wl
                 RHIWriteBufferResource writeView(SRGBindingGlobalView,
                                                  packet.ViewAllocation.Buffer,
                                                  packet.ViewAllocation.Offset,
-                                                  packet.ViewAllocation.Size);
+                                                 packet.ViewAllocation.Size);
 
                 RHIWriteBufferResource writePointLights(SRGBindingGlobalPointLights,
-                                                        params.PointLightsAllocation->Buffer,
-                                                        params.PointLightsAllocation->Offset,
-                                                        params.PointLightsAllocation->Size);
+                                                        packet.PointLightsAllocation.Buffer,
+                                                        packet.PointLightsAllocation.Offset,
+                                                        packet.PointLightsAllocation.Size);
 
                 RHIWriteBufferResource writeDirectionalLight(SRGBindingGlobalDirectionalLight,
-                                                             params.DirectionalLightAllocation->Buffer,
-                                                             params.DirectionalLightAllocation->Offset,
-                                                             params.DirectionalLightAllocation->Size);
+                                                             packet.DirectionalLightAllocation.Buffer,
+                                                             packet.DirectionalLightAllocation.Offset,
+                                                             packet.DirectionalLightAllocation.Size);
 
                 RHIWriteBufferResource writeCounters(SRGBindingGlobalCounters,
-                                                     params.CountersAllocation->Buffer,
-                                                     params.CountersAllocation->Offset,
-                                                     params.CountersAllocation->Size);
+                                                     packet.CountersAllocation.Buffer,
+                                                     packet.CountersAllocation.Offset,
+                                                     packet.CountersAllocation.Size);
 
                 globalSRG->SetBuffer(writeView);
                 globalSRG->SetBuffer(writePointLights);
@@ -63,9 +63,9 @@ namespace Wl
             RHIShaderResourceGroup* renderInstanceSRG = frame.SRGPool->AllocateSRG(renderInstanceSRGLayout);
             {
                 RHIWriteBufferResource writeRenderInstance(SRGBindingRenderInstance,
-                                                           packet.MeshAllocation.Buffer,
-                                                           packet.MeshAllocation.Offset,
-                                                           packet.MeshAllocation.Size);
+                                                           packet.InstanceAllocation.Buffer,
+                                                           packet.InstanceAllocation.Offset,
+                                                           packet.InstanceAllocation.Size);
 
                 renderInstanceSRG->SetBuffer(writeRenderInstance);
                 renderInstanceSRG->Update();

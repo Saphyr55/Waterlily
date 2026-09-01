@@ -1,6 +1,7 @@
 #include "LightSystem.hpp"
 
 #include "Waterlily/Core/Platform/PlatformTime.hpp"
+#include "Waterlily/Scene/PointLight.hpp"
 #include "Waterlily/Scene/SceneComponent.hpp"
 
 namespace Wl
@@ -27,6 +28,12 @@ namespace Wl
         TransformComponent light4Transform = registry.AddComponent(light4, TransformComponent({-6.5f, 0.75f, 0.5f}));
         registry.AddComponent(light4, LightComponent({0.4f, 0.8f, 0.8f}));
         registry.AddComponent(light4, LightAnimationComponent(light4Transform.Position));
+
+        Entity directionalLightEntity = registry.Create();
+        registry.AddComponent(directionalLightEntity, DirectionalLight {
+                .Direction = Vector3f(0.1f, 0.1f, 0.1f),
+                .Color = Vector3f(1.0f, 0.90f, 0.75f),
+        });
     }
 
     void UpdateLights(EntityRegistry& registry, double deltaTime)

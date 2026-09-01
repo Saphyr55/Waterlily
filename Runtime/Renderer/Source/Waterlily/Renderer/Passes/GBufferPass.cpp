@@ -47,9 +47,9 @@ namespace Wl
             RHIShaderResourceGroup* renderInstanceSRG = frame.SRGPool->AllocateSRG(renderInstanceSRGLayout);
             {
                 RHIWriteBufferResource writeRenderInstance(SRGBindingRenderInstance,
-                                                           packet.MeshAllocation.Buffer,
-                                                           packet.MeshAllocation.Offset,
-                                                           packet.MeshAllocation.Size);
+                                                           packet.InstanceAllocation.Buffer,
+                                                           packet.InstanceAllocation.Offset,
+                                                           packet.InstanceAllocation.Size);
 
                 renderInstanceSRG->SetBuffer(writeRenderInstance);
                 renderInstanceSRG->Update();
@@ -78,13 +78,13 @@ namespace Wl
                 commandBuffer->BindSRG(pipeline, {texturesSRG}, SRGIndexTextures);
                 commandBuffer->BindSRG(pipeline, {materialsSRG}, SRGIndexMaterials);
 
-                commandBuffer->BindVertexBuffers(packet.Mesh->GetVertexBuffers());
-                commandBuffer->BindIndexBuffer(packet.Mesh->GetIndexBuffer());
+                commandBuffer->BindVertexBuffers(packet.VertexBuffers);
+                commandBuffer->BindIndexBuffer(packet.IndexBuffers);
 
                 FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(data.Indirect);
 
                 RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand = {};
-                drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalTexture.Handle;
+                drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalBuffer.Handle;
                 drawIndexedIndirectCommand.Offset = 0;
                 drawIndexedIndirectCommand.DrawCount = packet.DrawCount;
                 drawIndexedIndirectCommand.Stride = sizeof(RHIDrawIndexedCommand);

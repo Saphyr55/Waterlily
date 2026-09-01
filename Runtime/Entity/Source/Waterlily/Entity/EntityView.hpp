@@ -80,6 +80,16 @@ namespace Wl
         {
         }
 
+        Entity First()
+        {
+            return m_entities.Front();
+        }
+
+        Entity Last()
+        {
+            return m_entities.Back();
+        }
+
         template<typename Func>
         void ForEach(Func&& func) const
         {

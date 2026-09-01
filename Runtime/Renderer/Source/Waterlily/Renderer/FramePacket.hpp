@@ -1,41 +1,25 @@
 #pragma once
 
-#include "Waterlily/Core/Containers/HashMap.hpp"
-#include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
+#include "Waterlily/Core/Containers/ArrayView.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
-#include "Waterlily/Renderer/RendererExports.hpp"
-#include "Waterlily/Renderer/View.hpp"
 
 namespace Wl
 {
 
-    class RenderProxy;
-    class Frame;
-
     struct FramePacket
     {
-        ViewData View;
+        ArrayView<RHIBuffer*> VertexBuffers;
+        RHIBuffer* IndexBuffers;
+        
         RenderAllocation ViewAllocation;
 
-        SharedPtr<RenderMesh> Mesh;
-        RenderAllocation MeshAllocation;
+        RenderAllocation InstanceAllocation;
 
-        uint32_t DrawCount = 0;
-    };
-
-    class WL_RENDERER_API FramePacketManager
-    {
-    public:
-        void RegisterProxy(StringID name, SharedPtr<RenderProxy> proxy);
-        void UnregisterProxy(StringID name);
-
-        FramePacket ExtractPacket(const ViewData& view, const SharedPtr<RenderMesh>& mesh, uint32_t drawCount);
+        RenderAllocation PointLightsAllocation;
+        RenderAllocation DirectionalLightAllocation;
+        RenderAllocation CountersAllocation;
         
-        void PrepareFrame(FramePacket& packet, Frame& frame);
-
-    private:
-        HashMap<StringID, SharedPtr<RenderProxy>> m_proxies;
+        uint32_t DrawCount = 0;
     };
 
 }// namespace Wl

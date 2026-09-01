@@ -230,7 +230,7 @@ namespace Wl
                                            nullptr);
     }
 
-    void VulkanCommandBuffer::BindVertexBuffers(const Array<RHIBuffer*>& buffers)
+    void VulkanCommandBuffer::BindVertexBuffers(const ArrayView<RHIBuffer*> buffers)
     {
         Array<VkDeviceSize> offsets;
         offsets.Resize(buffers.GetSize(), 0);
