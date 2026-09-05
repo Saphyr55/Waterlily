@@ -3,6 +3,7 @@
 #include "Waterlily/Core/Containers/Handler.hpp"
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/String/String.hpp"
+#include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHI/TextureView.hpp"
@@ -103,7 +104,7 @@ namespace Wl
     struct FrameGraphBufferResource
     {
         FrameGraphBufferInfo Info;
-        FrameGraphPhysicalBuffer PhysicalTexture;
+        FrameGraphPhysicalBuffer PhysicalBuffer;
         RHIBufferUsageFlags Usage;
         FrameGraphResourceLifetime Lifetime;
         bool IsTransient = false;

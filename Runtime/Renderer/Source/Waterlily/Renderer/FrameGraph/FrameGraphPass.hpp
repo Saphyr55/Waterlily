@@ -39,6 +39,15 @@ namespace Wl
         SharedPtr<RHIDevice> Device;
         SharedPtr<FrameContext> FrameContext;
         FrameGraph* FrameGraph;
+
+        FrameGraphPassSetupContext(const SharedPtr<RHIDevice>& device,
+                                   const SharedPtr<class FrameContext>& frameContext,
+                                   class FrameGraph* frameGraph)
+            : Device(device)
+            , FrameContext(frameContext)
+            , FrameGraph(frameGraph)
+        {
+        }
     };
 
     struct WL_RENDERER_API FrameGraphPassExecutionContext

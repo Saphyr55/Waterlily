@@ -76,7 +76,7 @@ namespace Wl
         uploader.Upload(m_device->GetGraphicsQueue());
     }
 
-    void TextureRegistry::CompileSRG()
+    void TextureRegistry::UpdateSRG()
     {
         for (auto [handle, data]: GetRegistry())
         {

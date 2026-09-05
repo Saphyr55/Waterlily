@@ -55,8 +55,7 @@ namespace Wl
 
         void Upload(const SharedPtr<RHICommandQueue>& queue);
 
-        RHIDeviceMemoryUploader(SharedPtr<RHIDevice> device,
-                                size_t capacity = 8);
+        RHIDeviceMemoryUploader(SharedPtr<RHIDevice> device, size_t capacity = 8);
 
     private:
         RHIBufferDescription CreateStagingBufferDescription(const RHIStagingBufferContext& context);

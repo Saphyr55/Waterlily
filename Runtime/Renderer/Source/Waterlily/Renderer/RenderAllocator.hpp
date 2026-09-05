@@ -21,6 +21,12 @@ namespace Wl
         {
             return static_cast<MappedType*>(Data);
         }
+
+        template<typename MappedType, typename DataType>
+        void Update(const DataType& data)
+        {
+            *Get<MappedType>() = data;
+        }
     };
 
     class WL_RENDERER_API RenderAllocator

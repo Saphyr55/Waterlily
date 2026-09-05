@@ -13,6 +13,7 @@ namespace Wl
         WL_SIGNAL_STATIC(OnWindowClose, WindowHandle /* window*/);
         WL_SIGNAL_STATIC(OnWindowResized, WindowHandle /* window */, uint32_t /* width*/, uint32_t /* height */);
         WL_SIGNAL_STATIC(OnWindowMinimized, WindowHandle /* window */);
+        WL_SIGNAL_STATIC(OnWindowExposed, WindowHandle /* window */);
         WL_SIGNAL_STATIC(OnWindowShown, WindowHandle /* window */);
     };
 
@@ -22,6 +23,8 @@ namespace Wl
         virtual void OnWindowClose(WindowHandle window) override;
 
         virtual void OnWindowResized(WindowHandle window, uint32_t width, uint32_t height) override;
+        
+        virtual void OnWindowExposed(WindowHandle window) override;
 
         virtual void OnWindowMinimized(WindowHandle window) override;
 

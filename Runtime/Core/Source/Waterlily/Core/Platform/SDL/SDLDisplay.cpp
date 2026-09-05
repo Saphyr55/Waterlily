@@ -1,10 +1,12 @@
 #include "Waterlily/Core/Platform/SDL/SDLDisplay.hpp"
+#include "SDL3/SDL_events.h"
+#include "SDL3/SDL_video.h"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Platform/SDL/SDLInput.hpp"
 #include "Waterlily/Core/Platform/WindowHandle.hpp"
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_Events.h>
+#include <SDL3/SDL_properties.h>
 
 namespace Wl
 {
@@ -60,6 +62,34 @@ namespace Wl
         WL_LOG_INFO("Platform", "Retrieved window properties for handle: %d", window);
 
         return properties;
+    }
+
+    void SDLDisplay::SetWindowProperties(WindowHandle window, const WindowProperties& properties)
+    {
+        WL_CHECK_MSG(IsValid(window), "Invalid window handle provided.");
+
+        SDL_Window* sdlWindow = m_windowMap[window];
+
+        WL_CHECK(sdlWindow);
+
+        const WindowProperties& oldProperties = m_windowPropertiesMap[window];
+
+        if (oldProperties.Width != properties.Width || oldProperties.Height != properties.Height)
+        {
+            SDL_SetWindowSize(sdlWindow, properties.Width, properties.Height);
+        }
+
+        if (oldProperties.X != properties.X || oldProperties.Y != properties.Y)
+        {
+            SDL_SetWindowPosition(sdlWindow, properties.X, properties.Y);
+        }
+
+        if (oldProperties.Title != properties.Title)
+        {
+            SDL_SetWindowTitle(sdlWindow, properties.Title);
+        }
+
+        m_windowPropertiesMap[window] = properties;
     }
 
     WindowProperties SDLDisplay::QueryWindowProperties(WindowHandle window)
@@ -156,57 +186,67 @@ namespace Wl
                 break;
             }
 
+            SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
+
             switch (event.type)
             {
-                case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-                    WindowHandle handle = m_ReverseWindowMap[window];
-                    m_eventHandler->OnWindowClose(handle);
+                case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                {
+                    m_eventHandler->OnWindowClose(m_ReverseWindowMap[window]);
                     break;
                 }
-                case SDL_EVENT_WINDOW_RESIZED: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-                    WindowHandle handle = m_ReverseWindowMap[window];
-                    m_eventHandler->OnWindowResized(handle, event.window.data1, event.window.data2);
+                case SDL_EVENT_WINDOW_RESIZED:
+                {
+                    m_eventHandler->OnWindowResized(m_ReverseWindowMap[window], event.window.data1, event.window.data2);
                     break;
                 }
-                case SDL_EVENT_WINDOW_SHOWN: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-                    WindowHandle handle = m_ReverseWindowMap[window];
-                    m_eventHandler->OnWindowShown(handle);
+                case SDL_EVENT_WINDOW_EXPOSED:
+                {
+                    m_eventHandler->OnWindowExposed(m_ReverseWindowMap[window]);
                     break;
                 }
-                case SDL_EVENT_WINDOW_MINIMIZED: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
-                    WindowHandle handle = m_ReverseWindowMap[window];
-                    m_eventHandler->OnWindowMinimized(handle);
+                case SDL_EVENT_WINDOW_SHOWN:
+                {
+                    m_eventHandler->OnWindowShown(m_ReverseWindowMap[window]);
                     break;
                 }
-                case SDL_EVENT_MOUSE_WHEEL: {
+                case SDL_EVENT_WINDOW_MINIMIZED:
+                {
+                    m_eventHandler->OnWindowMinimized(m_ReverseWindowMap[window]);
+                    break;
+                }
+                case SDL_EVENT_MOUSE_WHEEL:
+                {
                     m_eventHandler->OnMouseWheel(event.wheel.mouse_x);
                     break;
                 }
-                case SDL_EVENT_KEY_UP: {
+                case SDL_EVENT_KEY_UP:
+                {
                     m_eventHandler->OnKeyUp(KeyFromSDL(event.key.key));
                     break;
                 }
-                case SDL_EVENT_KEY_DOWN: {
+                case SDL_EVENT_KEY_DOWN:
+                {
                     m_eventHandler->OnKeyDown(KeyFromSDL(event.key.key));
                     break;
                 }
-                case SDL_EVENT_MOUSE_BUTTON_UP: {
+                case SDL_EVENT_MOUSE_BUTTON_UP:
+                {
                     m_eventHandler->OnButtonUp(ButtonFromSDL(event.button.button));
                     break;
                 }
-                case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+                case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                {
                     m_eventHandler->OnButtonDown(ButtonFromSDL(event.button.button));
                     break;
                 }
-                case SDL_EVENT_MOUSE_MOTION: {
+                case SDL_EVENT_MOUSE_MOTION:
+                {
                     m_eventHandler->OnMouseMove(event.motion.xrel, event.motion.yrel, event.motion.x, event.motion.y);
                     break;
                 }
-                default: {
+                default:
+                {
                     break;
                 }
             }

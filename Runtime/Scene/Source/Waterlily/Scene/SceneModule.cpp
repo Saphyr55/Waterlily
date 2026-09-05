@@ -7,11 +7,6 @@ namespace Wl
 
     WL_REGISTER_MODULE(SceneModule, "Waterlily.Scene");
 
-    void SceneModule::OnLoad()
-    {
-        WL_LOG_INFO("SceneModule", "Scene module loaded.");
-    }
-
     void SceneModule::OnStartup()
     {
         WL_LOG_INFO("SceneModule", "Scene module started.");
@@ -20,11 +15,6 @@ namespace Wl
     void SceneModule::OnShutdown()
     {
         WL_LOG_INFO("SceneModule", "Scene module stopped.");
-    }
-
-    void SceneModule::OnUnload()
-    {
-        WL_LOG_INFO("SceneModule", "Scene module unloaded.");
     }
 
 }// namespace Wl

@@ -21,7 +21,7 @@ namespace Wl
             return;
         }
 
-        size_t index = (*it).Value;
+        size_t index = it->Value;
         Entity last = m_LivingEntities.Back();
 
         m_LivingEntities[index] = last;

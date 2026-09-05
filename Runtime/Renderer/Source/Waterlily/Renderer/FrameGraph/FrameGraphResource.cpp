@@ -35,7 +35,7 @@ namespace Wl
         FrameGraphBufferResource resource = {};
         resource.Info.Size = size;
         resource.Info.Offset = offset;
-        resource.PhysicalTexture.Handle = buffer;
+        resource.PhysicalBuffer.Handle = buffer;
         resource.Usage = buffer->GetUsage();
         resource.IsTransient = false;
 

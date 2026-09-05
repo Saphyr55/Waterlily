@@ -1,15 +1,15 @@
 #pragma once
 
+#include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Asserts.hpp"
+#include "Waterlily/Core/CoreExports.hpp"
+
 #include <cstdint>
 #include <type_traits>
 
-#include "Waterlily/Core/Asserts.hpp"
-#include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/Memory/Concepts.hpp"
-
 #define WL_NEW ::new
-#define WL_PLACEMENT_NEW WL_NEW
+#define WL_PLACEMENT_NEW(memory, type) ::new (memory) type
+#define WL_DELETE ::delete
 #define WL_KB (1024ul)
 #define WL_MB (1024ul * WL_KB)
 #define WL_GB (1024ul * WL_MB)
@@ -115,41 +115,54 @@ namespace Wl
     };
 
     template<typename ResourceType>
-    inline ResourceType* New(Wl::CAlignedAllocator auto& allocator, ResourceType&& resource) noexcept
+    inline ResourceType* New(Allocator* allocator, ResourceType&& resource) noexcept
     {
-        void* memory = allocator.Allocate(sizeof(ResourceType), alignof(ResourceType));
+        void* memory = allocator->Allocate(sizeof(ResourceType), alignof(ResourceType));
         if (!memory)
         {
             return nullptr;
         }
-        WL_PLACEMENT_NEW (memory) ResourceType(std::move(resource));
+
+        WL_PLACEMENT_NEW(memory, ResourceType(std::move(resource)));
         return static_cast<ResourceType*>(memory);
     }
 
     template<typename ResourceType, typename... Args>
         requires(std::is_constructible_v<ResourceType, Args && ...>)
-    inline ResourceType* NewArgs(Wl::CAlignedAllocator auto& allocator, Args&&... args) noexcept
+    inline ResourceType* NewArgs(Allocator* allocator, Args&&... args) noexcept
     {
-        void* memory = allocator.Allocate(sizeof(ResourceType), alignof(ResourceType));
+        void* memory = allocator->Allocate(sizeof(ResourceType), alignof(ResourceType));
         if (!memory)
         {
             return nullptr;
         }
-        WL_PLACEMENT_NEW (memory) ResourceType(std::forward<Args>(args)...);
+
+        WL_PLACEMENT_NEW(memory, ResourceType(std::forward<Args>(args)...));
         return static_cast<ResourceType*>(memory);
     }
 
     template<typename ResourceType>
-    inline void Delete(Wl::CAlignedAllocator auto& allocator, ResourceType* ptr) noexcept
+    inline void SafeDestruct(ResourceType* resource)
     {
-        WL_CHECK(ptr);
+        if (!resource)
+        {
+            return;
+        }
 
         if constexpr (std::is_destructible_v<ResourceType>)
         {
-            ptr->~ResourceType();
+            resource->~ResourceType();
         }
-
-        allocator.Deallocate(ptr, sizeof(ResourceType), alignof(ResourceType));
     }
+
+    template<typename ResourceType>
+    inline void Delete(Allocator* allocator, ResourceType* resource) noexcept
+    {
+        WL_CHECK(resource);
+
+        SafeDestruct(resource);
+        allocator->Deallocate(resource, sizeof(ResourceType), alignof(ResourceType));
+    }
+
 
 }// namespace Wl

@@ -3,7 +3,7 @@
 namespace Wl
 {
 
-    RHIRenderPass* FrameGraphRenderPassCache::GetRenderPass(StringID name)
+    RHIRenderPass* FrameGraphRenderPassRegistry::GetRenderPass(StringID name)
     {
         if (RHIRenderPass** renderPass = m_renderPasses.GetPtr(name))
         {
@@ -12,7 +12,7 @@ namespace Wl
         return nullptr;
     }
 
-    RHIRenderPass* FrameGraphRenderPassCache::Create(StringID name, const RHIRenderPassDescription& description)
+    RHIRenderPass* FrameGraphRenderPassRegistry::Create(StringID name, const RHIRenderPassDescription& description)
     {
         WL_CHECK(!GetRenderPass(name));
         RHIRenderPass* renderPass = m_device->CreateRenderPass(description);
@@ -20,7 +20,7 @@ namespace Wl
         return renderPass;
     }
 
-    void FrameGraphRenderPassCache::Clear()
+    void FrameGraphRenderPassRegistry::Clear()
     {
         for (auto [_, renderPass]: m_renderPasses)
         {

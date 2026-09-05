@@ -4,8 +4,10 @@
 #include "Waterlily/Core/Containers/Entry.hpp"
 #include "Waterlily/Core/Containers/HashMapSlot.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
-#include "Waterlily/Core/Memory/Concepts.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
+#include "Waterlily/Core/Traits/AlignedStorage.hpp"
+
 
 #include <cstddef>
 #include <type_traits>
@@ -15,8 +17,7 @@ namespace Wl
 
     template<typename KeyType,
              typename ValueType,
-             typename HashType = Hash<KeyType>,
-             CAlignedAllocator AllocatorType = DefaultAllocator>
+             typename HashType = Hash<KeyType>>
     class HashMap
     {
     public:
@@ -27,7 +28,7 @@ namespace Wl
         using EntryType = Entry<const KeyType&, ValueType&>;
         using ImmutableEntryType = Entry<const KeyType&, const ValueType&>;
         using SlotType = BufferedSlot<KeyType, ValueType>;
-        using SlotArray = Array<SlotType, AllocatorType>;
+        using SlotArray = Array<SlotType>;
 
     public:
         using size_type = size_t;
@@ -49,6 +50,7 @@ namespace Wl
             EntryIterator(HashMap* table, size_type index)
                 : m_table(table)
                 , m_index(index)
+                , m_entry()
             {
                 Next();
             }
@@ -83,6 +85,12 @@ namespace Wl
                 return {slot.Key.GetRef(), slot.Value.GetRef()};
             }
 
+            pointer operator->() const
+            {
+                SlotType& slot = m_table->m_slots[m_index];
+                m_entry.Emplace({slot.Key.GetRef(), slot.Value.GetRef()});
+                return m_entry.GetPtr();
+            }
 
         private:
             void Next()
@@ -96,6 +104,7 @@ namespace Wl
         private:
             HashMap* m_table;
             size_type m_index;
+            mutable AlignedStorageType<value_type> m_entry;
         };
 
         class ImmutableEntryIterator
@@ -142,7 +151,14 @@ namespace Wl
             value_type operator*() const
             {
                 const SlotType& slot = m_table->m_slots[m_index];
-                return ImmutableEntryType{slot.Key.GetRef(), slot.Value.GetRef()};
+                return ImmutableEntryType {slot.Key.GetRef(), slot.Value.GetRef()};
+            }
+
+            pointer operator->() const
+            {
+                const SlotType& slot = m_table->m_slots[m_index];
+                m_entry.Emplace({slot.Key.GetRef(), slot.Value.GetRef()});
+                return m_entry.GetPtr();
             }
 
         private:
@@ -157,6 +173,7 @@ namespace Wl
         private:
             const HashMap* m_table;
             size_type m_index;
+            mutable AlignedStorageType<value_type> m_entry;
         };
 
     public:
@@ -164,21 +181,22 @@ namespace Wl
         using const_iterator = ImmutableEntryIterator;
 
     public:
-        HashMap(size_type capacity, AllocatorType allocator = {}) noexcept
+        HashMap(size_type capacity, Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
             : m_slots(allocator)
             , m_size(0)
         {
             m_slots.Resize(capacity);
         }
 
-        HashMap() noexcept
+        HashMap(Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
             : m_size(0)
-            , m_slots(16, AllocatorType())
+            , m_slots(allocator)
         {
         }
 
-        HashMap(std::initializer_list<ImmutableEntryType> init) noexcept
+        HashMap(std::initializer_list<ImmutableEntryType> init, Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
             : m_size(0)
+            , m_slots(allocator)
         {
             for (const ImmutableEntryType& entry: init)
             {
@@ -277,24 +295,24 @@ namespace Wl
 
         EntryType Put(const KeyType& key, const ValueType& value)
         {
-            return Insert(ImmutableEntryType{key, value});
+            return Insert(ImmutableEntryType {key, value});
         }
 
         EntryType Emplace(const KeyType& key, const ValueType& value)
         {
-            return Insert(ImmutableEntryType{key, value});
+            return Insert(ImmutableEntryType {key, value});
         }
 
         EntryType Insert(const ImmutableEntryType& entry)
         {
             SlotType& slot = InsertImpl(entry);
-            return EntryType{slot.Key.GetRef(), slot.Value.GetRef()};
+            return EntryType {slot.Key.GetRef(), slot.Value.GetRef()};
         }
 
         EntryType Insert(const EntryType& entry)
         {
             SlotType& slot = InsertImpl(ImmutableEntryType(entry.Key, entry.value));
-            return EntryType{slot.Key.GetRef(), slot.Value.GetRef()};
+            return EntryType {slot.Key.GetRef(), slot.Value.GetRef()};
         }
 
         bool Remove(const KeyType& key)
@@ -390,6 +408,11 @@ namespace Wl
         const_iterator cend() const
         {
             return const_iterator(this, GetCapacity());
+        }
+
+        Allocator& GetAllocator() const
+        {
+            return m_slots.GetAllocator();
         }
 
     private:
@@ -565,8 +588,8 @@ namespace Wl
             m_size = 0;
 
             size_type capacity = newCapacity;
-            m_slots = SlotArray();
-            m_slots.Resize(capacity);
+            m_slots.Clear();
+            m_slots.Resize(capacity, SlotType());
 
             for (size_type i = 0; i < capacity; i++)
             {
@@ -578,7 +601,7 @@ namespace Wl
                 SlotType& oldSlot = oldSlots[i];
                 if (oldSlot.IsOccupied())
                 {
-                    Insert(ImmutableEntryType{oldSlot.Key.GetRef(), oldSlot.Value.GetRef()});
+                    Insert(ImmutableEntryType {oldSlot.Key.GetRef(), oldSlot.Value.GetRef()});
                 }
             }
         }

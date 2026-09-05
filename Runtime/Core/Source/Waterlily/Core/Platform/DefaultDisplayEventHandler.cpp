@@ -14,6 +14,11 @@ namespace Wl
         DisplaySignals::OnWindowResized.Emit(window, width, height);
     }
 
+    void DefaultDisplayEventHandler::OnWindowExposed(WindowHandle window)
+    {
+        DisplaySignals::OnWindowExposed.Emit(window);
+    }
+
     void DefaultDisplayEventHandler::OnWindowMinimized(const WindowHandle window)
     {
         DisplaySignals::OnWindowMinimized.Emit(window);

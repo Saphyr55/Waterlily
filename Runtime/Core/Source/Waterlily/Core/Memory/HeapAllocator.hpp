@@ -2,21 +2,19 @@
 
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
-#include "Waterlily/Core/Memory/TypedAllocator.hpp"
 
 namespace Wl
 {
 
-    class HeapAllocator : public AlignedAllocator
-        , public Allocator
+    class HeapAllocator : public Allocator
     {
     public:
-        inline virtual void* Allocate(size_t size) override
+        inline void* Allocate(size_t size)
         {
             return Memory::Allocate(size);
         }
 
-        inline virtual void Deallocate(void* memory, size_t size) override
+        inline void Deallocate(void* memory, size_t size)
         {
             Memory::Deallocate(memory, size);
         }
@@ -30,12 +28,6 @@ namespace Wl
         {
             Memory::Deallocate(memory, size, alignment);
         }
-
-        HeapAllocator() = default;
-        ~HeapAllocator() = default;
     };
-
-    template<typename Type>
-    using TypedHeapAllocator = TypedAllocator<Type, HeapAllocator>;
 
 }// namespace Wl

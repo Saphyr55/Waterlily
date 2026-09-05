@@ -6,14 +6,11 @@
 
 namespace Wl
 {
+    
+    using MainConsoleCallback = int32_t();
 
-    class Application;
-
-    using EngineConsoleCallback = int32_t();
-    using EngineApplicationCallback = int32_t(Application&);
-
-    WL_LAUNCHER_API int32_t MainConsole(int32_t argc, const char** argv, EngineConsoleCallback* func);
-
-    WL_LAUNCHER_API int32_t MainApplication(int32_t argc, const char** argv, EngineApplicationCallback* func);
+    WL_LAUNCHER_API int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback* callback);
+    
+    WL_LAUNCHER_API int32_t MainApplication(int32_t argc, const char* argv[]);
 
 }// namespace Wl

@@ -7,19 +7,15 @@
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Platform.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
-#include "Waterlily/Engine/Application.hpp"
 #include "Waterlily/Engine/Engine.hpp"
-
 
 namespace Wl
 {
 
-    bool MainLoadManifest()
+    bool MainLoadManifest(StringRef manifestFilepath)
     {
         Engine& engine = Engine::GetInstance();
         ModuleManifest& engineManifest = engine.GetManifest();
-
-        StringRef manifestFilepath = "ModuleManifest.json";
 
         if (!engineManifest.LoadJSON(manifestFilepath))
         {
@@ -56,15 +52,16 @@ namespace Wl
         {
             const ModuleInformation* info = engine.GetOrderedModuleInformations()[i];
             ModuleRegistry::GetInstance().UnloadModule(info->Name);
-            WL_LOG_INFO("Launcher", "Unloaded module: %s", info->Name.GetData());
         }
     }
 
     bool MainPreLaunch(int32_t argc, const char** argv)
     {
-        WL_LOG_INFO("Launcher", "Pre init Engine.");
+        Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
 
-        if (!MainLoadManifest())
+        PlatformStartup();
+
+        if (!MainLoadManifest("ModuleManifest.json"))
         {
             return false;
         }
@@ -75,25 +72,17 @@ namespace Wl
     void MainPostLaunch()
     {
         MainUnloadManifest();
+        PlatformShutdown();
     }
 
-    int32_t MainConsole(int32_t argc, const char** argv, EngineConsoleCallback* func)
+    int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback* callback)
     {
-        Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
-
-        PlatformStartup();
-
         if (!MainPreLaunch(argc, argv))
         {
             return EXIT_FAILURE;
         }
 
-        Engine& engine = Engine::GetInstance();
-        engine.Startup();
-
-        int32_t result = func();
-
-        engine.Shutdown();
+        int32_t result = callback();
 
         MainPostLaunch();
         PlatformShutdown();
@@ -101,30 +90,21 @@ namespace Wl
         return result;
     }
 
-    int32_t MainApplication(int32_t argc, const char** argv, EngineApplicationCallback* func)
+    int32_t MainApplication(int32_t argc, const char* argv[])
     {
-        Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
-
-        PlatformStartup();
-
         if (!MainPreLaunch(argc, argv))
         {
             return EXIT_FAILURE;
         }
 
-        Engine& engine = Engine::GetInstance();
-        engine.Startup();
-
-        Application application;
-
-        int32_t result = func(application);
-
-        engine.Shutdown();
+        Engine::GetInstance().Startup();
+        Engine::GetInstance().Run();
+        Engine::GetInstance().Shutdown();
 
         MainPostLaunch();
         PlatformShutdown();
 
-        return result;
+        return EXIT_SUCCESS;
     }
 
 }// namespace Wl

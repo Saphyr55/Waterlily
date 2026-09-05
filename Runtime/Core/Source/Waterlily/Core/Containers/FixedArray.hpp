@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Waterlily/Core/Logging/Trace.hpp"
+#include "Waterlily/Core/Memory/Memory.hpp"
 
 namespace Wl
 {
@@ -98,8 +99,7 @@ namespace Wl
             size_t i = 0;
             for (const ElementType& item: init)
             {
-                WL_PLACEMENT_NEW(m_data + i++)
-                ElementType(item);
+                WL_PLACEMENT_NEW(m_data + i++, ElementType(item));
             }
         }
 
@@ -107,8 +107,7 @@ namespace Wl
         {
             for (size_t i = 0; i < Capacity; i++)
             {
-                WL_PLACEMENT_NEW(m_data + i)
-                ElementType(other.m_data[i]);
+                WL_PLACEMENT_NEW(m_data + i, ElementType(other.m_data[i]));
             }
         }
 
@@ -116,8 +115,7 @@ namespace Wl
         {
             for (size_t i = 0; i < Capacity; i++)
             {
-                WL_PLACEMENT_NEW(m_data + i)
-                ElementType(std::move(other.m_data[i]));
+                WL_PLACEMENT_NEW(m_data + i, ElementType(std::move(other.m_data[i])));
             }
         }
 
@@ -127,9 +125,8 @@ namespace Wl
             {
                 for (size_t i = 0; i < Capacity; i++)
                 {
-                    m_data[i].~ElementType();
-                    WL_PLACEMENT_NEW(m_data + i)
-                    ElementType(other.m_data[i]);
+                    SafeDestruct(&m_data[i]);
+                    WL_PLACEMENT_NEW(m_data + i, ElementType(other.m_data[i]));
                 }
             }
             return *this;
@@ -141,9 +138,8 @@ namespace Wl
             {
                 for (size_t i = 0; i < Capacity; i++)
                 {
-                    m_data[i].~ElementType();
-                    WL_PLACEMENT_NEW(m_data + i)
-                    ElementType(std::move(other.m_data[i]));
+                    SafeDestruct(&m_data[i]);
+                    WL_PLACEMENT_NEW(m_data + i, ElementType(std::move(other.m_data[i])));
                 }
             }
             return *this;
@@ -152,7 +148,7 @@ namespace Wl
         ~FixedArray() = default;
 
     private:
-        ElementType m_data[Capacity];
+        alignas(ElementType) ElementType m_data[Capacity];
     };
 
 }// namespace Wl

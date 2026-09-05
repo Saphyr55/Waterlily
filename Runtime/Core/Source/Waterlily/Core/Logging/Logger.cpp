@@ -9,6 +9,7 @@
 
 namespace Wl
 {
+    
     HashMap<StringID, SharedPtr<LoggerWriter>> Logger::s_writers;
 
     static constexpr const char* s_colorReset = "\033[0m";

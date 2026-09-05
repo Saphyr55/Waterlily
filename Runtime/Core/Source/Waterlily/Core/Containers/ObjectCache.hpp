@@ -44,7 +44,7 @@ namespace Wl
         typename CacheType::iterator it = m_cache.Find(key);
         if (it != m_cache.end())
         {
-            return m_registry[(*it).Value];
+            return m_registry[it->Value];
         }
 
         ObjectType resource = m_createCallback(key);
@@ -75,11 +75,15 @@ namespace Wl
         {
             m_destroyCallback(resource);
         }
+
+        m_registry.Clear();
+        m_cache.Clear();
     }
 
     template<typename KeyType, typename ResourceType, typename HashType>
     inline ObjectCache<KeyType, ResourceType, HashType>::~ObjectCache()
     {
+        Dispose();
     }
 
 }// namespace Wl

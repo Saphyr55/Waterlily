@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/HashMap.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/CommandQueue.hpp"
 #include "Waterlily/RHI/Device.hpp"
@@ -27,7 +26,7 @@ namespace Wl
         const MaterialData& GetMaterial(MaterialHandle handle);
 
         void Upload(SharedPtr<RHICommandQueue> queue);
-        void CompileShaderResource();
+        void UpdateSRG();
 
         void Destroy();
 

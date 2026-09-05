@@ -6,7 +6,6 @@ AccessModifierOffset: -4
 AlignArrayOfStructures: Left
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: None
-AlignEscapedNewlines: LeftWithLastLine
 AlignOperands: Align
 AllowAllArgumentsOnNextLine: false
 AllowShortLambdasOnASingleLine: None

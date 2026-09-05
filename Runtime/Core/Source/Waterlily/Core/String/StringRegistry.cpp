@@ -19,7 +19,7 @@ namespace Wl
             m_registry.Emplace(sid.GetHash(), String(str));
         }
 
-        return {sid.GetHash(), m_registry[sid.GetHash()]};
+        return {sid.GetHash(), m_registry[sid.GetHash()].data()};
     }
 
     StringRef StringRegistry::Resolve(StringID sid)
@@ -29,7 +29,7 @@ namespace Wl
         auto it = m_registry.find(sid.GetHash());
         if (it != m_registry.end())
         {
-            return (*it).Value;
+            return it->Value.data();
         }
 
         return nullptr;

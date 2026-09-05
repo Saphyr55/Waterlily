@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Defines.hpp"
 
 #include <functional>
 
 namespace Wl
 {
+    
     template<typename Type>
     using Hash = std::hash<Type>;
 
@@ -16,7 +16,7 @@ namespace Wl
         template<typename T>
         static size_t hash(const T& value)
         {
-            return Hash<T>{}(value);
+            return Hash<T> {}(value);
         }
     };
 
@@ -38,10 +38,12 @@ namespace Wl
         };                                                              \
     }
 
-#define WL_HASH_TEMPLATED_DEFINE(TEMPLATE_TYPE, TYPE, VAR_NAME, BODY)              \
-    namespace std template<typename TEMPLATE_TYPE>                                 \
-    struct ::std::hash<TYPE<TEMPLATE_TYPE>>                                        \
-    {                                                                              \
-        size_t operator()(const TYPE<TEMPLATE_TYPE>& VAR_NAME) const noexcept BODY \
-    };                                                                             \
+#define WL_HASH_TEMPLATED_DEFINE(TEMPLATE_TYPE, TYPE, VAR_NAME, BODY)                  \
+    namespace std                                                                      \
+    {                                                                                  \
+        template<typename TEMPLATE_TYPE>                                               \
+        struct hash<TYPE<TEMPLATE_TYPE>>                                               \
+        {                                                                              \
+            size_t operator()(const TYPE<TEMPLATE_TYPE>& VAR_NAME) const noexcept BODY \
+        };                                                                             \
     }

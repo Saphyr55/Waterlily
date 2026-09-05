@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Allocator.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
 #include "Waterlily/Core/Memory/Deleter.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 
 #include <atomic>
 #include <utility>
@@ -18,7 +18,11 @@ namespace Wl
         using RefCountType = std::atomic_int32_t;
 
     public:
-        ReferenceCounter() = default;
+        ReferenceCounter()
+            : m_allocator(MemoryStack::GetCurrentAllocator())
+        {
+        }
+
         virtual ~ReferenceCounter() = default;
 
         virtual void DestroyResource() = 0;
@@ -48,11 +52,12 @@ namespace Wl
                 std::atomic_thread_fence(std::memory_order_acquire);
 
                 DestroyResource();
-                Wl::Delete(DefaultAllocator::GetInstance(), this);
+                Wl::Delete(m_allocator, this);
             }
         }
 
     protected:
+        Allocator* m_allocator;
         RefCountType m_sharedReferenceCount = 1;
     };
 
@@ -72,6 +77,7 @@ namespace Wl
 
         ReferenceCounterWithDeleter(ResourceType* resource, const DeleterType& deleter)
             : DeleterDelegate<DeleterType>(deleter)
+            , ReferenceCounter()
             , m_resource(resource)
         {
             WL_CHECK(m_resource);
@@ -106,14 +112,15 @@ namespace Wl
     inline ReferenceCounter* NewRefCounterDeleter(ResourceType* resource, const DeleterType& deleter) noexcept
     {
         using RefCounter = ReferenceCounterWithDeleter<ResourceType, DeleterType>;
-        return NewArgs<RefCounter>(DefaultAllocator::GetInstance(), resource, deleter);
+        Allocator* allocator = MemoryStack::GetCurrentAllocator();
+        return Wl::NewArgs<RefCounter>(allocator, resource, deleter);
     }
 
     template<typename ResourceType>
     inline ReferenceCounter* NewDefaultRefCounter(ResourceType* resource) noexcept
     {
-        using DeleterType = DefaultDeleter<ResourceType>;
-        return NewRefCounterDeleter(resource, DeleterType(DefaultAllocator::GetInstance()));
+        Allocator* allocator = MemoryStack::GetCurrentAllocator();
+        return NewRefCounterDeleter(resource, Deleter<ResourceType>(allocator));
     }
 
 }// namespace Wl

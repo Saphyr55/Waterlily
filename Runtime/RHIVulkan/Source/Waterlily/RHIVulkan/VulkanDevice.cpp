@@ -1,7 +1,8 @@
 #include "Waterlily/RHIVulkan/vulkanDevice.hpp"
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
@@ -337,7 +338,7 @@ namespace Wl
 
     RHISemaphore* VulkanDevice::CreateSemaphore()
     {
-        VulkanSemaphore* vulkanSemaphore = Wl::New(m_allocator, VulkanSemaphore());
+        VulkanSemaphore* vulkanSemaphore = Wl::NewArgs<VulkanSemaphore>(m_allocator);
         VkSemaphoreCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -387,9 +388,9 @@ namespace Wl
         return m_context.CommandQueues;
     }
 
-    VulkanDevice::VulkanDevice()
+    VulkanDevice::VulkanDevice(Allocator* allocator)
         : m_context(VulkanContextGet())
-        , m_allocator(DefaultAllocator::GetInstance())
+        , m_allocator(allocator)
     {
     }
 

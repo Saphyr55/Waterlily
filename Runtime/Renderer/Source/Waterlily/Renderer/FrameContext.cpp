@@ -1,5 +1,4 @@
 #include "Waterlily/Renderer/FrameContext.hpp"
-
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
@@ -14,10 +13,9 @@
 namespace Wl
 {
 
-    void FrameContext::Init(const SharedPtr<RHIDevice>& device, const FrameContextInitInfo& info)
+    void FrameContext::Init(const FrameContextInitInfo& info)
     {
         WL_CHECK_MSG(info.GraphicsCommandBufferCount > 0, "Must have at least 1 graphics command buffer.");
-        m_device = device;
 
         Display& display = Display::GetDefault();
 
@@ -64,7 +62,7 @@ namespace Wl
 
             frame.StorageAllocator.Initialize(storageBuffer, properties.MinStorageBufferOffsetAlignment);
 
-            frame.Uploader.Init({
+            frame.Uploader.Init(UploadSchedulerInitInfo {
                     .Device = m_device,
                     .StagingSize = info.StagingBufferSize,
                     .MinAlignment = properties.NonCoherentAtomSize,
@@ -72,7 +70,7 @@ namespace Wl
         }
     }
 
-    void FrameContext::InitializeSRGPools()
+    void FrameContext::InitSRGPools()
     {
         for (Frame& frame: m_frames)
         {
@@ -92,9 +90,23 @@ namespace Wl
 
     void FrameContext::Resize(uint32_t width, uint32_t height)
     {
-
         m_device->WaitIdle();
         m_device->RecreateSwapchain(m_swapchain, width, height);
+    }
+
+    uint32_t FrameContext::GetWidth() const
+    {
+        return m_swapchain->GetWidth();
+    }
+
+    uint32_t FrameContext::GetHeight() const
+    {
+        return m_swapchain->GetHeight();
+    }
+
+    float FrameContext::GetAspectRatio() const
+    {
+        return static_cast<float>(m_swapchain->GetWidth()) / static_cast<float>(m_swapchain->GetHeight());
     }
 
     void FrameContext::Destroy()
@@ -111,6 +123,7 @@ namespace Wl
 
             m_device->DestroyBuffer(static_cast<RHIBuffer*>(frame.UniformAllocator.GetBuffer()));
             m_device->DestroyBuffer(static_cast<RHIBuffer*>(frame.StorageAllocator.GetBuffer()));
+
             frame.Uploader.Shutdown();
 
             m_device->DestroySRGPool(frame.SRGPool);
@@ -169,4 +182,44 @@ namespace Wl
         return m_defaultSampler;
     }
 
+    SharedPtr<RHIDevice> FrameContext::GetDevice() const
+    {
+        return m_device;
+    }
+
+    SharedPtr<RHIShaderResourceGroupLayoutCache> FrameContext::GetSRGLayoutCache()
+    {
+        return m_srgLayoutCache;
+    }
+
+    uint64_t FrameContext::GetFrameIndex() const
+    {
+        return m_frameIndex;
+    }
+
+    uint64_t FrameContext::GetMaxFrameInFlight() const
+    {
+        return m_maxFrameInFlight;
+    }
+
+    uint64_t FrameContext::GetFrameCount() const
+    {
+        return m_frameCount;
+    }
+
+    Frame& FrameContext::GetCurrentFrame()
+    {
+        return m_frames[m_frameIndex];
+    }
+
+    void FrameContext::NextFrame()
+    {
+        m_frameIndex = (m_frameIndex + 1) % m_maxFrameInFlight;
+        m_frameCount++;
+    }
+
+    RHISwapchain* FrameContext::GetSwapchain()
+    {
+        return m_swapchain;
+    }
 }// namespace Wl

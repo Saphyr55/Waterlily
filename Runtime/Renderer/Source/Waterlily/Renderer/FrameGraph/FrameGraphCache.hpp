@@ -27,14 +27,14 @@ namespace Wl
         }
     };
 
-    class FrameGraphRenderPassCache
+    class FrameGraphRenderPassRegistry
     {
     public:
         RHIRenderPass* GetRenderPass(StringID name);
         RHIRenderPass* Create(StringID name, const RHIRenderPassDescription& description);
         void Clear();
 
-        FrameGraphRenderPassCache(SharedPtr<RHIDevice> device)
+        FrameGraphRenderPassRegistry(const SharedPtr<RHIDevice>& device)
             : m_device(device)
         {
         }

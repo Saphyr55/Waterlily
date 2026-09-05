@@ -2,8 +2,9 @@
 
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 
 #include <initializer_list>
 #include <utility>
@@ -36,7 +37,6 @@ namespace Wl
     };
 
     template<typename KeyType,
-             CTypedAllocator<HashSetElement<KeyType>> AllocatorType = DefaultTypedAllocator<HashSetElement<KeyType>>,
              typename HasherType = Hasher>
     class HashSet
     {
@@ -198,20 +198,20 @@ namespace Wl
         using const_iterator = ConstIterator;
 
     public:
-        HashSet(size_t capacity = 8)
+        HashSet(size_t capacity = 8, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_size(0)
             , m_capacity(capacity)
             , m_buckets(nullptr)
-            , m_allocator()
+            , m_allocator(allocator)
         {
             InitializeBuckets();
         }
 
-        HashSet(std::initializer_list<KeyType> init)
+        HashSet(std::initializer_list<KeyType> init, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_size(0)
             , m_capacity(8)
             , m_buckets(nullptr)
-            , m_allocator()
+            , m_allocator(allocator)
         {
             InitializeBuckets();
             for (const auto& key: init)
@@ -220,11 +220,11 @@ namespace Wl
             }
         }
 
-        HashSet(const HashSet& other)
+        HashSet(const HashSet& other, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_size(0)
             , m_capacity(other.m_capacity)
             , m_buckets(nullptr)
-            , m_allocator()
+            , m_allocator(allocator)
         {
             InitializeBuckets();
 
@@ -234,9 +234,8 @@ namespace Wl
                 ElementType** tail = &m_buckets[i];
                 while (cur)
                 {
-                    ElementType* copy = m_allocator.Allocate(1);
-                    WL_PLACEMENT_NEW(copy)
-                    ElementType(cur->Key, cur->Hash);
+                    ElementType* copy = static_cast<ElementType*>(m_allocator.Allocate(sizeof(ElementType), alignof(ElementType)));
+                    WL_PLACEMENT_NEW(copy, ElementType(cur->Key, cur->Hash));
                     *tail = copy;
                     tail = &((*tail)->Next);
                     cur = cur->Next;
@@ -249,7 +248,7 @@ namespace Wl
             : m_size(other.m_size)
             , m_capacity(other.m_capacity)
             , m_buckets(other.m_buckets)
-            , m_allocator(std::move(other.m_allocator))
+            , m_allocator(other.m_allocator)
         {
             other.m_size = 0;
             other.m_capacity = 0;
@@ -400,8 +399,8 @@ namespace Wl
                         m_buckets[idx] = cur->Next;
                     }
 
-                    cur->~ElementType();
-                    m_allocator.Deallocate(cur, 1);
+                    SafeDestruct<ElementType>(cur);
+                    m_allocator.Deallocate(cur, sizeof(ElementType), alignof(ElementType));
                     --m_size;
 
                     return 1;
@@ -489,8 +488,8 @@ namespace Wl
                 while (cur)
                 {
                     ElementType* next = cur->Next;
-                    cur->~ElementType();
-                    m_allocator.Deallocate(cur, 1);
+                    SafeDestruct<ElementType>(cur);
+                    m_allocator.Deallocate(cur, sizeof(ElementType), alignof(ElementType));
                     cur = next;
                 }
 
@@ -629,21 +628,21 @@ namespace Wl
 
         ElementType* CreateElement(const KeyType& key, size_t h)
         {
-            ElementType* raw = m_allocator.Allocate(1);
-            ElementType* element = WL_PLACEMENT_NEW(raw) ElementType(key, h);
+            ElementType* raw = static_cast<ElementType*>(m_allocator.Allocate(sizeof(ElementType), alignof(ElementType)));
+            ElementType* element = WL_PLACEMENT_NEW(raw, ElementType(key, h));
             return element;
         }
 
         ElementType* CreateElement(KeyType&& key, size_t h)
         {
-            ElementType* raw = m_allocator.Allocate(1);
-            ElementType* element = WL_PLACEMENT_NEW(raw) ElementType(std::move(key), h);
+            ElementType* raw = static_cast<ElementType*>(m_allocator.Allocate(sizeof(ElementType), alignof(ElementType)));
+            ElementType* element = WL_PLACEMENT_NEW(raw, ElementType(std::move(key), h));
             return element;
         }
 
         size_t Hash(const KeyType& key) const
         {
-            return std::hash<KeyType>{}(key);
+            return std::hash<KeyType> {}(key);
         }
 
         void InitializeBuckets()
@@ -662,12 +661,11 @@ namespace Wl
             std::swap(m_buckets, other.m_buckets);
             std::swap(m_size, other.m_size);
             std::swap(m_capacity, other.m_capacity);
-            std::swap(m_allocator, other.m_allocator);
         }
 
     private:
+        Allocator& m_allocator;
         ElementType** m_buckets;
-        AllocatorType m_allocator;
         size_t m_size = 0;
         size_t m_capacity = 1;
     };

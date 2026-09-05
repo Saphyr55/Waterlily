@@ -51,6 +51,14 @@ namespace Wl
             }
         });
 
+        DisplaySignals::OnWindowExposed.Connect([&](WindowHandle handle)
+        {
+            if (m_handle == handle) 
+            {
+                m_eventHandler.OnExposed.Emit();
+            }
+        });
+
         DisplaySignals::OnWindowMinimized.Connect([&](WindowHandle handle)
         {
             if (m_handle == handle)
@@ -104,6 +112,12 @@ namespace Wl
     const WindowProperties& Window::GetProperties() const
     {
         return m_properties;
+    }
+
+    void Window::SetProperties(const WindowProperties& properties)
+    {
+        m_display.SetWindowProperties(m_handle, properties);
+        m_properties = properties;
     }
 
     const WindowProperties& Window::QueryProperties()

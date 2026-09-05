@@ -1,38 +1,61 @@
+#define WLSL_MAX_LIGHTS 32
 
-struct PunctualLight
+struct PointLightData
 {
     float3 Position;
     float3 Color;
 };
 
-struct ComputedPunctualLight
+struct ComputedPointLightData
+{
+    float3 Result;
+    float3 Direction;
+    float Intensity;
+    float Distance;
+};
+
+struct DirectionalLightData
 {
     float3 Direction;
-    float Distance;
-    float Lambertian;
-    float3 Result;
+    float3 Color;
 };
+
+struct ComputedDirectionalLightData
+{
+    float3 Result;
+    float Intensity;
+};
+
+ComputedDirectionalLightData ComputeDirectionalLight(DirectionalLightData light, float3 normal)
+{
+    ComputedDirectionalLightData outputLight;
+
+    float3 lightDirection = normalize(light.Direction);
+    float lambertian = dot(lightDirection, normal);
+
+    outputLight.Intensity = saturate(lambertian);
+    outputLight.Result = outputLight.Intensity * light.Color;
+
+    return outputLight;
+}
+
+ComputedPointLightData ComputePointLight(PointLightData light, float3 normal, float3 position) 
+{
+    ComputedPointLightData outputLight;
+
+    float3 lightDirection = light.Position - position;
+    outputLight.Distance = length(lightDirection);
+    outputLight.Direction = normalize(lightDirection);
+
+    float lambertian = dot(outputLight.Direction, normal);
+
+    outputLight.Intensity = saturate(lambertian);
+    outputLight.Result = outputLight.Intensity * light.Color;   
+
+    return outputLight;
+}
 
 float InverseSquareLightAttenuation(float lightDistance, float fixedDistance, float epsilon)
 {
     return (fixedDistance * fixedDistance) / ((lightDistance * lightDistance) + epsilon);
-}
-
-ComputedPunctualLight ComputePunctualLight(PunctualLight light, float3 normal, float3 position, float3 eyeDirection) 
-{
-    ComputedPunctualLight output;
-
-    if (dot(eyeDirection, normal) < 0.0f)
-    {
-        normal = -normal;
-    }
-    
-    float3 lightDirection = light.Position - position;
-    output.Distance = length(lightDirection);
-    output.Direction = normalize(lightDirection);
-    
-    output.Lambertian = max(dot(output.Direction, normal), 0.0f);
-    output.Result = output.Lambertian * light.Color;   
-
-    return output;
 }

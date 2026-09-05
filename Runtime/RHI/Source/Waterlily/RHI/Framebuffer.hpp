@@ -34,20 +34,28 @@ namespace Wl
 
 }// namespace Wl
 
-WL_HASH_DEFINE(Wl::RHIFramebufferDescription, description, {
-    size_t h = std::hash<uint64_t>()(uint64_t(description.RenderPass));
+namespace std
+{
+    using namespace Wl;
 
-    for (auto view: description.Attachments)
+    template<>
+    struct hash<RHIFramebufferDescription>
     {
-        h ^= std::hash<uint64_t>()(uint64_t(view));
-    }
-    h ^= std::hash<uint32_t>()(description.Width);
-    h ^= std::hash<uint32_t>()(description.Height);
-    h ^= std::hash<uint32_t>()(description.Layers);
+        size_t operator()(const RHIFramebufferDescription& description) const noexcept
+        {
+            size_t h = Hash<RHIRenderPass*>()(description.RenderPass);
+            for (RHITextureView* view: description.Attachments)
+            {
+                h ^= Hash<RHITextureView*>()(view);
+            }
+            h ^= Hash<uint32_t>()(description.Width);
+            h ^= Hash<uint32_t>()(description.Height);
+            h ^= Hash<uint32_t>()(description.Layers);
+            return h;
+        }
+    };
 
-
-    return h;
-})
+}// namespace std
 
 inline bool Wl::RHIFramebufferDescription::operator==(const RHIFramebufferDescription& other) const
 {

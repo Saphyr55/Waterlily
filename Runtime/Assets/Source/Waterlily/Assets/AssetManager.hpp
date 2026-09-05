@@ -8,11 +8,14 @@
 #include "Waterlily/Assets/AssetsExports.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Memory/Cast.hpp"
+#include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 
 namespace Wl
 {
+
+    const inline StringID AssetManagerName = WL_SID("AssetManager"); 
 
     class WL_ASSETS_API AssetManager
     {
@@ -51,15 +54,14 @@ namespace Wl
             }
             else if (asset && reload)
             {
-                asset->~AssetType();
+                SafeDestruct<AssetType>(asset);
                 pool->Deallocate(uuid);
             }
             
             asset = pool->Allocate(uuid);
             if (SharedPtr<Stream> stream = m_loader->OpenAndValidate(metadata))
             {
-                WL_PLACEMENT_NEW(asset)
-                AssetType();
+                WL_PLACEMENT_NEW(asset, AssetType());
                 AssetSerializer::Deserialize(*stream, *asset);
                 return asset;
             }
@@ -127,9 +129,18 @@ namespace Wl
             return Wl::StaticPtrCast<AssetPool<AssetType>>(*base_pool);
         }
 
-    private:
+        SharedPtr<AssetRegistry> GetRegistry() const
+        {
+            return m_registry;
+        }
+
+        SharedPtr<AssetLoader> GetLoader() const
+        {
+            return m_loader;
+        }
+
     public:
-        AssetManager(const SharedPtr<AssetRegistry>& registry, const SharedPtr<IAssetLoader>& loader)
+        AssetManager(const SharedPtr<AssetRegistry>& registry, const SharedPtr<AssetLoader>& loader)
             : m_registry(registry)
             , m_loader(loader)
         {
@@ -138,7 +149,7 @@ namespace Wl
 
     private:
         SharedPtr<AssetRegistry> m_registry;
-        SharedPtr<IAssetLoader> m_loader;
+        SharedPtr<AssetLoader> m_loader;
 
         HashMap<StringID, SharedPtr<IAssetPool>> m_pools;
     };

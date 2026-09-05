@@ -49,8 +49,6 @@ namespace Wl
             return nullptr;
         }
 
-        modulePtr->OnLoad();
-
         m_pendingModules.Remove(name);
         m_loadedModules.Put(name, LoadedModule(name, modulePtr, library));
 
@@ -69,8 +67,6 @@ namespace Wl
         {
             return;
         }
-
-        loadedModule->ModulePtr->OnUnload();
 
         if (loadedModule->Library)
         {

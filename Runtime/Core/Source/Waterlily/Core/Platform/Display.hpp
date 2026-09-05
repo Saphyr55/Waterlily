@@ -27,6 +27,8 @@ namespace Wl
 
         virtual WindowProperties GetWindowProperties(WindowHandle window) = 0;
 
+        virtual void SetWindowProperties(WindowHandle window, const WindowProperties& properties) = 0;
+
         virtual WindowProperties QueryWindowProperties(WindowHandle window) = 0;
 
         virtual void ShowWindow(WindowHandle window) = 0;

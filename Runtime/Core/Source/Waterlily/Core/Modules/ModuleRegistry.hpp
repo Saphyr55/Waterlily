@@ -2,7 +2,7 @@
 
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Function/Function.hpp"
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/Module.hpp"
@@ -75,7 +75,7 @@ namespace Wl
         {
             ModuleRegistry::GetInstance().RegisterModule(uniqueName, []() -> Module*
             {
-                return Wl::New(DefaultAllocator::GetInstance(), ModuleType());
+                return Wl::New(MemoryStack::GetCurrentAllocator(), ModuleType());
             });
         }
     };

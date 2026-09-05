@@ -1,7 +1,6 @@
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResourcePool.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
-#include "Waterlily/Core/Logging/Trace.hpp"
 
 namespace Wl
 {
@@ -12,14 +11,20 @@ namespace Wl
         {
             maxFrameLifetime = maxFrameLifetime + m_frameContext->GetMaxFrameInFlight();
         }
-        
+
         m_frameCount = m_frameContext->GetFrameCount();
         GarbageCollect(maxFrameLifetime);
-         
+
         for (const PendingRelease& pendingRelease: m_pendingReleases)
         {
+            if (!m_freeList.Contains(pendingRelease.Key))
+            {
+                m_freeList[pendingRelease.Key] = Array<PooledPhysicalTextureHandle>(m_allocator);
+            }
+
             m_freeList[pendingRelease.Key].Append(pendingRelease.Handle);
         }
+
         m_pendingReleases.Clear();
     }
 
@@ -32,9 +37,9 @@ namespace Wl
             m_resources[pooledResourceHandle].LastUsedFrame = m_frameCount;
             return pooledResourceHandle;
         }
-        
+
         Allocate(key, m_frameCount);
-        
+
         return m_resources.GetSize() - 1;
     }
 
@@ -55,9 +60,9 @@ namespace Wl
 
     void FrameGraphPhysicalTexturePool::GarbageCollect(uint64_t maxFrameLifetime)
     {
-        // TODO: 
+        // TODO:
     }
-    
+
     PooledPhysicalTexture& FrameGraphPhysicalTexturePool::Allocate(const FrameGraphPhysicalTextureKey& key, uint64_t currentFrame)
     {
         return m_resources.Emplace(Create(key), currentFrame);

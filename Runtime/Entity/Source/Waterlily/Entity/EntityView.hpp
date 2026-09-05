@@ -19,8 +19,8 @@ namespace Wl
         {
         public:
             using value_type = std::tuple<Entity, Components&...>;
-            using reference = value_type;
-            using pointer = void;
+            using reference = value_type&;
+            using pointer = value_type*;
             using difference_type = std::ptrdiff_t;
             using iterator_category = std::forward_iterator_tag;
 
@@ -43,12 +43,7 @@ namespace Wl
             Iterator& operator++()
             {
                 m_index++;
-                return *this;
-            }
-
-            Iterator& operator--()
-            {
-                m_index--;
+                SkipInvalid();
                 return *this;
             }
 
@@ -56,6 +51,19 @@ namespace Wl
             {
                 Entity entity = m_view->m_entities[m_index];
                 return m_view->GetComponents(entity);
+            }
+
+        private:
+            void SkipInvalid()
+            {
+                while (m_index < m_view->GetSize())
+                {
+                    if (m_view->HasComponents(m_view->m_entities[m_index]))
+                    {
+                        break;
+                    }
+                    m_index++;
+                }
             }
 
         private:
@@ -72,28 +80,45 @@ namespace Wl
         {
         }
 
-        template<typename Func>
-        void ForEach(Func&& func)
+        Entity First()
         {
-            for (Entity entity: m_entities)
-            {
-                if (HasComponents(entity))
-                {
-                    InvokeWithComponents(entity, std::forward<Func>(func));
-                }
-            }
+            return m_entities.Front();
+        }
+
+        Entity Last()
+        {
+            return m_entities.Back();
         }
 
         template<typename Func>
         void ForEach(Func&& func) const
         {
-            for (Entity entity: m_entities)
+            std::apply([&](ComponentPool<Components>*... pools)
             {
-                if (HasComponents(entity))
+                for (Entity entity: m_entities)
                 {
-                    InvokeWithComponents(entity, std::forward<Func>(func));
+                    if ((pools->HasComponent(entity) && ...))
+                    {
+                        func(entity, *(pools->GetComponent(entity))...);
+                    }
                 }
-            }
+            }, m_pools);
+        }
+
+        bool HasComponents(Entity entity) const
+        {
+            return std::apply([entity](ComponentPool<Components>*... pools)
+            {
+                return (pools->HasComponent(entity) && ...);
+            }, m_pools);
+        }
+
+        auto GetComponents(Entity entity)
+        {
+            return std::apply([entity](ComponentPool<Components>*... pools)
+            {
+                return std::make_tuple(entity, std::ref(*(pools->GetComponent(entity)))...);
+            }, m_pools);
         }
 
         size_t GetSize() const
@@ -117,42 +142,6 @@ namespace Wl
         }
 
     private:
-        bool HasComponents(Entity entity) const
-        {
-            return std::apply([entity](auto*... pools)
-            {
-                return (pools->HasComponent(entity) && ...);
-            }, m_pools);
-        }
-
-        template<typename Func>
-        void InvokeWithComponents(Entity entity, Func&& func)
-        {
-            std::apply([entity, &func](auto*... pools)
-            {
-                func(entity, *(pools->GetComponent(entity))...);
-            }, m_pools);
-        }
-
-        template<typename Func>
-        void InvokeWithComponents(Entity entity, Func&& func) const
-        {
-            std::apply([entity, &func](auto*... pools)
-            {
-                func(entity, *(pools->GetComponent(entity))...);
-            }, m_pools);
-        }
-
-        auto GetComponents(Entity entity)
-        {
-            return std::apply(
-                    [entity](auto*... pools)
-            {
-                return std::make_tuple(entity, std::ref(*(pools->GetComponent(entity)))...);
-            },
-                    m_pools);
-        }
-
     private:
         const Array<Entity>& m_entities;
         std::tuple<ComponentPool<Components>*...> m_pools;

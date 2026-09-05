@@ -7,11 +7,6 @@ namespace Wl
 
     WL_REGISTER_MODULE(LauncherModule, "Waterlily.Launcher");
 
-    void LauncherModule::OnLoad()
-    {
-        WL_LOG_INFO("LauncherModule", "Launcher module loaded.");
-    }
-
     void LauncherModule::OnStartup()
     {
         WL_LOG_INFO("LauncherModule", "Launcher module started.");
@@ -20,11 +15,6 @@ namespace Wl
     void LauncherModule::OnShutdown()
     {
         WL_LOG_INFO("LauncherModule", "Launcher module stopped.");
-    }
-
-    void LauncherModule::OnUnload()
-    {
-        WL_LOG_INFO("LauncherModule", "Launcher module unloaded.");
     }
 
 }// namespace Wl

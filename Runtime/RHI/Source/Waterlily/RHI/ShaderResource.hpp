@@ -8,18 +8,21 @@
 namespace Wl
 {
 
+    using SRGBinding = uint32_t;
+    using SRGIndex = uint32_t;
+
     /**
      * @brief Defines a single resource binding slot within a Shader Resource Group Layout.
      */
     struct RHIShaderResourceBinding
     {
-        uint32_t Binding = 0;
+        SRGBinding Binding = 0;
         RHIShaderResourceType Type = RHIShaderResourceType::Uniform;
         RHIShaderStage Stage = RHIShaderStage::AllGraphics | RHIShaderStage::Compute;
         uint32_t Count = 1;
 
         RHIShaderResourceBinding() = default;
-        RHIShaderResourceBinding(uint32_t binding,
+        RHIShaderResourceBinding(SRGBinding binding,
                                  RHIShaderResourceType type,
                                  RHIShaderStage stage = RHIShaderStage::AllGraphics | RHIShaderStage::Compute,
                                  uint32_t count = 1)
@@ -54,14 +57,14 @@ namespace Wl
     struct RHIWriteBufferResource
     {
         RHIBuffer* Buffer = nullptr;
-        uint32_t Binding = 0;
+        SRGBinding Binding = 0;
         size_t Offset = 0;
         size_t Range = 1;
         size_t ArrayIndex = 0;
 
         RHIWriteBufferResource() = default;
 
-        RHIWriteBufferResource(uint32_t binding,
+        RHIWriteBufferResource(SRGBinding binding,
                                RHIBuffer* buffer,
                                size_t offset = 0,
                                size_t range = 1,
@@ -81,12 +84,12 @@ namespace Wl
     struct RHIWriteSamplerResource
     {
         RHISampler* Sampler = nullptr;
-        uint32_t Binding = 0;
+        SRGBinding Binding = 0;
         size_t ArrayIndex = 0;
 
         RHIWriteSamplerResource() = default;
 
-        RHIWriteSamplerResource(uint32_t binding, RHISampler* sampler, size_t arrayIndex = 0)
+        RHIWriteSamplerResource(SRGBinding binding, RHISampler* sampler, size_t arrayIndex = 0)
             : Sampler(sampler)
             , Binding(binding)
             , ArrayIndex(arrayIndex)
@@ -101,12 +104,12 @@ namespace Wl
     {
         RHITextureView* TextureView = nullptr;
         RHISampler* Sampler = nullptr;
-        uint32_t Binding = 0;
+        SRGBinding Binding = 0;
         size_t ArrayIndex = 0;
 
         RHIWriteTextureSamplerResource() = default;
 
-        RHIWriteTextureSamplerResource(uint32_t binding,
+        RHIWriteTextureSamplerResource(SRGBinding binding,
                                        RHITextureView* textureView,
                                        RHISampler* sampler,
                                        size_t arrayIndex = 0)
@@ -125,12 +128,12 @@ namespace Wl
     struct RHIWriteTextureResource
     {
         RHITextureView* TextureView = nullptr;
-        uint32_t Binding = 0;
+        SRGBinding Binding = 0;
         size_t ArrayIndex = 0;
 
         RHIWriteTextureResource() = default;
 
-        RHIWriteTextureResource(uint32_t binding, RHITextureView* textureView, size_t arrayIndex = 0)
+        RHIWriteTextureResource(SRGBinding binding, RHITextureView* textureView, size_t arrayIndex = 0)
             : TextureView(textureView)
             , Binding(binding)
             , ArrayIndex(arrayIndex)
@@ -147,7 +150,7 @@ namespace Wl
     public:
         virtual ~RHIShaderResourceGroupLayout() = default;
 
-        virtual RHIShaderResourceType GetResourceType(size_t binding) const = 0;
+        virtual RHIShaderResourceType GetResourceType(SRGBinding binding) const = 0;
 
         virtual const Array<RHIShaderResourceBinding>& GetBindings() const = 0;
 

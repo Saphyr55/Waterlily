@@ -7,11 +7,6 @@ namespace Wl
 
     WL_REGISTER_MODULE(RHIModule, "Waterlily.RHI");
 
-    void RHIModule::OnLoad()
-    {
-        WL_LOG_INFO("RHIModule", "Loading RHI Module.");
-    }
-
     void RHIModule::OnStartup()
     {
         WL_LOG_INFO("RHIModule", "Start up RHI Module.");
@@ -20,11 +15,6 @@ namespace Wl
     void RHIModule::OnShutdown()
     {
         WL_LOG_INFO("RHIModule", "Shuting down RHI Module...");
-    }
-
-    void RHIModule::OnUnload()
-    {
-        WL_LOG_INFO("RHIModule", "Unload RHI Module.");
     }
 
 }// namespace Wl

@@ -14,6 +14,10 @@ namespace Wl
         {
         }
 
+        virtual void OnWindowExposed(WindowHandle window)
+        {
+        }
+
         virtual void OnWindowResized(WindowHandle window, uint32_t width, uint32_t height)
         {
         }

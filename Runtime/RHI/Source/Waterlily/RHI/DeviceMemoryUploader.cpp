@@ -1,6 +1,6 @@
 #include "Waterlily/RHI/DeviceMemoryUploader.hpp"
 
-#include "Waterlily/Core/Memory/DefaultAllocator.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/RHI/BufferPool.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/CommandQueue.hpp"
@@ -80,8 +80,7 @@ namespace Wl
         commandAllocatorDescription.Count = 1;// One command buffer allocated.
         commandAllocatorDescription.CommandQueue = queue;
 
-        RHICommandAllocator* commandAllocator =
-                m_device->CreateCommandAllocatorr(commandAllocatorDescription);
+        RHICommandAllocator* commandAllocator = m_device->CreateCommandAllocatorr(commandAllocatorDescription);
 
         // Open a transfer command buffer
         RHICommandBuffer* commandBuffer = commandAllocator->OpenCommandBuffer();

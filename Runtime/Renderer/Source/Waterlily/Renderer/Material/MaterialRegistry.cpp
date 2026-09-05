@@ -113,7 +113,7 @@ namespace Wl
         uploader.Shutdown();
     }
 
-    void MaterialRegistry::CompileShaderResource()
+    void MaterialRegistry::UpdateSRG()
     {
         RHIWriteBufferResource write = {};
         write.Buffer = m_bufferStorage;

@@ -1,6 +1,5 @@
 #include "Waterlily/Core/IO/PlatformFile.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
 
 namespace Wl
@@ -112,7 +111,7 @@ namespace Wl
         size_t sizeBytes = static_cast<size_t>(fileSize);
 
         *outSize = sizeBytes;
-        *outDestination = static_cast<uint8_t*>(allocator->Allocate(sizeBytes));
+        *outDestination = static_cast<uint8_t*>(allocator->Allocate(sizeBytes, 1));
 
         size_t bytesRead = fread(*outDestination, sizeof(uint8_t), *outSize, m_stream);
         if (bytesRead != fileSize)

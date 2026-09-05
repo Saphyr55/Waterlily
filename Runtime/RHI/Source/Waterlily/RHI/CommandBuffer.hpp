@@ -162,7 +162,7 @@ namespace Wl
          * @brief Bind vertex buffers for rendering.
          * @param buffers Array of buffer handles to bind.
          */
-        virtual void BindVertexBuffers(const Array<RHIBuffer*>& buffers) = 0;
+        virtual void BindVertexBuffers(ArrayView<RHIBuffer*> buffers) = 0;
 
         // TODO: Make the index type configurable
         virtual void BindIndexBuffer(RHIBuffer* buffer) = 0;

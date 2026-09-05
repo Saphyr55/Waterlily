@@ -1,9 +1,7 @@
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
-#include "Waterlily/Core/String/Format.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
@@ -12,11 +10,11 @@
 namespace Wl
 {
 
-    RHIGraphicsPipeline* PipelineManager::Create(const StringID& name, GraphicsPipelineState& props)
+    RHIGraphicsPipeline* PipelineManager::Create(const StringID& name, GraphicsPipelineState& state)
     {
         WL_CHECK_MSG(!m_cache.Contains(name), "The pipeline named '%s' already exist.", name.GetText().data());
 
-        RHIGraphicsPipeline* pipeline = CreateInternal(props);
+        RHIGraphicsPipeline* pipeline = CreateInternal(state);
         m_cache[name] = pipeline;
         return pipeline;
     }
@@ -37,13 +35,13 @@ namespace Wl
         {
             return nullptr;
         }
-        return (*it).Value;
+        return it->Value;
     }
 
-    RHIGraphicsPipeline* PipelineManager::Recreate(const StringID& name, GraphicsPipelineState& props)
+    RHIGraphicsPipeline* PipelineManager::Recreate(const StringID& name, GraphicsPipelineState& state)
     {
         Destroy(name);
-        return Create(name, props);
+        return Create(name, state);
     }
 
     void PipelineManager::Destroy(const StringID& name)

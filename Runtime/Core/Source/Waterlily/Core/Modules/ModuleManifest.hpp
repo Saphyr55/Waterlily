@@ -42,6 +42,7 @@ namespace Wl
         }
 
     private:
+    
         Array<ModuleInformation> m_manifestInformations;
     };
 

@@ -3,6 +3,7 @@
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Traits/AlignedStorage.hpp"
 
 namespace Wl
@@ -72,7 +73,7 @@ namespace Wl
 
     template<typename ResourceType>
     MemoryPool<ResourceType>::MemoryPool()
-        : m_allocator(&DefaultAllocator::GetInstance())
+        : m_allocator(MemoryStack::GetCurrentAllocator())
         , m_freeBlock(nullptr)
         , m_blockCount(64)
         , m_blocks()
@@ -126,8 +127,7 @@ namespace Wl
     ResourceType* MemoryPool<ResourceType>::NewResource(Args&&... args)
     {
         ResourceType* resource = Allocate();
-        WL_PLACEMENT_NEW(resource)
-        ResourceType(std::forward<Args>(args)...);
+        WL_PLACEMENT_NEW(resource, ResourceType(std::forward<Args>(args)...));
         return resource;
     }
 
@@ -139,10 +139,7 @@ namespace Wl
             return;
         }
 
-        if constexpr (std::is_destructible_v<ResourceType>)
-        {
-            resource->~ResourceType();
-        }
+        SafeDestruct<ResourceType>(resource);
 
         Deallocate(resource);
     }
@@ -152,7 +149,10 @@ namespace Wl
     {
         for (Block* block: m_blocks)
         {
-            m_allocator->Deallocate(block, m_blockCount * sizeof(Block));
+            if (block)
+            {
+                m_allocator->Deallocate(block, m_blockCount * sizeof(Block));
+            }
         }
         m_blocks.Clear();
         m_freeBlock = nullptr;

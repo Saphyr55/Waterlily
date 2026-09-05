@@ -1,5 +1,8 @@
-#include "Waterlily/Entity/EntityView.hpp"
+#include "Waterlily/Entity/Entity.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
+#include "Waterlily/Entity/EntityView.hpp"
+#include "catch2/catch_test_macros.hpp"
+
 
 #include <catch2/catch_all.hpp>
 
@@ -74,8 +77,9 @@ TEST_CASE("View with multiple components.", "[EntityView]")
 
     SECTION("Two components view")
     {
+        float sum_x = 0.0f;
+        float sum_dx = 0.0f;
         int32_t count = 0;
-        float sum_x = 0.0f, sum_dx = 0.0f;
 
         auto view = registry.View<Position, Velocity>();
         view.ForEach([&](Entity e, Position& pos, Velocity& vel) -> void
@@ -94,8 +98,7 @@ TEST_CASE("View with multiple components.", "[EntityView]")
     {
         int32_t count = 0;
 
-        auto view = registry.View<Position, Velocity, Health>();
-        view.ForEach([&](Entity e, Position& pos, Velocity& vel, Health& health) -> void
+        registry.ForEach<Position, Velocity, Health>([&](Entity e, Position& pos, Velocity& vel, Health& health) -> void
         {
             count++;
             REQUIRE(health.hp == 100);
@@ -111,13 +114,23 @@ TEST_CASE("View with range-based for loop.", "[EntityView]")
 
     Entity e1 = registry.Create();
     Entity e2 = registry.Create();
+    Entity e3 = registry.Create();
+    Entity e4 = registry.Create();
 
-    registry.AddComponent<Position>(e1, {1.0f, 2.0f});
-    registry.AddComponent<Velocity>(e1, {3.0f, 4.0f});
-    registry.AddComponent<Position>(e2, {5.0f, 6.0f});
-    registry.AddComponent<Velocity>(e2, {7.0f, 8.0f});
+    registry.AddComponent<Position>(e1, {1.0f, 1.0f});
+    registry.AddComponent<Velocity>(e1, {0.1f, 0.1f});
+    registry.AddComponent<Health>(e1, {100});
 
-    SECTION("Range-based iteration")
+    registry.AddComponent<Position>(e2, {2.0f, 2.0f});
+
+    registry.AddComponent<Position>(e3, {3.0f, 3.0f});
+    registry.AddComponent<Velocity>(e3, {0.3f, 0.3f});
+
+    registry.AddComponent<Velocity>(e4, {0.4f, 0.4f});
+
+    Velocity& v4 = registry.AddComponent<Velocity>(e4, {7.0f, 8.0f});
+
+    SECTION("Two components view, Range-based iteration")
     {
         float sum_x = 0.0f;
         float sum_dx = 0.0f;
@@ -131,8 +144,21 @@ TEST_CASE("View with range-based for loop.", "[EntityView]")
         }
 
         REQUIRE(count == 2);
-        REQUIRE(sum_x == 6.0f);
-        REQUIRE(sum_dx == 10.0f);
+        REQUIRE(sum_x == 4.0f);
+        REQUIRE(sum_dx == 0.4f);
+    }
+
+    SECTION("Three components view, Range-based iteration")
+    {
+        int32_t count = 0;
+
+        for (const auto [entity, pos, vel, h]: registry.View<Position, Velocity, Health>())
+        {
+            count++;
+            REQUIRE(h.hp == 100);
+        }
+
+        REQUIRE(count == 1);
     }
 }
 

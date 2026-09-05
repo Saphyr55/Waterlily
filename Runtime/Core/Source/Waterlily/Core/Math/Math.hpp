@@ -2,6 +2,7 @@
 
 #include "Waterlily/Core/Defines.hpp"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 

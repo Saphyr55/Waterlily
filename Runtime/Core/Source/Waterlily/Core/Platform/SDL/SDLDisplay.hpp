@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_properties.h>
 
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Platform/Display.hpp"
@@ -20,6 +19,8 @@ namespace Wl
         virtual WindowHandle CreateWindowHandle(const WindowProperties& properties) override;
 
         virtual WindowProperties GetWindowProperties(WindowHandle window) override;
+
+        virtual void SetWindowProperties(WindowHandle window, const WindowProperties& properties) override;
 
         virtual WindowProperties QueryWindowProperties(WindowHandle window) override;
 

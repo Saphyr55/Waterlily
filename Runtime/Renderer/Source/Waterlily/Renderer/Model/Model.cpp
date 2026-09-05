@@ -23,4 +23,19 @@ namespace Wl
         }
     }
 
+    Array<StaticMesh*> Model::GetMeshes(Model* model, SharedPtr<AssetManager> assetManager)
+    {
+        Array<StaticMesh*> modelStaticMeshesAsset;
+        modelStaticMeshesAsset.Reserve(model->Meshes.GetSize());
+
+        for (const AssetHandle& meshAssetHandle: model->Meshes)
+        {
+            StaticMesh* staticMesh = assetManager->GetAsset<StaticMesh>(meshAssetHandle);
+            modelStaticMeshesAsset.Append(staticMesh);
+        }
+        
+        return modelStaticMeshesAsset;
+    }
+
+
 }// namespace Wl

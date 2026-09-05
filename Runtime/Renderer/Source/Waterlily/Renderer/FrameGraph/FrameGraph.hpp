@@ -152,7 +152,7 @@ namespace Wl
         FrameGraphPhysicalTexturePool m_texturePool;
 
         FrameGraphFramebufferCache m_framebufferCache;
-        FrameGraphRenderPassCache m_renderPassCache;
+        FrameGraphRenderPassRegistry m_renderPassRegistry;
     };
 
 }// namespace Wl

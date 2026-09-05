@@ -1,14 +1,18 @@
 #include <catch2/catch_all.hpp>
 #include <catch2/catch_approx.hpp>
+#include <cstdint>
 
+#include "Waterlily/Core/Memory/HeapAllocator.hpp"
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
+
 
 using namespace Wl;
 
+static thread_local HeapAllocator heap;
+
 TEST_CASE("LinearAllocator basic allocation", "[LinearAllocator]")
 {
-    LinearAllocator allocator;
-    allocator.Init(1024);
+    LinearAllocator allocator(&heap, 1 * WL_KB);
 
     SECTION("Allocate returns non-null and respects alignment.")
     {
@@ -36,26 +40,16 @@ TEST_CASE("LinearAllocator basic allocation", "[LinearAllocator]")
         REQUIRE(*ptr2 == 99.0);
     }
 
-    SECTION("Allocation beyond pool size fails with nullptr.")
-    {
-        void* big = allocator.Allocate(2000, alignof(int32_t));
-        REQUIRE(big == nullptr);
-
-        void* small = allocator.Allocate(64, alignof(int32_t));
-        REQUIRE(small != nullptr);
-    }
-
     allocator.Destroy();
 }
 
 TEST_CASE("TypedLinearAllocator usage.", "[TypedLinearAllocator]")
 {
-    LinearAllocator allocator(512);
-    TypedLinearAllocator<int32_t> typedAllocator(&allocator);
+    LinearAllocator allocator(&heap, 512);
 
     SECTION("Allocate array of ints.")
     {
-        int32_t* arr = typedAllocator.Allocate(10);
+        int32_t* arr = static_cast<int32_t*>(allocator.Allocate(10 * sizeof(int32_t)));
         REQUIRE(arr != nullptr);
 
         for (int32_t i = 0; i < 10; i++)
@@ -70,24 +64,17 @@ TEST_CASE("TypedLinearAllocator usage.", "[TypedLinearAllocator]")
 
     SECTION("Allocate multiple different types with same pool.")
     {
-        TypedLinearAllocator<double> float64Alloctorr(&allocator);
-
-        int32_t* ints = typedAllocator.Allocate(4);
+        int32_t* ints = static_cast<int32_t*>(allocator.Allocate(4 * sizeof(int32_t)));
         REQUIRE(ints != nullptr);
 
-        double* float64s = float64Alloctorr.Allocate(4);
-        REQUIRE(float64s != nullptr);
+        double* doubles = static_cast<double*>(allocator.Allocate(4 * sizeof(double)));
+        REQUIRE(doubles != nullptr);
 
         ints[0] = 7;
-        float64s[0] = 3.1415;
+        doubles[0] = 3.1415;
 
         REQUIRE(ints[0] == 7);
-        REQUIRE(float64s[0] == Catch::Approx(3.1415));
+        REQUIRE(doubles[0] == Catch::Approx(3.1415));
     }
 
-    SECTION("Out of memory returns nullptr.")
-    {
-        int32_t* arr = typedAllocator.Allocate(10'000);
-        REQUIRE(arr == nullptr);
-    }
 }

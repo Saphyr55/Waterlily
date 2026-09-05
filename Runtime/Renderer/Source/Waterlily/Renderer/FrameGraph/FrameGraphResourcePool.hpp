@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/HashMap.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
@@ -9,6 +10,7 @@
 
 namespace Wl
 {
+
     using PooledPhysicalTextureHandle = size_t;
 
     struct PooledPhysicalTexture
@@ -44,6 +46,7 @@ namespace Wl
         FrameGraphPhysicalTexturePool(const SharedPtr<FrameContext>& frameContext)
             : m_device(frameContext->GetDevice())
             , m_frameContext(frameContext)
+            , m_allocator(MemoryStack::GetGlobalAllocator(), 64 * WL_KB)
         {
         }
 
@@ -58,8 +61,8 @@ namespace Wl
         SharedPtr<RHIDevice> m_device;
         SharedPtr<FrameContext> m_frameContext;
 
-        using KeyType = FrameGraphPhysicalTextureKey;
-        HashMap<KeyType, Array<size_t>, FrameGraphPhysicalTextureKeyHash> m_freeList;
+        LinearAllocator m_allocator;
+        HashMap<FrameGraphPhysicalTextureKey, Array<PooledPhysicalTextureHandle>, FrameGraphPhysicalTextureKeyHash> m_freeList;
 
         struct PendingRelease
         {
@@ -69,6 +72,7 @@ namespace Wl
         Array<PendingRelease> m_pendingReleases;
 
         Array<PooledPhysicalTexture> m_resources;
+
         uint64_t m_frameCount = 0;
     };
 

@@ -15,11 +15,6 @@ namespace Wl
 
     WL_REGISTER_MODULE(RendererModule, "Waterlily.Renderer");
 
-    void RendererModule::OnLoad()
-    {
-        WL_LOG_INFO("RendererModule", "Renderer module loaded.");
-    }
-
     void RendererModule::OnStartup()
     {
         WL_LOG_INFO("RendererModule", "Renderer module started.");
@@ -40,11 +35,6 @@ namespace Wl
         AssetSerializer::UnregisterAssetType<Shader>(AssetType_Shader);
 
         WL_LOG_INFO("RendererModule", "Renderer module stopped.");
-    }
-
-    void RendererModule::OnUnload()
-    {
-        WL_LOG_INFO("RendererModule", "Renderer module unloaded.");
     }
 
 }// namespace Wl

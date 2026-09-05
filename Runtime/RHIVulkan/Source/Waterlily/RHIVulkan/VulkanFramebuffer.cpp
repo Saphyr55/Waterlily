@@ -41,6 +41,7 @@ namespace Wl
     void VulkanFramebuffer::Create()
     {
         VulkanRenderPass* vulkanRenderPass = static_cast<VulkanRenderPass*>(m_description.RenderPass);
+        WL_CHECK(vulkanRenderPass);
 
         Array<VkImageView> attachments(m_description.Attachments.size());
         for (RHITextureView* textureView: m_description.Attachments)
@@ -59,8 +60,7 @@ namespace Wl
         createInfo.height = m_description.Height;
         createInfo.layers = m_description.Layers;
 
-        WL_VULKAN_CHECK(
-                VulkanAPI::vkCreateFramebuffer(m_context.Device, &createInfo, m_context.Allocator, &m_handle));
+        WL_VULKAN_CHECK(VulkanAPI::vkCreateFramebuffer(m_context.Device, &createInfo, m_context.Allocator, &m_handle));
     }
 
     void VulkanFramebuffer::Destroy()
