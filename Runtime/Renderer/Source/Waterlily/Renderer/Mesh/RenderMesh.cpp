@@ -74,8 +74,8 @@ namespace Wl
 
             materialData.baseColor = textures->ObtainTexture(materialAsset->baseColor, false);
             materialData.normal = textures->ObtainTexture(materialAsset->normal, true);
-            materialData.emissive = textures->ObtainTexture(materialAsset->emissive, false);
-            materialData.occlusion = textures->ObtainTexture(materialAsset->occlusion, false);
+            materialData.emissive = textures->ObtainTexture(materialAsset->emissive, true);
+            materialData.occlusion = textures->ObtainTexture(materialAsset->occlusion, true);
             materialData.metallicRoughness = textures->ObtainTexture(materialAsset->metallicRoughness, false);
 
             item.Material = materials->ObtainMaterial(materialData);

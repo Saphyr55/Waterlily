@@ -58,8 +58,8 @@ FSOutput FSMain(VSOutput input)
     float4 albedo = gBufferTextures.albedoTexture.Sample(input.UV);
     float3 metallicRoughness = gBufferTextures.metallicRoughnessTexture.Sample(input.UV).rgb;
 
-    float metallic = metallicRoughness.x;
-    float roughness = metallicRoughness.y;
+    float metallic = metallicRoughness.b;
+    float roughness = metallicRoughness.g;
 
     float3 viewDirection = normalize(view.position - position);
 
@@ -80,13 +80,12 @@ FSOutput FSMain(VSOutput input)
     float3 Lo = float3(0.0f, 0.0f, 0.0f);
 
     DirectionalLight dl = directionalLight;
-    dl.color = Lo;
+    dl.color = float3(0.0f, 0.0f, 0.0f); // Turn off directional light.
     Lo += PBR.CookTorranceBRDF(dl, materialBRDF, normal, viewDirection, position);
 
     for (uint i = 0; i < pointLightCount; i++)
     {
-        PointLight pointLight = pointLights[i];
-        Lo += PBR.CookTorranceBRDF(pointLight, materialBRDF, normal, viewDirection, position);
+        Lo += PBR.CookTorranceBRDF(pointLights[i], materialBRDF, normal, viewDirection, position);
     }
 
     float3 color = Lo;
