@@ -32,22 +32,22 @@ namespace Wl
             RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[0];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
             {
-                RHIWriteBufferResource writeView(SRGBindingGlobalView,
+                RHIWriteBufferResource writeView(0,
                                                  packet.ViewAllocation.Buffer,
                                                  packet.ViewAllocation.Offset,
                                                  packet.ViewAllocation.Size);
 
-                RHIWriteBufferResource writeDirectionalLight(SRGBindingGlobalDirectionalLight,
+                RHIWriteBufferResource writeDirectionalLight(1,
                                                              packet.DirectionalLightAllocation.Buffer,
                                                              packet.DirectionalLightAllocation.Offset,
                                                              packet.DirectionalLightAllocation.Size);
 
-                RHIWriteBufferResource writePointLights(SRGBindingGlobalPointLights,
+                RHIWriteBufferResource writePointLights(2,
                                                         packet.PointLightsAllocation.Buffer,
                                                         packet.PointLightsAllocation.Offset,
                                                         packet.PointLightsAllocation.Size);
 
-                RHIWriteBufferResource writeCounters(SRGBindingGlobalCounters,
+                RHIWriteBufferResource writeCounters(3,
                                                      packet.CountersAllocation.Buffer,
                                                      packet.CountersAllocation.Offset,
                                                      packet.CountersAllocation.Size);
@@ -68,9 +68,9 @@ namespace Wl
 
                 RHISampler* pointSampler = context.FrameContext->GetDefaultSampler();
 
-                RHIWriteTextureSamplerResource writePosition(SRGBindingGBufferPosition, positionResource.View, pointSampler);
-                RHIWriteTextureSamplerResource writeNormal(SRGBindingGBufferNormal, normalResource.View, pointSampler);
-                RHIWriteTextureSamplerResource writeAlbedo(SRGBindingGBufferAlbedo, albedoResource.View, pointSampler);
+                RHIWriteTextureSamplerResource writePosition(0, positionResource.View, pointSampler);
+                RHIWriteTextureSamplerResource writeNormal(1, normalResource.View, pointSampler);
+                RHIWriteTextureSamplerResource writeAlbedo(2, albedoResource.View, pointSampler);
 
                 gBufferTexturesSRG->SetTextureSampler(writePosition);
                 gBufferTexturesSRG->SetTextureSampler(writeNormal);

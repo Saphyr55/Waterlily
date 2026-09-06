@@ -18,7 +18,7 @@ struct VSOutput
     float2 UV : TEXCOORD0;
     float3 Tangent : TANGENT0;
     float3 Bitangent : TEXCOORD1;
-    uint InstanceIndex : SV_InstanceID;
+    nointerpolation uint InstanceIndex : SV_InstanceID;
 }
 
 struct FSOutput
@@ -41,9 +41,8 @@ Sampler2D[] samplers2D;
 StructuredBuffer<Material> materialRegistry;
 
 [shader("vertex")]
-VSOutput VSMain(VSInput input, uint instanceIndex: SV_InstanceID)
+VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
 {
-    VSOutput output;
 
     RenderInstance instance = renderInstanceBuffer[instanceIndex];
 
@@ -55,6 +54,8 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_InstanceID)
     float3 tangent = normalize(mul(worldMatrix, input.Tangent.xyz));
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     float3 bitangent = cross(normal, tangent) * input.Tangent.w;
+
+    VSOutput output;
 
     output.Position = mul(view.ViewProj, worldPosition);
     output.WorldPosition = worldPosition.xyz;
@@ -72,8 +73,8 @@ FSOutput FSMain(VSOutput input)
 {
     FSOutput output;
 
-    RenderInstance instance = renderInstanceBuffer[input.InstanceIndex];
-    Material material = materialRegistry[instance.MaterialIndex];
+    RenderInstance instance = renderInstanceBuffer.Load(input.InstanceIndex);
+    Material material = materialRegistry.Load(instance.MaterialIndex);
 
     output.Position = float4(input.WorldPosition, 1.0f);
 

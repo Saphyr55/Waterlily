@@ -42,15 +42,15 @@ namespace Wl
 
             RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
 
-            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[SRGIndexGlobal];
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[0];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
 
-            RHIWriteBufferResource writeRenderView(SRGBindingGlobalView,
+            RHIWriteBufferResource writeRenderView(0,
                                                    packet.ViewAllocation.Buffer,
                                                    packet.ViewAllocation.Offset,
                                                    packet.ViewAllocation.Size);
 
-            RHIWriteBufferResource writeLight(SRGBindingGlobalPointLights,
+            RHIWriteBufferResource writeLight(1,
                                               params.LightAllocation->Buffer,
                                               params.LightAllocation->Offset,
                                               params.LightAllocation->Size);
@@ -59,10 +59,10 @@ namespace Wl
             globalSRG->SetBuffer(writeLight);
             globalSRG->Update();
 
-            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipelineState.SRGLayouts[SRGIndexRenderInstance];
+            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipelineState.SRGLayouts[1];
             RHIShaderResourceGroup* renderInstanceSRG = frame.SRGPool->AllocateSRG(renderInstanceSRGLayout);
 
-            RHIWriteBufferResource writeRenderInstance(SRGBindingRenderInstance,
+            RHIWriteBufferResource writeRenderInstance(0,
                                                        packet.InstanceAllocation.Buffer,
                                                        packet.InstanceAllocation.Offset,
                                                        packet.InstanceAllocation.Size);
@@ -81,10 +81,10 @@ namespace Wl
                 commandBuffer->SetViewport(viewport);
                 commandBuffer->SetScissor(scissor);
 
-                commandBuffer->BindSRG(pipeline, {globalSRG}, SRGIndexGlobal);
-                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, SRGIndexRenderInstance);
-                commandBuffer->BindSRG(pipeline, {textureSRG}, SRGIndexTextures);
-                commandBuffer->BindSRG(pipeline, {materialSRG}, SRGIndexMaterials);
+                commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
+                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, 1);
+                commandBuffer->BindSRG(pipeline, {textureSRG}, 2);
+                commandBuffer->BindSRG(pipeline, {materialSRG}, 3);
 
                 commandBuffer->BindVertexBuffers(packet.VertexBuffers);
                 commandBuffer->BindIndexBuffer(packet.IndexBuffers);

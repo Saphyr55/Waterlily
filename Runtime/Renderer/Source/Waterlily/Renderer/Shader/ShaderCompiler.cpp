@@ -1,11 +1,12 @@
 #include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
-#include "Waterlily/Renderer/Shader/ShaderReflection.hpp"
 #include "Waterlily/Assets/WLCAFile.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Renderer/Shader/Shader.hpp"
+#include "Waterlily/Renderer/Shader/ShaderReflection.hpp"
+
 
 #include <slang-com-ptr.h>
 #include <slang.h>
@@ -67,7 +68,6 @@ namespace Wl
         {
             std::cout << "Name=\"" << name << "\" Set=" << set << " Binding=" << binding << "\n";
         };
-
     }
 
     bool ShaderCompiler::CompileSlang(const ShaderCompileSlangDesc& desc)
@@ -92,13 +92,14 @@ namespace Wl
 
         TargetDesc targetDesc = {};
         targetDesc.format = SLANG_SPIRV;
-        targetDesc.profile = globalSession->findProfile("sm_6_0");
+        targetDesc.profile = globalSession->findProfile("spirv_1_7");
         targetDesc.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 
         FixedArray<const char*, 1> searchPaths = {desc.EnvPath};
 
         SessionDesc sessionDesc = {};
         sessionDesc.targets = &targetDesc;
+        sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
         sessionDesc.targetCount = 1;
         sessionDesc.searchPaths = searchPaths.data();
         sessionDesc.searchPathCount = searchPaths.size();

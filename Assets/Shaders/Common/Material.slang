@@ -8,9 +8,3 @@ struct Material
     uint DiffuseIndex;
     uint NormalIndex;
 }
-
-struct TextureRegistry
-{
-    SamplerState sampler;
-    Texture2D[] textures2D;
-}

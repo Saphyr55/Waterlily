@@ -18,7 +18,7 @@ struct VSOutput
     float2 UV : TEXCOORD0;
     float3 Tangent : TANGENT0;
     float3 Bitangent : TEXCOORD1;
-    uint InstanceIndex : SV_InstanceID;
+    nointerpolation uint InstanceIndex;
 }
 
 struct FSOutput
@@ -26,19 +26,23 @@ struct FSOutput
     float4 FragColor : SV_TARGET;
 }
 
-ParameterBlock<View> view;
+[[vk::binding(0, 0)]]
+ConstantBuffer<View> view;
 
-ParameterBlock<DirectionalLight> directionalLight;
-ParameterBlock<PointLight[kMaxPointLight]> pointLights;
-ParameterBlock<uint> pointLightCount;
+[[vk::binding(1, 0)]]
+ConstantBuffer<PointLight[kMaxPointLight]> pointLights;
 
-ParameterBlock<Sampler2D[]> sampler2DRegistry;
-ParameterBlock<StructuredBuffer<Material>> materialRegistry;
+[[vk::binding(0, 1)]]
+StructuredBuffer<RenderInstance> renderInstanceBuffer;
 
-ParameterBlock<StructuredBuffer<RenderInstance>> renderInstanceBuffer;
+[[vk::binding(0, 2)]]
+Sampler2D[] sampler2DRegistry;
+
+[[vk::binding(0, 3)]]
+StructuredBuffer<Material> materialRegistry;
 
 [shader("vertex")]
-VSOutput VSMain(VSInput input, uint instanceIndex: SV_InstanceID)
+VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
 {
     VSOutput output;
 

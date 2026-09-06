@@ -8,26 +8,7 @@
 
 namespace Wl
 {
-    inline constexpr SRGIndex SRGIndexGlobal = 0;
-    inline constexpr SRGBinding SRGBindingGlobalView = 0;
-    inline constexpr SRGBinding SRGBindingGlobalDirectionalLight = 1;
-    inline constexpr SRGBinding SRGBindingGlobalPointLights = 2;
-    inline constexpr SRGBinding SRGBindingGlobalCounters = 3;
-
-    inline constexpr SRGIndex SRGIndexRenderInstance = 1;
-    inline constexpr SRGBinding SRGBindingRenderInstance = 0;
-
-    inline constexpr SRGIndex SRGIndexTextures = 2;
-    inline constexpr SRGBinding SRGBindingTextures = 0;
-
-    inline constexpr SRGIndex SRGIndexMaterials = 3;
-    inline constexpr SRGBinding SRGBindingMaterials = 0;
-
-    inline constexpr SRGIndex SRGIndexGBuffer = 4;
-    inline constexpr SRGBinding SRGBindingGBufferPosition = 0;
-    inline constexpr SRGBinding SRGBindingGBufferNormal = 1;
-    inline constexpr SRGBinding SRGBindingGBufferAlbedo = 2;
-
+    
     struct PassContext
     {
         SharedPtr<FrameGraph> FrameGraph;
