@@ -278,6 +278,12 @@ namespace Wl
         albedoTextureInfo.SizeClass = SizeClass::Swapchain;
         FrameGraphTextureHandle albedo = frameGraph->CreateTexture(albedoTextureInfo);
 
+        FrameGraphTextureInfo metallicRoughnessTextureInfo = {};
+        metallicRoughnessTextureInfo.Name = "MetallicRoughness";
+        metallicRoughnessTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
+        metallicRoughnessTextureInfo.SizeClass = SizeClass::Swapchain;
+        FrameGraphTextureHandle metallicRoughness = frameGraph->CreateTexture(metallicRoughnessTextureInfo);
+
         FrameGraphTextureInfo depthStencilTextureInfo = {};
         depthStencilTextureInfo.Name = "DepthScentil";
         depthStencilTextureInfo.Format = RHIFormat::D24S8;
@@ -289,6 +295,7 @@ namespace Wl
         gBufferParams.Normal = normal;
         gBufferParams.Albedo = albedo;
         gBufferParams.DepthStencil = depthStencil;
+        gBufferParams.MetallicRoughness = metallicRoughness;
         gBufferParams.Indirect = indirect;
 
         ShaderGraphicsPass& shaderGBufferPass = shaderBundle->GetShaderGraphicsPass(GBufferPassName);
@@ -303,6 +310,7 @@ namespace Wl
         lightingParams.Albedo = albedo;
         lightingParams.Normal = normal;
         lightingParams.Position = position;
+        lightingParams.MetallicRoughness = metallicRoughness;
         lightingParams.Indirect = indirect;
         lightingParams.DepthStencil = depthStencil;
 

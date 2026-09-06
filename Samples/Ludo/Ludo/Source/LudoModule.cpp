@@ -69,8 +69,6 @@ namespace Wl
         engine.UnregisterUpdater(LudoName);
         engine.UnregisterService(RenderServiceName);
 
-        
-
         WL_LOG_INFO("Ludo", "Ludo Module stopped.");
     }
 

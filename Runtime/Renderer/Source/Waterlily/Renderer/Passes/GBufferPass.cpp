@@ -22,6 +22,7 @@ namespace Wl
             builder.Write(data.Position);
             builder.Write(data.Normal);
             builder.Write(data.Albedo);
+            builder.Write(data.MetallicRoughness);
             builder.ReadStorage(data.Indirect);
             builder.SetDepthStencil(data.DepthStencil);
         });

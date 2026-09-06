@@ -16,6 +16,7 @@ namespace Wl
         FrameGraphTextureHandle Position;
         FrameGraphTextureHandle Normal;
         FrameGraphTextureHandle Albedo;
+        FrameGraphTextureHandle MetallicRoughness;
         FrameGraphTextureHandle DepthStencil;
         FrameGraphBufferHandle Indirect;
     };

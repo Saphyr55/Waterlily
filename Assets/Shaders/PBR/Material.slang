@@ -1,17 +1,26 @@
+import Common.Colors;
 
-typealias TextureHandle = uint;
+public typealias TextureHandle = uint;
 
-static const TextureHandle kInvalidTextureIndex = 0xffffffff;
+public static const TextureHandle kInvalidTextureIndex = 0xffffffff;
 
-struct Material
+public struct Material
 {
-    float4 baseColorFactor;
-    float4 metallicFactor;
-    float4 roughnessFactor;
+    public float4 baseColorFactor = Colors.White;
+    public float metallicFactor = 1.0f;
+    public float roughnessFactor = 1.0f;
 
-    TextureHandle baseColor = kInvalidTextureIndex;
-    TextureHandle normal = kInvalidTextureIndex;
-    TextureHandle emissive = kInvalidTextureIndex;
-    TextureHandle occlusion = kInvalidTextureIndex;
-    TextureHandle metallicRoughness = kInvalidTextureIndex;
+    public TextureHandle baseColor = kInvalidTextureIndex;
+    public TextureHandle normal = kInvalidTextureIndex;
+    public TextureHandle emissive = kInvalidTextureIndex;
+    public TextureHandle occlusion = kInvalidTextureIndex;
+    public TextureHandle metallicRoughness = kInvalidTextureIndex;
+}
+
+public struct MaterialBRDF
+{
+    public float3 F0;
+    public float3 albedo;
+    public float roughness;
+    public float metallic;
 }

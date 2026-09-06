@@ -1,5 +1,5 @@
-import Common.Lighting;
-import Common.RenderScene;
+import Common.Light;
+import Common.Scene;
 import PBR.Material;
 
 struct VSInput
@@ -23,9 +23,10 @@ struct VSOutput
 
 struct FSOutput
 {
-    float4 Position : SV_TARGET0;
-    float4 Normal : SV_TARGET1;
-    float4 Albedo : SV_TARGET2;
+    float4 Position : SV_Target0;
+    float4 Normal : SV_Target1;
+    float4 Albedo : SV_Target2;
+    float4 MetallicRoughness : SV_Target3;
 }
 
 [[vk::binding(0, 0)]]
@@ -43,7 +44,6 @@ StructuredBuffer<Material> materialRegistry;
 [shader("vertex")]
 VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
 {
-
     RenderInstance instance = renderInstanceBuffer[instanceIndex];
 
     float4 worldPosition = mul(instance.model, float4(input.Position, 1.0));
@@ -78,6 +78,16 @@ FSOutput FSMain(VSOutput input)
 
     output.Position = float4(input.WorldPosition, 1.0f);
 
+    if (material.baseColor != kInvalidTextureIndex)
+    {
+        Sampler2D diffuseTexture = samplers2D[NonUniformResourceIndex(material.baseColor)];
+        output.Albedo = diffuseTexture.Sample(input.UV) * material.baseColorFactor;
+    }
+    else
+    {
+        output.Albedo = material.baseColor;
+    }
+
     float3 normal = input.Normal;
     if (material.normal != kInvalidTextureIndex)
     {
@@ -92,15 +102,15 @@ FSOutput FSMain(VSOutput input)
     }
     output.Normal = float4(normal, 0.0f);
 
-    if (material.baseColor != kInvalidTextureIndex)
+    float4 metallicRoughness = float4(material.metallicFactor, material.roughnessFactor, 0.0, 1.0);
+    if (material.metallicRoughness != kInvalidTextureIndex)
     {
-        Sampler2D diffuseTexture = samplers2D[NonUniformResourceIndex(material.baseColor)];
-        output.Albedo = diffuseTexture.Sample(input.UV) * material.baseColorFactor;
+        Sampler2D metallicRoughnessSampler = samplers2D[NonUniformResourceIndex(material.metallicRoughness)];
+        metallicRoughness = metallicRoughnessSampler.Sample(input.UV);
+        metallicRoughness.x *= material.metallicFactor;
+        metallicRoughness.y *= material.roughnessFactor;    
     }
-    else
-    {
-        output.Albedo = material.baseColor;
-    }
+    output.MetallicRoughness = metallicRoughness;
 
     return output;
 }

@@ -1,6 +1,8 @@
-import Common.Lighting;
-import Common.RenderScene;
+import Common.Light;
+import Common.Scene;
 import PBR.Material;
+
+using Light;
 
 struct VSInput
 {
@@ -103,8 +105,8 @@ FSOutput FSMain(VSOutput input)
     // TODO:
     PointLight light = pointLights[0];
 
-    float3 lightColor = light.Color;
-    float3 lightDirection = light.Position - input.WorldPosition;
+    float3 lightColor = light.color;
+    float3 lightDirection = light.position - input.WorldPosition;
     float lightDistance = length(lightDirection);
     lightDirection = normalize(lightDirection);
 
@@ -112,7 +114,7 @@ FSOutput FSMain(VSOutput input)
     float3 result = diffuseColor.rgb * lambertian + diffuseColor.rgb * 0.1f;
 
     float epsilon = 1.0e-5f;
-    result *= InverseSquareLightAttenuation(lightDistance, 1.0f, epsilon);
+    result *= Light.InverseSquareLightAttenuation(lightDistance, 1.0f, epsilon);
 
     output.FragColor.rgb = result;
     output.FragColor.a = diffuseColor.a;

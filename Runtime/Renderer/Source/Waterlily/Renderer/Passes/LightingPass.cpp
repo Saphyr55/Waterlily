@@ -20,6 +20,7 @@ namespace Wl
             builder.Read(params.Position);
             builder.Read(params.Normal);
             builder.Read(params.Albedo);
+            builder.Read(params.MetallicRoughness);
             builder.ReadStorage(params.Indirect);
             builder.SetDepthStencil(params.DepthStencil);
         });
@@ -65,16 +66,20 @@ namespace Wl
                 FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(params.Position);
                 FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(params.Normal);
                 FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(params.Albedo);
+                FrameGraphPhysicalTexture& metallicRoughnessResource = context.FrameGraph->ResolvePhysicalTexture(params.MetallicRoughness);
 
                 RHISampler* pointSampler = context.FrameContext->GetDefaultSampler();
 
                 RHIWriteTextureSamplerResource writePosition(0, positionResource.View, pointSampler);
                 RHIWriteTextureSamplerResource writeNormal(1, normalResource.View, pointSampler);
                 RHIWriteTextureSamplerResource writeAlbedo(2, albedoResource.View, pointSampler);
+                RHIWriteTextureSamplerResource writMetallicRoughness(3, metallicRoughnessResource.View, pointSampler);
 
                 gBufferTexturesSRG->SetTextureSampler(writePosition);
                 gBufferTexturesSRG->SetTextureSampler(writeNormal);
                 gBufferTexturesSRG->SetTextureSampler(writeAlbedo);
+                gBufferTexturesSRG->SetTextureSampler(writMetallicRoughness);
+
                 gBufferTexturesSRG->Update();
             }
             float width = static_cast<float>(context.FrameContext->GetWidth());

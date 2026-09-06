@@ -177,6 +177,8 @@ namespace Wl
             String lcaPath = PathToLCAFilepath(textureImportContext.URI, textureImportContext.OutputURI);
             AssetHandle assetTextureHandle = registry.GetAssetHandle(CreateSID(lcaPath));
 
+            WL_LOG_INFO("GlTFImporter", "Creating Texture2D Asset, URI: \"%s\"", lcaPath.data());
+
             textureMap.Put(gltfTexture.source, assetTextureHandle);
         }
 
@@ -205,8 +207,8 @@ namespace Wl
                                               static_cast<float>(gltfPBR.baseColorFactor[2]),
                                               static_cast<float>(gltfPBR.baseColorFactor[3])};
             
-            gltfPBR.metallicFactor = gltfPBR.metallicFactor;
-            gltfPBR.roughnessFactor = gltfPBR.roughnessFactor;
+            materialAsset->metallicFactor = static_cast<float>(gltfPBR.metallicFactor);
+            materialAsset->roughnessFactor = static_cast<float>(gltfPBR.roughnessFactor);
 
             if (gltfPBR.metallicRoughnessTexture.index != -1)
             {

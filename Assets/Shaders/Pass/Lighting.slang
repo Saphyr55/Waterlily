@@ -1,11 +1,18 @@
-import Common.Lighting;
-import Common.RenderScene;
+import Common.Light;
+import Common.Scene;
+import Common.Math;
+import PBR.PBR;
+import PBR.Material;
+
+using Light;
+using PBR;
 
 struct GBufferTextures
 {
     Sampler2D positionTexture;
     Sampler2D normalTexture;
     Sampler2D albedoTexture;
+    Sampler2D metallicRoughnessTexture;
 }
 
 struct FSOutput
@@ -48,31 +55,44 @@ FSOutput FSMain(VSOutput input)
 
     float3 position = gBufferTextures.positionTexture.Sample(input.UV).rgb;
     float3 normal = gBufferTextures.normalTexture.Sample(input.UV).rgb;
-    float3 albedo = gBufferTextures.albedoTexture.Sample(input.UV).rgb;
+    float4 albedo = gBufferTextures.albedoTexture.Sample(input.UV);
+    float3 metallicRoughness = gBufferTextures.metallicRoughnessTexture.Sample(input.UV).rgb;
 
-    float3 result = float3(0.0f, 0.0f, 0.0f);
+    float metallic = metallicRoughness.x;
+    float roughness = metallicRoughness.y;
 
     float3 viewDirection = normalize(view.position - position);
-
-    float fixedDistance = 1.0f;
-    float epsilon = 1.0e-5f;
 
     if (dot(viewDirection, normal) < 0.0f)
     {
         normal = -normal;
     }
 
-    ComputedDirectionalLight computedDirectionalLight = ComputeDirectionalLight(directionalLight, normal);
-    result += computedDirectionalLight.Result * albedo;
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, albedo.rgb, metallic);
+
+    MaterialBRDF materialBRDF;
+    materialBRDF.albedo = albedo.rgb;
+    materialBRDF.metallic = metallic;
+    materialBRDF.roughness = roughness;
+    materialBRDF.F0 = F0;
+
+    float3 Lo = float3(0.0f, 0.0f, 0.0f);
+
+    DirectionalLight dl = directionalLight;
+    dl.color = Lo;
+    Lo += PBR.CookTorranceBRDF(dl, materialBRDF, normal, viewDirection, position);
 
     for (uint i = 0; i < pointLightCount; i++)
     {
-        ComputedPointLight computedLight = ComputePointLight(pointLights[i], normal, position);
-        float attenation = InverseSquareLightAttenuation(computedLight.Distance, fixedDistance, epsilon);
-        result += computedLight.Result * albedo * attenation;
+        PointLight pointLight = pointLights[i];
+        Lo += PBR.CookTorranceBRDF(pointLight, materialBRDF, normal, viewDirection, position);
     }
 
-    output.Color = float4(result, 1.0f);
+    float3 color = Lo;
+    color = color / (color + float3(1.0, 1.0, 1.0));
+
+    output.Color = float4(color, albedo.a);
 
     return output;
 }

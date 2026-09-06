@@ -14,8 +14,8 @@ namespace Wl
     struct MaterialAsset : Asset
     {
         Vector4f baseColorFactor;
-        Vector4f metallicFactor;
-        Vector4f roughnessFactor;
+        float metallicFactor;
+        float roughnessFactor;
 
         AssetHandle baseColor;
         AssetHandle normal;
@@ -32,8 +32,8 @@ namespace Wl
     struct MaterialData
     {
         Vector4f baseColorFactor;
-        Vector4f metallicFactor;
-        Vector4f roughnessFactor;
+        float metallicFactor;
+        float roughnessFactor;
 
         TextureHandle baseColor = TextureRegistry::InvalidTexture;
         TextureHandle normal = TextureRegistry::InvalidTexture;
@@ -64,17 +64,8 @@ struct std::hash<Wl::MaterialData>
         hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.y));
         hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.z));
         hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.w));
-
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor.x));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor.y));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor.z));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor.w));
-
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor.x));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor.y));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor.z));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor.w));
-
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor));
         hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColor));
         hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.normal));
         hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.emissive));

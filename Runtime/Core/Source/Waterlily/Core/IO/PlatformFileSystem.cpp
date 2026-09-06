@@ -8,7 +8,7 @@
 #include <filesystem>
 
 #ifndef _MSC_VER
-#include <sys/stat.h>
+    #include <sys/stat.h>
 #endif
 
 namespace Wl
@@ -28,15 +28,11 @@ namespace Wl
     bool PlatformFileSystem::FileExists(StringRef filepath) const
     {
 #ifdef _MSC_VER
-        struct _stat buffer
-        {
-        };
+        struct _stat buffer {};
 
         return _stat(filepath, &buffer) == 0;
 #else
-        struct stat buffer
-        {
-        };
+        struct stat buffer {};
         return stat(filepath, &buffer) == 0;
 #endif
     }
@@ -114,9 +110,25 @@ namespace Wl
                 return FileError::Unknown;
         }
     }
-    
+
     FileResult PlatformFileSystem::Open(StringRef filepath, FileAccess access, FileMode mode) const
     {
+        if (mode == FileMode::OpenOrCreate || mode == FileMode::Create)
+        {
+            std::filesystem::path path(filepath.data());
+            std::filesystem::path parent = path.parent_path();
+
+            if (!parent.empty())
+            {
+                std::error_code error;
+                std::filesystem::create_directories(parent, error);
+                if (error)
+                {
+                    return FileResult::Failure(ToFileError(error.value()));
+                }
+            }
+        }
+
         FILE* stream;
 
         String modeStr = GetFileMode(access, mode);
