@@ -1,6 +1,6 @@
 import Common.Lighting;
 import Common.RenderScene;
-import Common.Material;
+import PBR.Material;
 
 struct VSInput
 {
@@ -46,9 +46,9 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
 
     RenderInstance instance = renderInstanceBuffer[instanceIndex];
 
-    float4 worldPosition = mul(instance.Model, float4(input.Position, 1.0));
+    float4 worldPosition = mul(instance.model, float4(input.Position, 1.0));
 
-    float3x3 worldMatrix = float3x3(instance.Model);
+    float3x3 worldMatrix = float3x3(instance.model);
 
     float3 normal = normalize(mul(worldMatrix, input.Normal));
     float3 tangent = normalize(mul(worldMatrix, input.Tangent.xyz));
@@ -57,7 +57,7 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
 
     VSOutput output;
 
-    output.Position = mul(view.ViewProj, worldPosition);
+    output.Position = mul(view.viewProj, worldPosition);
     output.WorldPosition = worldPosition.xyz;
     output.Normal = normal;
     output.UV = input.UV;
@@ -74,32 +74,32 @@ FSOutput FSMain(VSOutput input)
     FSOutput output;
 
     RenderInstance instance = renderInstanceBuffer.Load(input.InstanceIndex);
-    Material material = materialRegistry.Load(instance.MaterialIndex);
+    Material material = materialRegistry.Load(instance.materialIndex);
 
     output.Position = float4(input.WorldPosition, 1.0f);
 
     float3 normal = input.Normal;
-    if (material.NormalIndex != kInvalidTextureIndex)
+    if (material.normal != kInvalidTextureIndex)
     {
         float3 tangent = normalize(input.Tangent);
         float3 bitangent = normalize(input.Bitangent);
         float3x3 TBN = transpose(float3x3(tangent, bitangent, normal));
 
-        Sampler2D normalTexture = samplers2D[NonUniformResourceIndex(material.NormalIndex)];
+        Sampler2D normalTexture = samplers2D[NonUniformResourceIndex(material.normal)];
         normal = normalTexture.Sample(input.UV).rgb;
         normal = normal * 2.0f - 1.0f;
         normal = normalize(mul(TBN, normal));
     }
     output.Normal = float4(normal, 0.0f);
 
-    if (material.DiffuseIndex != kInvalidTextureIndex)
+    if (material.baseColor != kInvalidTextureIndex)
     {
-        Sampler2D diffuseTexture = samplers2D[NonUniformResourceIndex(material.DiffuseIndex)];
-        output.Albedo = diffuseTexture.Sample(input.UV) * material.DiffuseFactor;
+        Sampler2D diffuseTexture = samplers2D[NonUniformResourceIndex(material.baseColor)];
+        output.Albedo = diffuseTexture.Sample(input.UV) * material.baseColorFactor;
     }
     else
     {
-        output.Albedo = material.DiffuseFactor;
+        output.Albedo = material.baseColor;
     }
 
     return output;

@@ -1,6 +1,6 @@
 import Common.Lighting;
 import Common.RenderScene;
-import Common.Material;
+import PBR.Material;
 
 struct VSInput
 {
@@ -48,16 +48,16 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
 
     RenderInstance instance = renderInstanceBuffer[instanceIndex];
 
-    float4 worldPosition = mul(instance.Model, float4(input.Position, 1.0));
+    float4 worldPosition = mul(instance.model, float4(input.Position, 1.0));
 
-    float3x3 worldMatrix = (float3x3)instance.Model;
+    float3x3 worldMatrix = float3x3(instance.model);
 
     float3 normal = normalize(mul(worldMatrix, input.Normal));
     float3 tangent = normalize(mul(worldMatrix, input.Tangent.xyz));
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     float3 bitangent = cross(normal, tangent) * input.Tangent.w;
 
-    output.Position = mul(view.ViewProj, worldPosition);
+    output.Position = mul(view.viewProj, worldPosition);
     output.WorldPosition = worldPosition.xyz;
     output.Normal = normal;
     output.UV = input.UV;
@@ -74,27 +74,27 @@ FSOutput FSMain(VSOutput input)
     FSOutput output;
 
     RenderInstance instance = renderInstanceBuffer[input.InstanceIndex];
-    Material material = materialRegistry[instance.MaterialIndex];
+    Material material = materialRegistry[instance.materialIndex];
 
-    Sampler2D diffuseTexture = sampler2DRegistry[NonUniformResourceIndex(material.DiffuseIndex)];
+    Sampler2D diffuseTexture = sampler2DRegistry[NonUniformResourceIndex(material.baseColor)];
     float4 diffuseColor = diffuseTexture.Sample(input.UV);
-    diffuseColor *= material.DiffuseFactor;
+    diffuseColor *= material.baseColorFactor;
 
     float3 normal = normalize(input.Normal);
 
-    if (material.NormalIndex != kInvalidTextureIndex)
+    if (material.normal != kInvalidTextureIndex)
     {
         float3 tangent = normalize(input.Tangent);
         float3 bitangent = normalize(input.Bitangent);
         float3x3 TBN = transpose(float3x3(tangent, bitangent, normal));
 
-        Sampler2D normalTexture = sampler2DRegistry[NonUniformResourceIndex(material.NormalIndex)];
+        Sampler2D normalTexture = sampler2DRegistry[NonUniformResourceIndex(material.normal)];
         normal = normalTexture.Sample(input.UV).rgb;
         normal = normal * 2.0f - 1.0f;
         normal = normalize(mul(TBN, normal));
     }
 
-    float3 viewDirection = normalize(view.Position - input.WorldPosition);
+    float3 viewDirection = normalize(view.position - input.WorldPosition);
     if (dot(viewDirection, normal) < 0.0f)
     {
         normal = -normal;

@@ -191,7 +191,7 @@ namespace Wl
             pathURI /= filename.GetData();
             std::string pathURIText = pathURI.generic_string();
 
-            WL_LOG_INFO("GlTFImporter","Creating Material Asset, URI: \"%s\"", pathURIText.data());
+            WL_LOG_INFO("GlTFImporter", "Creating Material Asset, URI: \"%s\"", pathURIText.data());
 
             StringRef pathURITextRef = pathURIText.data();
             StringID uri = CreateSID(pathURITextRef);
@@ -200,24 +200,51 @@ namespace Wl
             tinygltf::Material& gltfMaterial = model.GlTFModel.materials[materialIndex];
             tinygltf::PbrMetallicRoughness& gltfPBR = gltfMaterial.pbrMetallicRoughness;
 
-            materialAsset->DiffuseFactor = {static_cast<float>(gltfPBR.baseColorFactor[0]),
-                                            static_cast<float>(gltfPBR.baseColorFactor[1]),
-                                            static_cast<float>(gltfPBR.baseColorFactor[2]),
-                                            static_cast<float>(gltfPBR.baseColorFactor[3])};
+            materialAsset->baseColorFactor = {static_cast<float>(gltfPBR.baseColorFactor[0]),
+                                              static_cast<float>(gltfPBR.baseColorFactor[1]),
+                                              static_cast<float>(gltfPBR.baseColorFactor[2]),
+                                              static_cast<float>(gltfPBR.baseColorFactor[3])};
+            
+            gltfPBR.metallicFactor = gltfPBR.metallicFactor;
+            gltfPBR.roughnessFactor = gltfPBR.roughnessFactor;
 
-            if (gltfMaterial.normalTexture.index != -1)
+            if (gltfPBR.metallicRoughnessTexture.index != -1)
+            {
+                tinygltf::Texture& texture = model.GlTFModel.textures[gltfPBR.metallicRoughnessTexture.index];
+                AssetHandle textureAsset = textureMap[texture.source];
+                materialAsset->metallicRoughness = textureAsset;
+                registry.AddDependency(materialHandle, textureAsset);
+            }
+
+            if (gltfPBR.baseColorTexture.index != -1)
             {
                 tinygltf::Texture& gltfBaseColorTexture = model.GlTFModel.textures[gltfPBR.baseColorTexture.index];
                 AssetHandle baseColorTexture = textureMap[gltfBaseColorTexture.source];
-                materialAsset->Diffuse = baseColorTexture;
+                materialAsset->baseColor = baseColorTexture;
                 registry.AddDependency(materialHandle, baseColorTexture);
+            }
+
+            if (gltfMaterial.emissiveTexture.index != -1)
+            {
+                tinygltf::Texture& texture = model.GlTFModel.textures[gltfMaterial.emissiveTexture.index];
+                AssetHandle textureAsset = textureMap[texture.source];
+                materialAsset->emissive = textureAsset;
+                registry.AddDependency(materialHandle, textureAsset);
+            }
+
+            if (gltfMaterial.occlusionTexture.index != -1)
+            {
+                tinygltf::Texture& texture = model.GlTFModel.textures[gltfMaterial.occlusionTexture.index];
+                AssetHandle textureAsset = textureMap[texture.source];
+                materialAsset->occlusion = textureAsset;
+                registry.AddDependency(materialHandle, textureAsset);
             }
 
             if (gltfMaterial.normalTexture.index != -1)
             {
                 tinygltf::Texture& gltfNormalTexture = model.GlTFModel.textures[gltfMaterial.normalTexture.index];
                 AssetHandle normalHandle = textureMap[gltfNormalTexture.source];
-                materialAsset->Normal = normalHandle;
+                materialAsset->normal = normalHandle;
                 registry.AddDependency(materialHandle, normalHandle);
             }
 

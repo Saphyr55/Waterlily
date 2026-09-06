@@ -82,10 +82,13 @@ namespace Wl
             return EXIT_FAILURE;
         }
 
+        Engine::GetInstance().StartupModules();
+
         int32_t result = callback();
+        
+        Engine::GetInstance().ShutdownModules();
 
         MainPostLaunch();
-        PlatformShutdown();
 
         return result;
     }
@@ -97,12 +100,15 @@ namespace Wl
             return EXIT_FAILURE;
         }
 
+        Engine::GetInstance().StartupModules();
+
         Engine::GetInstance().Startup();
         Engine::GetInstance().Run();
         Engine::GetInstance().Shutdown();
 
+        Engine::GetInstance().ShutdownModules();
+
         MainPostLaunch();
-        PlatformShutdown();
 
         return EXIT_SUCCESS;
     }

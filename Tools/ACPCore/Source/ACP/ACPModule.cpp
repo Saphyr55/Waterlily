@@ -4,7 +4,7 @@
 
 namespace Wl
 {
-    WL_REGISTER_MODULE(ACPModule, "WACP.Core");
+    WL_REGISTER_MODULE(ACPModule, "ACP.Core");
 
     void ACPModule::OnStartup()
     {

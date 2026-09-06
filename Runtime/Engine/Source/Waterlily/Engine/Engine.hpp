@@ -9,6 +9,7 @@
 #include "Waterlily/Engine/EngineExports.hpp"
 #include "Waterlily/Engine/EngineService.hpp"
 #include "Waterlily/Engine/EngineUpdater.hpp"
+
 #include <type_traits>
 
 namespace Wl
@@ -67,6 +68,9 @@ namespace Wl
         Array<const ModuleInformation*>& GetOrderedModuleInformations();
         ModuleManifest& GetManifest();
 
+        void StartupModules();
+        void ShutdownModules();
+
     public:
         Engine();
         ~Engine() = default;
@@ -76,6 +80,7 @@ namespace Wl
 
         Engine& operator=(const Engine&) = delete;
         Engine& operator=(Engine&&) = delete;
+
 
     private:
         HashMap<StringID, SharedPtr<EngineService>> m_services;

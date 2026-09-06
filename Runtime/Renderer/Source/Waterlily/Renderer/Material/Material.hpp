@@ -13,9 +13,15 @@ namespace Wl
 
     struct MaterialAsset : Asset
     {
-        Vector4f DiffuseFactor;
-        AssetHandle Diffuse;// Texture2D
-        AssetHandle Normal; // Texture2D
+        Vector4f baseColorFactor;
+        Vector4f metallicFactor;
+        Vector4f roughnessFactor;
+
+        AssetHandle baseColor;
+        AssetHandle normal;
+        AssetHandle emissive;
+        AssetHandle occlusion;
+        AssetHandle metallicRoughness;
 
         MaterialAsset()
             : Asset(AssetType_Material)
@@ -25,9 +31,15 @@ namespace Wl
 
     struct MaterialData
     {
-        Vector4f DiffuseFactor;
-        TextureHandle Diffuse = TextureRegistry::InvalidTexture;
-        TextureHandle Normal = TextureRegistry::InvalidTexture;
+        Vector4f baseColorFactor;
+        Vector4f metallicFactor;
+        Vector4f roughnessFactor;
+
+        TextureHandle baseColor = TextureRegistry::InvalidTexture;
+        TextureHandle normal = TextureRegistry::InvalidTexture;
+        TextureHandle emissive = TextureRegistry::InvalidTexture;
+        TextureHandle occlusion = TextureRegistry::InvalidTexture;
+        TextureHandle metallicRoughness = TextureRegistry::InvalidTexture;
 
         MaterialData() = default;
         ~MaterialData() = default;
@@ -35,7 +47,6 @@ namespace Wl
         inline bool operator==(const MaterialData& other) const = default;
         inline bool operator!=(const MaterialData& other) const = default;
     };
-
 
     WL_RENDERER_API void operator<<(OutputStream& stream, const MaterialAsset& asset);
     WL_RENDERER_API void operator>>(InputStream& stream, MaterialAsset& asset);
@@ -47,12 +58,29 @@ struct std::hash<Wl::MaterialData>
 {
     size_t operator()(const Wl::MaterialData& material) const noexcept
     {
-        size_t hash = Wl::Hasher::hash(material.DiffuseFactor.x);
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.DiffuseFactor.y));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.DiffuseFactor.z));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.DiffuseFactor.w));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.Diffuse));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.Normal));
+        size_t hash = 0;
+
+        hash = Wl::Hasher::hash(material.baseColorFactor.x);
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.y));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.z));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.w));
+
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor.x));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor.y));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor.z));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor.w));
+
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor.x));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor.y));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor.z));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor.w));
+
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColor));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.normal));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.emissive));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.occlusion));
+        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicRoughness));
+        
         return hash;
     }
 };

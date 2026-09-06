@@ -50,8 +50,8 @@ BuildTool.IncludeTargets("Samples/Ludo/App")
 BuildTool.IncludeTargets("Samples/Ludo/Ludo")
 
 -- Tools sources --
-BuildTool.IncludeTargets("Tools/WACP")
-BuildTool.IncludeTargets("Tools/WACPCore")
+BuildTool.IncludeTargets("Tools/ACP")
+BuildTool.IncludeTargets("Tools/ACPCore")
 
 -- Setup Targets --
 BuildTool.SetupTargets();

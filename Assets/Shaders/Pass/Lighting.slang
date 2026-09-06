@@ -52,7 +52,7 @@ FSOutput FSMain(VSOutput input)
 
     float3 result = float3(0.0f, 0.0f, 0.0f);
 
-    float3 viewDirection = normalize(view.Position - position);
+    float3 viewDirection = normalize(view.position - position);
 
     float fixedDistance = 1.0f;
     float epsilon = 1.0e-5f;

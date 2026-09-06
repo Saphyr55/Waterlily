@@ -20,13 +20,6 @@ namespace Wl
 
     void Engine::Startup()
     {
-        ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
-
-        for (const ModuleInformation* info: GetOrderedModuleInformations())
-        {
-            Module* module = moduleRegistry.GetModuleInterface(info->Name);
-            module->OnStartup();
-        }
 
         for (auto [name, service]: m_services)
         {
@@ -41,7 +34,6 @@ namespace Wl
 
     void Engine::Shutdown()
     {
-
         for (auto [name, updater]: m_engineUpdaters)
         {
             updater->OnShutdown();
@@ -51,19 +43,11 @@ namespace Wl
         {
             service->OnShutdown();
         }
-
-        ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
-
-        for (size_t i = m_orderedModuleInformations.GetSize() - 1; i-- > 0;)
-        {
-            const ModuleInformation* info = m_orderedModuleInformations[i];
-            Module* module = moduleRegistry.GetModuleInterface(info->Name);
-            module->OnShutdown();
-        }
     }
 
     void Engine::Run()
     {
+
         m_isRunning = true;
         double lastTime = PlatformGetHighResolutionTime();
 
@@ -109,7 +93,7 @@ namespace Wl
     {
         m_services.Remove(name);
     }
-    
+
     SharedPtr<EngineService> Engine::GetService(StringID name)
     {
         return m_services[name];
@@ -123,6 +107,29 @@ namespace Wl
     ModuleManifest& Engine::GetManifest()
     {
         return m_manifest;
+    }
+    
+    void Engine::StartupModules()
+    {
+        ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
+
+        for (const ModuleInformation* info: GetOrderedModuleInformations())
+        {
+            Module* module = moduleRegistry.GetModuleInterface(info->Name);
+            module->OnStartup();
+        }
+    }
+    
+    void Engine::ShutdownModules()
+    {
+        ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
+
+        for (size_t i = m_orderedModuleInformations.GetSize() - 1; i-- > 0;)
+        {
+            const ModuleInformation* info = m_orderedModuleInformations[i];
+            Module* module = moduleRegistry.GetModuleInterface(info->Name);
+            module->OnShutdown();
+        }
     }
 
 }// namespace Wl

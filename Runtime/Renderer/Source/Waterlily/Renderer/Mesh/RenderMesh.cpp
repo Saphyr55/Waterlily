@@ -1,16 +1,12 @@
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
-#include "Waterlily/Core/Math/Matrix4.hpp"
-#include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Core/Object/Field.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/Material/Material.hpp"
 #include "Waterlily/Renderer/Material/MaterialRegistry.hpp"
-#include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
 #include "Waterlily/Renderer/UploadScheduler.hpp"
 
@@ -72,9 +68,15 @@ namespace Wl
             MaterialAsset* materialAsset = assets->GetAsset<MaterialAsset>(subMesh.Material);
 
             MaterialData materialData = {};
-            materialData.DiffuseFactor = materialAsset->DiffuseFactor;
-            materialData.Diffuse = textures->ObtainTexture(materialAsset->Diffuse, false);
-            materialData.Normal = textures->ObtainTexture(materialAsset->Normal, true);
+            materialData.baseColorFactor = materialAsset->baseColorFactor;
+            materialData.metallicFactor = materialAsset->metallicFactor;
+            materialData.roughnessFactor = materialAsset->roughnessFactor;
+
+            materialData.baseColor = textures->ObtainTexture(materialAsset->baseColor, false);
+            materialData.normal = textures->ObtainTexture(materialAsset->normal, true);
+            materialData.emissive = textures->ObtainTexture(materialAsset->emissive, false);
+            materialData.occlusion = textures->ObtainTexture(materialAsset->occlusion, false);
+            materialData.metallicRoughness = textures->ObtainTexture(materialAsset->metallicRoughness, false);
 
             item.Material = materials->ObtainMaterial(materialData);
 
