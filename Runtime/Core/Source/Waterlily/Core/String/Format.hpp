@@ -11,7 +11,7 @@ namespace Wl
     template<typename... Args>
     inline String Format(StringRef format, Args&&... args)
     {
-        int32_t size = ::snprintf(nullptr, 0, format, std::forward<Args>(args)...);
+        int32_t size = std::snprintf(nullptr, 0, format, std::forward<Args>(args)...);
 
         if (size < 0)
         {
@@ -20,17 +20,19 @@ namespace Wl
 
         String buffer;
         buffer.Resize(size);
-        ::snprintf(buffer.GetData(), buffer.GetSize() + 1, format, std::forward<Args>(args)...);
+        size = std::snprintf(buffer.GetData(), buffer.GetSize() + 1, format, std::forward<Args>(args)...);
+
+        WL_CHECK(size == buffer.GetSize());
 
         return buffer;
     }
 
     inline String Formatv(StringRef format, va_list args)
     {
-        va_list argsCopy;
+        va_list argsCopy = {};
         va_copy(argsCopy, args);
 
-        int size = ::vsnprintf(nullptr, 0, format, argsCopy);
+        int size = std::vsnprintf(nullptr, 0, format, argsCopy);
         va_end(argsCopy);
 
         if (size <= 0)
@@ -40,7 +42,9 @@ namespace Wl
 
         String buffer;
         buffer.Resize(static_cast<size_t>(size));
-        ::vsnprintf(buffer.data(), buffer.GetSize() + 1, format, args);
+        size = std::vsnprintf(buffer.data(), buffer.GetSize() + 1, format, args);
+
+        WL_CHECK(size == buffer.GetSize());
 
         return buffer;
     }

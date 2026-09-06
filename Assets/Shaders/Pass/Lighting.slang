@@ -3,10 +3,9 @@ import Common.RenderScene;
 
 struct GBufferTextures
 {
-    Texture2D PositionTexture;
-    Texture2D NormalTexture;
-    Texture2D AlbedoTexture;
-    SamplerState defaultSampler;
+    Sampler2D positionTexture;
+    Sampler2D normalTexture;
+    Sampler2D albedoTexture;
 }
 
 struct FSOutput
@@ -47,9 +46,9 @@ FSOutput FSMain(VSOutput input)
 {
     FSOutput output;
 
-    float3 position = gBufferTextures.PositionTexture.Sample(gBufferTextures.defaultSampler, input.UV).rgb;
-    float3 normal = gBufferTextures.NormalTexture.Sample(gBufferTextures.defaultSampler, input.UV).rgb;
-    float3 albedo = gBufferTextures.AlbedoTexture.Sample(gBufferTextures.defaultSampler, input.UV).rgb;
+    float3 position = gBufferTextures.positionTexture.Sample(input.UV).rgb;
+    float3 normal = gBufferTextures.normalTexture.Sample(input.UV).rgb;
+    float3 albedo = gBufferTextures.albedoTexture.Sample(input.UV).rgb;
 
     float3 result = float3(0.0f, 0.0f, 0.0f);
 

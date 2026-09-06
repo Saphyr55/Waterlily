@@ -9,10 +9,8 @@ struct Material
     uint NormalIndex;
 }
 
-typealias MaterialRegistry = StructuredBuffer<Material>;
-
 struct TextureRegistry
 {
-    // TODO: StructuredBuffer<DescriptorHandle<Sampler2D>> registry2D;
-    Sampler2D[] registry2D;
+    SamplerState sampler;
+    Texture2D[] textures2D;
 }

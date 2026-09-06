@@ -32,8 +32,8 @@ ParameterBlock<DirectionalLight> directionalLight;
 ParameterBlock<PointLight[kMaxPointLight]> pointLights;
 ParameterBlock<uint> pointLightCount;
 
-ParameterBlock<TextureRegistry> textureRegistry;
-ParameterBlock<MaterialRegistry> materialRegistry;
+ParameterBlock<Sampler2D[]> sampler2DRegistry;
+ParameterBlock<StructuredBuffer<Material>> materialRegistry;
 
 ParameterBlock<StructuredBuffer<RenderInstance>> renderInstanceBuffer;
 
@@ -64,7 +64,6 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_InstanceID)
     return output;
 }
 
-
 [shader("fragment")]
 FSOutput FSMain(VSOutput input)
 {
@@ -73,7 +72,7 @@ FSOutput FSMain(VSOutput input)
     RenderInstance instance = renderInstanceBuffer[input.InstanceIndex];
     Material material = materialRegistry[instance.MaterialIndex];
 
-    Sampler2D diffuseTexture = textureRegistry.registry2D[NonUniformResourceIndex(material.DiffuseIndex)];
+    Sampler2D diffuseTexture = sampler2DRegistry[NonUniformResourceIndex(material.DiffuseIndex)];
     float4 diffuseColor = diffuseTexture.Sample(input.UV);
     diffuseColor *= material.DiffuseFactor;
 
@@ -85,7 +84,7 @@ FSOutput FSMain(VSOutput input)
         float3 bitangent = normalize(input.Bitangent);
         float3x3 TBN = transpose(float3x3(tangent, bitangent, normal));
 
-        Sampler2D normalTexture = textureRegistry.registry2D[NonUniformResourceIndex(material.NormalIndex)];
+        Sampler2D normalTexture = sampler2DRegistry[NonUniformResourceIndex(material.NormalIndex)];
         normal = normalTexture.Sample(input.UV).rgb;
         normal = normal * 2.0f - 1.0f;
         normal = normalize(mul(TBN, normal));

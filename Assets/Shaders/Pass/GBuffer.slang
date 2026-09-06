@@ -35,10 +35,10 @@ ConstantBuffer<View> view;
 StructuredBuffer<RenderInstance> renderInstanceBuffer;
 
 [[vk::binding(0, 2)]]
-TextureRegistry textureRegistry;
+Sampler2D[] samplers2D;
 
 [[vk::binding(0, 3)]]
-MaterialRegistry materialRegistry;
+StructuredBuffer<Material> materialRegistry;
 
 [shader("vertex")]
 VSOutput VSMain(VSInput input, uint instanceIndex: SV_InstanceID)
@@ -49,7 +49,7 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_InstanceID)
 
     float4 worldPosition = mul(instance.Model, float4(input.Position, 1.0));
 
-    float3x3 worldMatrix = (float3x3)instance.Model;
+    float3x3 worldMatrix = float3x3(instance.Model);
 
     float3 normal = normalize(mul(worldMatrix, input.Normal));
     float3 tangent = normalize(mul(worldMatrix, input.Tangent.xyz));
@@ -84,7 +84,7 @@ FSOutput FSMain(VSOutput input)
         float3 bitangent = normalize(input.Bitangent);
         float3x3 TBN = transpose(float3x3(tangent, bitangent, normal));
 
-        Sampler2D normalTexture = textureRegistry.registry2D[NonUniformResourceIndex(material.NormalIndex)];
+        Sampler2D normalTexture = samplers2D[NonUniformResourceIndex(material.NormalIndex)];
         normal = normalTexture.Sample(input.UV).rgb;
         normal = normal * 2.0f - 1.0f;
         normal = normalize(mul(TBN, normal));
@@ -93,7 +93,7 @@ FSOutput FSMain(VSOutput input)
 
     if (material.DiffuseIndex != kInvalidTextureIndex)
     {
-        Sampler2D diffuseTexture = textureRegistry.registry2D[NonUniformResourceIndex(material.DiffuseIndex)];
+        Sampler2D diffuseTexture = samplers2D[NonUniformResourceIndex(material.DiffuseIndex)];
         output.Albedo = diffuseTexture.Sample(input.UV) * material.DiffuseFactor;
     }
     else

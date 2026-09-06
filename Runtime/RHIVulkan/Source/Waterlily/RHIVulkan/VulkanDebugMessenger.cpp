@@ -16,16 +16,16 @@ namespace Wl
         switch (messageSeverity)
         {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                WL_LOG_INFO("Vulkan", callbackData->pMessage);
+                WL_LOG_INFO("Vulkan", "%s", callbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                WL_LOG_INFO("Vulkan", callbackData->pMessage);
+                WL_LOG_INFO("Vulkan", "%s", callbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                WL_LOG_WARN("Vulkan", callbackData->pMessage);
+                WL_LOG_WARN("Vulkan", "%s", callbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                WL_LOG_ERROR("Vulkan", callbackData->pMessage);
+                WL_LOG_ERROR("Vulkan", "%s", callbackData->pMessage);
                 break;
             default:
                 WL_LOG_FATAL("Vulkan", "Unknown message severity.");

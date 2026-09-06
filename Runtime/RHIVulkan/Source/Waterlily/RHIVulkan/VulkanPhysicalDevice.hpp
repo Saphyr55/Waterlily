@@ -13,18 +13,18 @@ namespace Wl
 
     struct VulkanPhysicalDeviceInformation
     {
-        VkPhysicalDeviceMemoryProperties MemoryProperties;
-        VkPhysicalDeviceProperties Properties;
-        VkPhysicalDeviceFeatures Features;
-        VkPhysicalDeviceFeatures2 Features2;
-        VkPhysicalDeviceVulkan12Features VulkanFeatures12;
-        VkPhysicalDeviceDescriptorIndexingFeatures DescriptorIndexingFeatures;
+        VkPhysicalDeviceMemoryProperties MemoryProperties = {};
+        VkPhysicalDeviceProperties Properties = {};
+        VkPhysicalDeviceFeatures Features = {};
+        VkPhysicalDeviceFeatures2 Features2 = {};
+        VkPhysicalDeviceVulkan11Features VulkanFeatures11 = {};
+        VkPhysicalDeviceVulkan12Features VulkanFeatures12 = {};
         Array<VkQueueFamilyProperties> QueueFamilies;
 
         uint32_t GraphicsQueueIndex = UINT32_MAX;
         uint32_t PresentQueueIndex = UINT32_MAX;
 
-        bool IsSuitable;
+        bool IsSuitable = false;
     };
     
     struct VulkanPhysicalDeviceRequirements

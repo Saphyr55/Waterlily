@@ -68,7 +68,6 @@ namespace Wl
             std::cout << "Name=\"" << name << "\" Set=" << set << " Binding=" << binding << "\n";
         };
 
-        PrintProgramLayout(programLayout);
     }
 
     bool ShaderCompiler::CompileSlang(const ShaderCompileSlangDesc& desc)
@@ -93,6 +92,8 @@ namespace Wl
 
         TargetDesc targetDesc = {};
         targetDesc.format = SLANG_SPIRV;
+        targetDesc.profile = globalSession->findProfile("sm_6_0");
+        targetDesc.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 
         FixedArray<const char*, 1> searchPaths = {desc.EnvPath};
 

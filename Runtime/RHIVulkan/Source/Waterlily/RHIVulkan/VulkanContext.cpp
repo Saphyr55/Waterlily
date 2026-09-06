@@ -75,9 +75,6 @@ namespace Wl
                         presentSupport ? "Yes" : "No");
         }
 
-        VkPhysicalDeviceFeatures physicalDeviceFeatures = physicalDeviceSelector.GetInfo().Features;
-        VkPhysicalDeviceVulkan12Features physicalDevice12Features = physicalDeviceSelector.GetInfo().VulkanFeatures12;
-
         Array<const char*> physicalDeviceExtensions;
         physicalDeviceExtensions.Resize(s_PhysicalDeviceExtensions.size());
 
@@ -88,10 +85,10 @@ namespace Wl
 
         VkDeviceCreateInfo deviceCreateInfo = {};
         deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        deviceCreateInfo.pNext = &physicalDevice12Features;
+        deviceCreateInfo.pNext = &physicalDeviceSelector.GetInfo().VulkanFeatures12;
         deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
         deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
-        deviceCreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
+        deviceCreateInfo.pEnabledFeatures = &physicalDeviceSelector.GetInfo().Features;
         deviceCreateInfo.ppEnabledExtensionNames = physicalDeviceExtensions.data();
         deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(physicalDeviceExtensions.size());
 

@@ -119,23 +119,20 @@ namespace Wl
         bool isSuitableExtensionSupport = CheckExtensionSupport();
 
         VulkanAPI::vkGetPhysicalDeviceMemoryProperties(m_context.PhysicalDevice, &m_info.MemoryProperties);
+        
+        VkPhysicalDeviceVulkan11Features& supportedFeatures11 = m_info.VulkanFeatures11;
+        supportedFeatures11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+        supportedFeatures11.pNext = nullptr;
 
-        VkPhysicalDeviceVulkan12Features supportedFeatures12 = {};
+        VkPhysicalDeviceVulkan12Features& supportedFeatures12 = m_info.VulkanFeatures12;
         supportedFeatures12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        supportedFeatures12.pNext = &supportedFeatures11;
 
-        VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = {};
-        descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-        descriptorIndexingFeatures.pNext = &supportedFeatures12;
-
-        VkPhysicalDeviceFeatures2 features2 = {};
+        VkPhysicalDeviceFeatures2& features2 = m_info.Features2;
         features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        features2.pNext = &descriptorIndexingFeatures;
+        features2.pNext = &supportedFeatures12;
 
         VulkanAPI::vkGetPhysicalDeviceFeatures2(m_context.PhysicalDevice, &features2);
-
-        m_info.Features2 = features2;
-        m_info.DescriptorIndexingFeatures = descriptorIndexingFeatures;
-        m_info.VulkanFeatures12 = supportedFeatures12;
 
         if (!supportedFeatures12.runtimeDescriptorArray)
         {
@@ -143,14 +140,14 @@ namespace Wl
                         m_info.Properties.deviceName);
         }
 
-        if (!descriptorIndexingFeatures.descriptorBindingPartiallyBound)
+        if (!supportedFeatures12.descriptorBindingPartiallyBound)
         {
             WL_LOG_WARN("Vulkan", "%s does not support descriptorBindingPartiallyBound.",
                         m_info.Properties.deviceName);
         }
 
         m_info.IsSuitable = isSuitableDeviceProperties && isSuitableDeviceFeatures && isSuitableQueueFamilies &&
-                            isSuitableExtensionSupport && descriptorIndexingFeatures.descriptorBindingPartiallyBound &&
+                            isSuitableExtensionSupport && supportedFeatures12.descriptorBindingPartiallyBound &&
                             supportedFeatures12.runtimeDescriptorArray;
     }
 
