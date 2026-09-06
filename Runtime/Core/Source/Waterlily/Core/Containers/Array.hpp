@@ -127,6 +127,7 @@ namespace Wl
 
         template<typename... Args>
         reference Emplace(Args&&... args)
+            requires std::is_constructible_v<ElementType, Args...>
         {
             if (!m_data)
             {

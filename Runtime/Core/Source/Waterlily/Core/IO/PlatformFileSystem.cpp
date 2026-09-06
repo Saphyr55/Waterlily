@@ -90,19 +90,45 @@ namespace Wl
         return fsPath.parent_path().string().c_str();
     }
 
+    FileError ToFileError(errno_t error)
+    {
+        switch (error)
+        {
+            case 0:
+                return FileError::None;
+
+            case ENOENT:
+                return FileError::NotFound;
+
+            case EEXIST:
+                return FileError::AlreadyExists;
+
+            case EACCES:
+            case EPERM:
+                return FileError::AccessDenied;
+
+            case EINVAL:
+                return FileError::InvalidArgument;
+
+            default:
+                return FileError::Unknown;
+        }
+    }
+    
     FileResult PlatformFileSystem::Open(StringRef filepath, FileAccess access, FileMode mode) const
     {
         FILE* stream;
 
-        String modeStr = get_file_mode(access, mode);
+        String modeStr = GetFileMode(access, mode);
 
         modeStr.Append('b');// Open in binary mode.
 
-        errno_t error = fopen_s(&stream, filepath, modeStr.GetData());
+        errno_t error = fopen_s(&stream, filepath, modeStr.data());
 
-        if (!stream)
+        if (error != 0)
         {
-            return FileResult::Failure(FileError::Unknown);
+            FileError fileError = ToFileError(error);
+            return FileResult::Failure(fileError);
         }
 
         SharedPtr<File> file = MakeShared<PlatformFile>(stream);
@@ -110,7 +136,7 @@ namespace Wl
         return FileResult::Success(file);
     }
 
-    String PlatformFileSystem::get_file_mode(FileAccess access, FileMode mode) const
+    String PlatformFileSystem::GetFileMode(FileAccess access, FileMode mode) const
     {
         String modeStr;
         switch (mode)

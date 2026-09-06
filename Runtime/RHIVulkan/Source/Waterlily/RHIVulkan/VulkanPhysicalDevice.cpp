@@ -1,7 +1,4 @@
-
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
-
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"
@@ -11,9 +8,9 @@
 namespace Wl
 {
 
-    VulkanPhysicalDeviceSelector::VulkanPhysicalDeviceSelector(VulkanContext& context, const Array<StringRef>& extensions)
-        : m_context(context)
-        , m_extensions(extensions)
+    VulkanPhysicalDeviceSelector::VulkanPhysicalDeviceSelector(const VulkanPhysicalDeviceRequirements& requirements)
+        : m_context(VulkanContextGet())
+        , m_requirements(requirements)
     {
     }
 
@@ -31,8 +28,7 @@ namespace Wl
 
     bool VulkanPhysicalDeviceSelector::IsPropertiesSuitable() const
     {
-        return (m_info.Properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-                m_info.Properties.limits.maxImageDimension2D >= 4096);
+        return m_info.Properties.deviceType == m_requirements.PreferredDeviceType && m_info.Properties.limits.maxImageDimension2D >= 4096;
     }
 
     bool VulkanPhysicalDeviceSelector::IsFeaturesSuitable() const
@@ -40,21 +36,23 @@ namespace Wl
         return m_info.Features.geometryShader && m_info.Features.samplerAnisotropy;
     }
 
-    bool VulkanPhysicalDeviceSelector::CheckExtensionSupport(const Array<StringRef>& extensions)
+    bool VulkanPhysicalDeviceSelector::CheckExtensionSupport()
     {
         uint32_t count;
-        WL_VULKAN_CHECK(
-                VulkanAPI::vkEnumerateDeviceExtensionProperties(m_context.PhysicalDevice, nullptr, &count, nullptr));
+        WL_VULKAN_CHECK(VulkanAPI::vkEnumerateDeviceExtensionProperties(m_context.PhysicalDevice,
+                                                                        nullptr,
+                                                                        &count,
+                                                                        nullptr));
 
         Array<VkExtensionProperties> availableExtensions;
         availableExtensions.Resize(count);
+
         WL_VULKAN_CHECK(VulkanAPI::vkEnumerateDeviceExtensionProperties(m_context.PhysicalDevice,
                                                                         nullptr,
                                                                         &count,
                                                                         availableExtensions.data()));
 
-        Array<StringRef> copyExtensions = extensions;
-
+        Array<StringRef> copyExtensions = m_requirements.RequiredExtensions;
         for (const VkExtensionProperties& extension: availableExtensions)
         {
             copyExtensions.Remove(extension.extensionName);
@@ -80,15 +78,14 @@ namespace Wl
         return m_info.QueueFamilies;
     }
 
-    bool VulkanPhysicalDeviceSelector::IsValidQueueFamily(const VkQueueFamilyProperties& queue_family_properties,
-                                                          int32_t queue_family_index)
+    bool VulkanPhysicalDeviceSelector::IsValidQueueFamily(const VkQueueFamilyProperties& queueFamilyProperties, int32_t queueFamilyIndex)
     {
         VkBool32 isPresentSupported = false;
         WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfaceSupportKHR(m_context.PhysicalDevice,
-                                                                        queue_family_index,
+                                                                        queueFamilyIndex,
                                                                         m_context.Surface->GetHandle(),
                                                                         &isPresentSupported));
-        return (queue_family_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) && isPresentSupported == VK_TRUE;
+        return (queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) && isPresentSupported == VK_TRUE;
     }
 
     bool VulkanPhysicalDeviceSelector::SelectQueueFamilies()
@@ -119,7 +116,7 @@ namespace Wl
         QueryQueueFamilies();
         bool isSuitableQueueFamilies = SelectQueueFamilies();
 
-        bool isSuitableExtensionSupport = CheckExtensionSupport(s_PhysicalDeviceExtensions);
+        bool isSuitableExtensionSupport = CheckExtensionSupport();
 
         VulkanAPI::vkGetPhysicalDeviceMemoryProperties(m_context.PhysicalDevice, &m_info.MemoryProperties);
 
@@ -140,10 +137,17 @@ namespace Wl
         m_info.DescriptorIndexingFeatures = descriptorIndexingFeatures;
         m_info.VulkanFeatures12 = supportedFeatures12;
 
-        // TODO: Check supported features 1.2 about updateAndFreeBit with storage buffer and uniform buffer.
-        WL_CHECK_MSG(supportedFeatures12.runtimeDescriptorArray, "GPU does not support runtimeDescriptorArray.");
-        WL_CHECK_MSG(descriptorIndexingFeatures.descriptorBindingPartiallyBound,
-                   "GPU does not support descriptorBindingPartiallyBound.");
+        if (!supportedFeatures12.runtimeDescriptorArray)
+        {
+            WL_LOG_WARN("Vulkan", "%s does not support runtimeDescriptorArray.",
+                        m_info.Properties.deviceName);
+        }
+
+        if (!descriptorIndexingFeatures.descriptorBindingPartiallyBound)
+        {
+            WL_LOG_WARN("Vulkan", "%s does not support descriptorBindingPartiallyBound.",
+                        m_info.Properties.deviceName);
+        }
 
         m_info.IsSuitable = isSuitableDeviceProperties && isSuitableDeviceFeatures && isSuitableQueueFamilies &&
                             isSuitableExtensionSupport && descriptorIndexingFeatures.descriptorBindingPartiallyBound &&
@@ -162,13 +166,13 @@ namespace Wl
             return false;
         }
 
-        Array<VkPhysicalDevice> devices;
-        devices.Resize(deviceCount);
-        WL_VULKAN_CHECK(VulkanAPI::vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data()));
+        Array<VkPhysicalDevice> physicalDevices;
+        physicalDevices.Resize(deviceCount);
+        WL_VULKAN_CHECK(VulkanAPI::vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices.data()));
 
-        for (const VkPhysicalDevice& physical_device: devices)
+        for (const VkPhysicalDevice& physicalDevice: physicalDevices)
         {
-            m_context.PhysicalDevice = physical_device;
+            m_context.PhysicalDevice = physicalDevice;
 
             QueryInfo();
 
@@ -176,14 +180,12 @@ namespace Wl
             if (m_info.IsSuitable)
             {
                 WL_LOG_INFO("Vulkan", "Physical device selected successfully.");
-                WL_LOG_ERROR("Vulkan", "No suitable physical device found.");
-
                 WL_LOG_INFO("Vulkan", "Selected Physical Device Properties:");
                 WL_LOG_INFO("Vulkan", "Device Name: %s", m_info.Properties.deviceName);
                 WL_LOG_INFO("Vulkan", "API Version: %u.%u.%u",
-                                  VK_VERSION_MAJOR(m_info.Properties.apiVersion),
-                                  VK_VERSION_MINOR(m_info.Properties.apiVersion),
-                                  VK_VERSION_PATCH(m_info.Properties.apiVersion));
+                            VK_VERSION_MAJOR(m_info.Properties.apiVersion),
+                            VK_VERSION_MINOR(m_info.Properties.apiVersion),
+                            VK_VERSION_PATCH(m_info.Properties.apiVersion));
                 WL_LOG_INFO("Vulkan", "Driver Version: %u", m_info.Properties.driverVersion);
                 WL_LOG_INFO("Vulkan", "Vendor ID: %u", m_info.Properties.vendorID);
                 WL_LOG_INFO("Vulkan", "Device ID: %u", m_info.Properties.deviceID);

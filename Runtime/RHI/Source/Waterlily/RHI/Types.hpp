@@ -81,7 +81,8 @@ namespace Wl
         Sampler,
         CombinedTextureSampler,
         StorageBuffer,
-        StorageTexture
+        StorageTexture,
+        Unknown,
     };
 
     enum class RHIQueueType : uint8_t

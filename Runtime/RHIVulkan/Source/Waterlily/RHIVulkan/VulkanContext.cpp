@@ -1,5 +1,6 @@
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 
+#include "VulkanPhysicalDevice.hpp"
 #include "Waterlily/Core/Function/FunctionRef.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
@@ -10,6 +11,7 @@
 #include "Waterlily/RHIVulkan/VulkanPhysicalDevice.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"
 #include "Waterlily/RHIVulkan/VulkanShaderModule.hpp"
+#include "vulkan/vulkan_core.h"
 
 
 #include <vk_mem_alloc.h>
@@ -157,7 +159,11 @@ namespace Wl
 
         WL_CHECK(context.Surface->GetHandle());
 
-        VulkanPhysicalDeviceSelector selector(context, s_PhysicalDeviceExtensions);
+        VulkanPhysicalDeviceRequirements requirements = {};
+        requirements.RequiredExtensions = s_PhysicalDeviceExtensions;
+        requirements.PreferredDeviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+
+        VulkanPhysicalDeviceSelector selector(requirements);
         VulkanDeviceCreate(context, selector);
 
         size_t familyQueueSize = context.PhysicalDeviceInfo.QueueFamilies.size();

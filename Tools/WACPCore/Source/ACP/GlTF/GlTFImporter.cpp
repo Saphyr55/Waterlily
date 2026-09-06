@@ -44,7 +44,7 @@ namespace Wl
 
         String content;
         content.Resize(stream->GetSize());
-        Wl::read_text(*stream, content);
+        Wl::ReadText(*stream, content);
 
         SharedPtr<GlTFAsset> model = MakeShared<GlTFAsset>();
 

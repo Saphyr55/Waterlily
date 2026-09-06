@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
 #include "Waterlily/RHI/Types.hpp"
 
@@ -79,7 +78,7 @@ namespace Wl
     };
 
     /**
-     * @brief Data structure to update a Sampler resource (independent Sampler binding).
+     * @brief Data structure to update a Sampler resource.
      */
     struct RHIWriteSamplerResource
     {
@@ -142,8 +141,7 @@ namespace Wl
     };
 
     /**
-     * @brief Base class representing the immutable definition of a Shader Resource Group (Vulkan example:
-     * VkDescriptorSetLayout).
+     * @brief Base class representing the immutable definition of a Shader Resource Group.
      */
     class RHIShaderResourceGroupLayout
     {
@@ -159,7 +157,7 @@ namespace Wl
     };
 
     /**
-     * @brief Base class representing a single instance of a Shader Resource Group (Vulkan example: VkDescriptorSet).
+     * @brief Base class representing a single instance of a Shader Resource Group.
      */
     class RHIShaderResourceGroup
     {

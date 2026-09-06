@@ -7,12 +7,21 @@
 namespace Wl
 {
 
-    class WL_RENDERER_API SPIRVShaderCompiler
+    struct ShaderCompileSlangDesc
+    {
+        StringRef EnvPath;
+        StringRef SlangFilepath;
+        StringRef OutputFilepath;
+        StringRef EntryPoint;
+        Shader::Stage Stage;
+        bool KeepSpvFile = true;
+    };
+
+
+    class WL_RENDERER_API ShaderCompiler
     {
     public:
-        static bool CompileSlang(StringRef inputFilepath, StringRef outputFilepath, StringRef entryPoint, Shader::Stage stage, bool keepSpvFile = true);
-
-        static bool CompileHLSL(StringRef inputFilepath, StringRef outputFilepath, StringRef entryPoint, Shader::Stage stage);
+        static bool CompileSlang(const ShaderCompileSlangDesc& desc);
     };
 
 }// namespace Wl

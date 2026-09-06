@@ -14,9 +14,9 @@ namespace Wl
     class RenderService;
 
     // TODO: Those paths must be in function of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.slang").
-    static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/GBuffer.slang");
-    static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Forward.slang");
-    static const StringID LightingShaderAssetPath = WL_SID("../../../Assets/Shaders/Lighting.slang");
+    static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/GBuffer.slang");
+    static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/Forward.slang");
+    static const StringID LightingShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/Lighting.slang");
 
     static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
 
@@ -46,25 +46,27 @@ namespace Wl
         {
             FileSystem& fileSystem = FileSystem::GetPlatform();
 
-            bool success = SPIRVShaderCompiler::CompileSlang(GBufferShaderAssetURI.GetText(),
-                                                            GBufferVertexShaderAssetURI.GetText(),
-                                                            "VSMain",
-                                                            Shader::Stage::Vertex);
+            StringRef envPath = "../../../Assets/Shaders/";
 
-            success = success && SPIRVShaderCompiler::CompileSlang(GBufferShaderAssetURI.GetText(),
-                                                                  GBufferFragmentShaderAssetURI.GetText(),
-                                                                  "FSMain",
-                                                                  Shader::Stage::Fragment);
+            bool success = ShaderCompiler::CompileSlang({envPath, GBufferShaderAssetURI.GetText(),
+                                                         GBufferVertexShaderAssetURI.GetText(),
+                                                         "VSMain",
+                                                         Shader::Stage::Vertex});
 
-            success = success && SPIRVShaderCompiler::CompileSlang(LightingShaderAssetPath.GetText(),
-                                                                  LightingVertexShaderAssetURI.GetText(),
-                                                                  "VSMain",
-                                                                  Shader::Stage::Vertex);
+            success = success && ShaderCompiler::CompileSlang({envPath, GBufferShaderAssetURI.GetText(),
+                                                               GBufferFragmentShaderAssetURI.GetText(),
+                                                               "FSMain",
+                                                               Shader::Stage::Fragment});
 
-            success = success && SPIRVShaderCompiler::CompileSlang(LightingShaderAssetPath.GetText(),
-                                                                  LightingFragmentShaderAssetURI.GetText(),
-                                                                  "FSMain",
-                                                                  Shader::Stage::Fragment);
+            success = success && ShaderCompiler::CompileSlang({envPath, LightingShaderAssetURI.GetText(),
+                                                               LightingVertexShaderAssetURI.GetText(),
+                                                               "VSMain",
+                                                               Shader::Stage::Vertex});
+
+            success = success && ShaderCompiler::CompileSlang({envPath, LightingShaderAssetURI.GetText(),
+                                                               LightingFragmentShaderAssetURI.GetText(),
+                                                               "FSMain",
+                                                               Shader::Stage::Fragment});
             return success;
         }
 

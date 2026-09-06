@@ -1,44 +1,54 @@
 #include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
+#include "Waterlily/Renderer/Shader/ShaderReflection.hpp"
 #include "Waterlily/Assets/WLCAFile.hpp"
+#include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
-#include "Waterlily/Core/String/String.hpp"
+#include "Waterlily/Renderer/Shader/Shader.hpp"
+
+#include <slang-com-ptr.h>
+#include <slang.h>
 
 #include <filesystem>
 
 namespace Wl
 {
 
-    bool ExecuteCommandCompilingShader(StringRef inputFilepath,
-                                       StringRef outputFilepath,
-                                       StringRef spvFilePath,
-                                       StringRef entryPoint,
-                                       Shader::Stage stage,
-                                       StringRef command)
+    SlangStage ShaderStageToSlangStage(Shader::Stage stage)
     {
-        WL_LOG_INFO("SPIRVShaderCompiler", "%s", command.GetData());
-
-        int32_t result = std::system(command.GetData());
-        if (result != 0)
+        switch (stage)
         {
-            WL_LOG_ERROR("SPIRVShaderCompiler", "Failed to compile shader file: %s", inputFilepath.data());
-            return false;
+            case Shader::Stage::None:
+                return SLANG_STAGE_COUNT;
+            case Shader::Stage::Vertex:
+                return SLANG_STAGE_VERTEX;
+            case Shader::Stage::Fragment:
+                return SLANG_STAGE_FRAGMENT;
+            case Shader::Stage::Compute:
+                return SLANG_STAGE_COMPUTE;
+            default:
+                return SLANG_STAGE_COUNT;
         }
+        return SlangStage::SLANG_STAGE_COUNT;
+    }
 
-        WL_LOG_INFO("SPIRVShaderCompiler", "Successfully compiled shader file: %s", inputFilepath.data());
-        WL_LOG_INFO("SPIRVShaderCompiler", "Creating Shader Asset File...");
+    bool SaveSpvFile(const ShaderCompileSlangDesc& desc, StringRef spvFilePath, Slang::ComPtr<slang::IBlob> kernelBlob)
+    {
+        WL_LOG_INFO("ShaderCompiler", "Creating Shader Asset File...");
 
         FileSystem& fileSystem = FileSystem::GetPlatform();
 
-        FileResult spvFileResult = fileSystem.OpenWrite(spvFilePath.data());
+        FileResult spvFileResult = fileSystem.Open(spvFilePath.data(), FileAccess::ReadWrite, FileMode::Create);
         WL_RETURN_OBJECT_WHEN(!spvFileResult.HasValue(), false);
 
         SharedPtr<File> spvFileHandle = spvFileResult.GetValue();
-        Shader shader(SPIRVShader(ShaderStageToRHI(stage), spvFileHandle->ReadAllBytes()), entryPoint, stage);
+        spvFileHandle->Write(reinterpret_cast<const uint8_t*>(kernelBlob->getBufferPointer()), kernelBlob->getBufferSize());
+
+        Shader shader(SPIRVShader(ShaderStageToRHI(desc.Stage), spvFileHandle->ReadAllBytes()), desc.EntryPoint, desc.Stage);
         spvFileHandle->Close();
 
-        FileResult shaderFileResult = fileSystem.OpenWrite(outputFilepath.data());
+        FileResult shaderFileResult = fileSystem.OpenWrite(desc.OutputFilepath.data(), FileMode::Create);
         WL_RETURN_OBJECT_WHEN(!shaderFileResult.HasValue(), false);
         SharedPtr<File> shaderFileHandle = shaderFileResult.GetValue();
 
@@ -46,90 +56,110 @@ namespace Wl
 
         shaderFileHandle->Close();
 
-        WL_LOG_INFO("SPIRVShaderCompiler", "Output Shader Asset File: %s", outputFilepath.data());
+        WL_LOG_INFO("ShaderCompiler", "Output Shader Asset File: %s", desc.OutputFilepath.data());
 
         return true;
     }
 
-    bool SPIRVShaderCompiler::CompileSlang(StringRef inputFilepath,
-                                           StringRef outputFilepath,
-                                           StringRef entryPoint,
-                                           Shader::Stage stage,
-                                           bool keepSpvFile)
+    void CreateShaderPipelineReflection(slang::ProgramLayout* programLayout)
     {
-        std::filesystem::path outPath(outputFilepath.GetData());
-        std::filesystem::path outDir = outPath.parent_path();
-        if (!outDir.empty() && !std::filesystem::exists(outDir))
+        auto printSlot = [](const char* name, uint32_t set, uint32_t binding) -> void
         {
-            std::filesystem::create_directories(outDir);
-        }
+            std::cout << "Name=\"" << name << "\" Set=" << set << " Binding=" << binding << "\n";
+        };
 
-        String spvFilePath = outputFilepath.data();
-        spvFilePath.Append(".spv");
-
-        String command = "slangc";
-        command.Append(" \"");
-        command.Append(inputFilepath);
-        command.Append("\" -target spirv");
-        // command.Append(" -profile spirv_1_4");
-        command.Append(" -preserve-params");
-        command.Append(" -emit-spirv-directly");
-        command.Append(" -fvk-use-entrypoint-name");
-        command.Append(" -o \"");
-        command.Append(spvFilePath);
-        command.Append("\" -entry ");
-        command.Append(entryPoint);
-        command.Append(" -DWLSL_SPIRV");
-        
-        return ExecuteCommandCompilingShader(inputFilepath, outputFilepath, spvFilePath, entryPoint, stage, command);
+        PrintProgramLayout(programLayout);
     }
 
-    bool SPIRVShaderCompiler::CompileHLSL(StringRef inputFilepath,
-                                          StringRef outputFilepath,
-                                          StringRef entryPoint,
-                                          Shader::Stage stage)
+    bool ShaderCompiler::CompileSlang(const ShaderCompileSlangDesc& desc)
     {
-        std::filesystem::path outPath(outputFilepath.GetData());
+        bool isFailed = false;
+
+        String spvFilePath = desc.OutputFilepath.data();
+        spvFilePath.Append(".spv");
+
+        std::filesystem::path outPath(desc.OutputFilepath.GetData());
         std::filesystem::path outDir = outPath.parent_path();
         if (!outDir.empty() && !std::filesystem::exists(outDir))
         {
             std::filesystem::create_directories(outDir);
         }
 
-        String spvFilePath = outputFilepath.data();
-        spvFilePath.Append(".spv");
+        using namespace slang;
 
-        String stageFlag;
-        switch (stage)
+        Slang::ComPtr<IGlobalSession> globalSession;
+        SlangGlobalSessionDesc globalSessionDesc = {};
+        createGlobalSession(&globalSessionDesc, globalSession.writeRef());
+
+        TargetDesc targetDesc = {};
+        targetDesc.format = SLANG_SPIRV;
+
+        FixedArray<const char*, 1> searchPaths = {desc.EnvPath};
+
+        SessionDesc sessionDesc = {};
+        sessionDesc.targets = &targetDesc;
+        sessionDesc.targetCount = 1;
+        sessionDesc.searchPaths = searchPaths.data();
+        sessionDesc.searchPathCount = searchPaths.size();
+
+        Slang::ComPtr<ISession> session;
+        globalSession->createSession(sessionDesc, session.writeRef());
+
+        Slang::ComPtr<IBlob> moduleDiagnostics;
+        IModule* module = session->loadModule(desc.SlangFilepath, moduleDiagnostics.writeRef());
+
+        isFailed = isFailed || moduleDiagnostics;
+        WL_LOG_ERROR_WHEN(moduleDiagnostics, "ShaderCompiler", "%s", static_cast<const char*>(moduleDiagnostics->getBufferPointer()));
+
+        if (!module)
         {
-            case Shader::Stage::Vertex:
-                stageFlag = "vs_6_5";
-                break;
-            case Shader::Stage::Fragment:
-                stageFlag = "ps_6_5";
-                break;
-            case Shader::Stage::Compute:
-                stageFlag = "cs_6_5";
-                break;
-            case Shader::Stage::None:
-                break;
+            WL_LOG_ERROR("ShaderCompiler", "Failed to load slang module: %s", desc.SlangFilepath.data());
+            return false;
         }
 
-        String command = "dxc";
-        command.Append(" -spirv -T ");
-        command.Append(stageFlag);
-        command.Append(" -E ");
-        command.Append(entryPoint);
-        command.Append(" ");
-        command.Append(inputFilepath);
-        command.Append(" -Fo ");
-        command.Append(spvFilePath);
-        command.Append(" -fspv-preserve-bindings");
-        command.Append(" -fspv-preserve-interface");
-        command.Append(" -fspv-target-env=vulkan1.3");
-        command.Append(" -fspv-extension=SPV_EXT_descriptor_indexing");
+        SlangStage stage = ShaderStageToSlangStage(desc.Stage);
 
-        return ExecuteCommandCompilingShader(inputFilepath, outputFilepath, spvFilePath, entryPoint, stage, command);
+        Slang::ComPtr<IEntryPoint> entryPoint;
+        Slang::ComPtr<ISlangBlob> entryPointDiagnostics;
+        module->findAndCheckEntryPoint(desc.EntryPoint, stage, entryPoint.writeRef(), entryPointDiagnostics.writeRef());
+
+        isFailed = isFailed || entryPointDiagnostics;
+        WL_LOG_ERROR_WHEN(entryPointDiagnostics, "ShaderCompiler", "%s", static_cast<const char*>(entryPointDiagnostics->getBufferPointer()));
+
+        FixedArray<slang::IComponentType*, 2> components = {module, entryPoint};
+        Slang::ComPtr<slang::IComponentType> program;
+        session->createCompositeComponentType(components.data(), components.size(), program.writeRef());
+
+        ProgramLayout* layout = program->getLayout();
+        CreateShaderPipelineReflection(layout);
+
+        Slang::ComPtr<IComponentType> linkedProgram;
+        Slang::ComPtr<ISlangBlob> programDiagnostic;
+
+        program->link(linkedProgram.writeRef(), programDiagnostic.writeRef());
+
+        isFailed = isFailed || programDiagnostic;
+        WL_LOG_ERROR_WHEN(programDiagnostic, "ShaderCompiler", "%s", static_cast<const char*>(programDiagnostic->getBufferPointer()));
+
+        int entryPointIndex = 0;
+        int targetIndex = 0;
+        Slang::ComPtr<IBlob> kernelBlob;
+        Slang::ComPtr<ISlangBlob> kernelDiagnostics;
+        linkedProgram->getEntryPointCode(entryPointIndex,
+                                         targetIndex,
+                                         kernelBlob.writeRef(),
+                                         kernelDiagnostics.writeRef());
+
+        isFailed = isFailed || kernelDiagnostics;
+        WL_LOG_ERROR_WHEN(kernelDiagnostics, "ShaderCompiler", "%s", static_cast<const char*>(kernelDiagnostics->getBufferPointer()));
+
+        if (!isFailed)
+        {
+            WL_LOG_INFO("ShaderCompiler", "Successfully compiled shader file: %s", desc.SlangFilepath.data());
+            return SaveSpvFile(desc, spvFilePath, kernelBlob);
+        }
+
+        return false;
     }
 
 }// namespace Wl

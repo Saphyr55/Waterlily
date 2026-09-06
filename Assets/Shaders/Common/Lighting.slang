@@ -1,12 +1,12 @@
-#define WLSL_MAX_LIGHTS 32
+static const int kMaxPointLight = 32;
 
-struct PointLightData
+struct PointLight
 {
     float3 Position;
     float3 Color;
 };
 
-struct ComputedPointLightData
+struct ComputedPointLight
 {
     float3 Result;
     float3 Direction;
@@ -14,21 +14,21 @@ struct ComputedPointLightData
     float Distance;
 };
 
-struct DirectionalLightData
+struct DirectionalLight
 {
     float3 Direction;
     float3 Color;
 };
 
-struct ComputedDirectionalLightData
+struct ComputedDirectionalLight
 {
     float3 Result;
     float Intensity;
 };
 
-ComputedDirectionalLightData ComputeDirectionalLight(DirectionalLightData light, float3 normal)
+ComputedDirectionalLight ComputeDirectionalLight(DirectionalLight light, float3 normal)
 {
-    ComputedDirectionalLightData outputLight;
+    ComputedDirectionalLight outputLight;
 
     float3 lightDirection = normalize(light.Direction);
     float lambertian = dot(lightDirection, normal);
@@ -39,9 +39,9 @@ ComputedDirectionalLightData ComputeDirectionalLight(DirectionalLightData light,
     return outputLight;
 }
 
-ComputedPointLightData ComputePointLight(PointLightData light, float3 normal, float3 position) 
+ComputedPointLight ComputePointLight(PointLight light, float3 normal, float3 position) 
 {
-    ComputedPointLightData outputLight;
+    ComputedPointLight outputLight;
 
     float3 lightDirection = light.Position - position;
     outputLight.Distance = length(lightDirection);

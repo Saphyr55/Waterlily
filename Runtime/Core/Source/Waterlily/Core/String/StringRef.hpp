@@ -108,7 +108,7 @@ namespace Wl
     }
 
     template<typename CharType>
-    inline constexpr Wl::StringBase<CharType> operator+(Wl::StringRefBase<CharType> lhs, Wl::StringRefBase<CharType> rhs)
+    inline Wl::StringBase<CharType> operator+(Wl::StringBase<CharType> lhs, Wl::StringBase<CharType> rhs)
     {
         Wl::StringBase<CharType> base(lhs);
         base.Append(rhs);
@@ -116,7 +116,7 @@ namespace Wl
     }
 
     template<typename CharType>
-    inline constexpr Wl::StringBase<CharType> operator+(Wl::StringRefBase<CharType> lhs, const CharType* rhs)
+    inline Wl::StringBase<CharType> operator+(Wl::StringBase<CharType> lhs, const CharType* rhs)
     {
         Wl::StringBase<CharType> base(lhs);
         base.Append(rhs);
@@ -124,7 +124,31 @@ namespace Wl
     }
 
     template<typename CharType>
-    constexpr Wl::StringBase<CharType> operator+(const CharType* lhs, Wl::StringRefBase<CharType> rhs)
+    inline Wl::StringBase<CharType> operator+(const CharType* lhs, Wl::StringBase<CharType> rhs)
+    {
+        Wl::StringBase<CharType> base(lhs);
+        base.Append(rhs);
+        return std::move(base);
+    }
+
+    template<typename CharType>
+    inline Wl::StringBase<CharType> operator+(Wl::StringRefBase<CharType> lhs, Wl::StringRefBase<CharType> rhs)
+    {
+        Wl::StringBase<CharType> base(lhs);
+        base.Append(rhs);
+        return std::move(base);
+    }
+
+    template<typename CharType>
+    inline Wl::StringBase<CharType> operator+(Wl::StringRefBase<CharType> lhs, const CharType* rhs)
+    {
+        Wl::StringBase<CharType> base(lhs);
+        base.Append(rhs);
+        return std::move(base);
+    }
+
+    template<typename CharType>
+    inline Wl::StringBase<CharType> operator+(const CharType* lhs, Wl::StringRefBase<CharType> rhs)
     {
         Wl::StringBase<CharType> base(lhs);
         base.Append(rhs);

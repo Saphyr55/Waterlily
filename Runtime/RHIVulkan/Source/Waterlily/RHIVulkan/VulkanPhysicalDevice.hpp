@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"
 
@@ -27,6 +26,12 @@ namespace Wl
 
         bool IsSuitable;
     };
+    
+    struct VulkanPhysicalDeviceRequirements
+    {
+        VkPhysicalDeviceType PreferredDeviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+        Array<StringRef> RequiredExtensions;
+    };
 
     class VulkanPhysicalDeviceSelector
     {
@@ -49,7 +54,7 @@ namespace Wl
 
         bool IsFeaturesSuitable() const;
 
-        bool CheckExtensionSupport(const Array<StringRef>& extensions);
+        bool CheckExtensionSupport();
 
     public:
         inline const VulkanPhysicalDeviceInformation& GetInfo()
@@ -58,11 +63,11 @@ namespace Wl
         }
 
     public:
-        VulkanPhysicalDeviceSelector(VulkanContext& context, const Array<StringRef>& extensions);
+        VulkanPhysicalDeviceSelector(const VulkanPhysicalDeviceRequirements& requirements);
         ~VulkanPhysicalDeviceSelector() = default;
 
     private:
-        Array<StringRef> m_extensions;
+        VulkanPhysicalDeviceRequirements m_requirements;
         VulkanPhysicalDeviceInformation m_info;
         VulkanContext& m_context;
     };

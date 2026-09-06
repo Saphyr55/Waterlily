@@ -31,10 +31,10 @@ namespace Wl
             RHICommandBuffer* commandBuffer = context.CommandBuffer;
             Frame& frame = context.FrameContext->GetCurrentFrame();
 
-            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[SRGIndexGlobal];
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[0];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
             {
-                RHIWriteBufferResource writeRenderView(SRGBindingGlobalView,
+                RHIWriteBufferResource writeRenderView(0,
                                                        packet.ViewAllocation.Buffer,
                                                        packet.ViewAllocation.Offset,
                                                        packet.ViewAllocation.Size);
@@ -43,10 +43,10 @@ namespace Wl
                 globalSRG->Update();
             }
 
-            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipelineState.SRGLayouts[SRGIndexRenderInstance];
+            RHIShaderResourceGroupLayout* renderInstanceSRGLayout = pipelineState.SRGLayouts[1];
             RHIShaderResourceGroup* renderInstanceSRG = frame.SRGPool->AllocateSRG(renderInstanceSRGLayout);
             {
-                RHIWriteBufferResource writeRenderInstance(SRGBindingRenderInstance,
+                RHIWriteBufferResource writeRenderInstance(0,
                                                            packet.InstanceAllocation.Buffer,
                                                            packet.InstanceAllocation.Offset,
                                                            packet.InstanceAllocation.Size);
@@ -72,11 +72,11 @@ namespace Wl
 
                 commandBuffer->SetViewport(pipelineState.Viewport);
                 commandBuffer->SetScissor(pipelineState.Scissor);
-
-                commandBuffer->BindSRG(pipeline, {globalSRG}, SRGIndexGlobal);
-                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, SRGIndexRenderInstance);
-                commandBuffer->BindSRG(pipeline, {texturesSRG}, SRGIndexTextures);
-                commandBuffer->BindSRG(pipeline, {materialsSRG}, SRGIndexMaterials);
+                
+                commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
+                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, 1);
+                commandBuffer->BindSRG(pipeline, {texturesSRG}, 2);
+                commandBuffer->BindSRG(pipeline, {materialsSRG}, 3);
 
                 commandBuffer->BindVertexBuffers(packet.VertexBuffers);
                 commandBuffer->BindIndexBuffer(packet.IndexBuffers);

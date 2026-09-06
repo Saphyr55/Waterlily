@@ -281,11 +281,11 @@ namespace Wl
     }
 
     /**
- * @brief The text must be resized to the expected size before calling this function, otherwise it will cause
- * undefined behavior.
- */
+     * @brief The text must be resized to the expected size before calling this function, otherwise it will cause
+     * undefined behavior.
+     */
     template<typename CharType>
-    inline bool read_text(InputStream& stream, StringBase<CharType>& text)
+    inline bool ReadText(InputStream& stream, StringBase<CharType>& text)
     {
         return stream.Read(reinterpret_cast<uint8_t*>(text.GetData()), text.GetSize() * sizeof(CharType));
     }

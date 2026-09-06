@@ -90,6 +90,26 @@ namespace Wl
             return m_data;
         }
 
+        inline value_type* data()
+        {
+            return GetData();
+        }
+
+        inline value_type* data() const
+        {
+            return GetData();
+        }
+
+        inline size_type size()
+        {
+            return GetSize();
+        }
+
+        inline size_type size() const
+        {
+            return GetSize();
+        }
+
     public:
         constexpr FixedArray() = default;
 

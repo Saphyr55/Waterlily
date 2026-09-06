@@ -285,7 +285,7 @@ namespace Wl
             WL_LOG_ERROR("SPIRVReflection", "Impossible to enumerate descriptor bindings.");
             return false;
         }
-        
+
         outReflect.EntryPointNames[shader.GetStage()] = String(spvModule.entry_point_name);
 
         for (size_t i = 0; i < bindingCount; i++)

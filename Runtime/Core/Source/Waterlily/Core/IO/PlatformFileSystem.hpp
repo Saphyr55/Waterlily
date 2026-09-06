@@ -34,7 +34,7 @@ namespace Wl
                                 FileAccess access = FileAccess::ReadWrite,
                                 FileMode mode = FileMode::Open) const override;
 
-        String get_file_mode(FileAccess access, FileMode mode) const;
+        String GetFileMode(FileAccess access, FileMode mode) const;
 
     public:
         virtual ~PlatformFileSystem() override;

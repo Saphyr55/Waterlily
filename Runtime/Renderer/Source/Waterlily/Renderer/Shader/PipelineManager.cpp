@@ -61,14 +61,14 @@ namespace Wl
     RHIGraphicsPipeline* PipelineManager::CreateInternal(GraphicsPipelineState& state)
     {
         WL_CHECK_MSG(state.RenderPass, "The GraphicsPipelineProperties.RenderPass is not nullable to create a graphics pipeline.");
-
-        bool result = false;
+        WL_CHECK_MSG(state.VertexShader, "The GraphicsPipelineProperties.VertexShader is not nullable to create a graphics pipeline.");
+        WL_CHECK_MSG(state.FragmentShader, "The GraphicsPipelineProperties.FragmentShader is not nullable to create a graphics pipeline.");
 
         const SPIRVShader& vertexShader = state.VertexShader->GetSPIRVShader();
         const SPIRVShader& fragmentShader = state.FragmentShader->GetSPIRVShader();
 
         SPIRVPipelineReflection reflection;
-        result = SPIRVPipelineReflector::Reflect(reflection, {vertexShader, fragmentShader});
+        bool result = SPIRVPipelineReflector::Reflect(reflection, {vertexShader, fragmentShader});
         WL_RETURN_OBJECT_WHEN(!result, nullptr);
 
         Array<uint32_t> groupIndices;
