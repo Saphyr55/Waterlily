@@ -1,5 +1,7 @@
 #include "RenderService.hpp"
+#include "Shader/PipelineManager.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
+#include "Waterlily/RHI/ComputePipeline.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/DeviceFactory.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
@@ -61,7 +63,15 @@ namespace Wl
         state.FragmentShader = state.FragmentShader;
         state.RenderPass = m_frameGraph->GetRenderPass(pass.GetName());
 
-        return m_pipelineManager->GetOrCreate(pass.GetName(), state);
+        return m_pipelineManager->GetOrCreateGraphicsPipeline(pass.GetName(), state);
+    }
+
+    RHIPipeline* RenderService::GetOrCreatePipeline(FrameGraphPass& pass, ComputePipelineState& state)
+    {
+        state.SRGLayouts[m_config.SRGIndexTextures] = m_textureRegistry->GetSRGLayout();
+        state.SRGLayouts[m_config.SRGIndexMaterials] = m_materialRegistry->GetSRGLayout();
+
+        return m_pipelineManager->GetOrCreateComputePipeline(pass.GetName(), state);
     }
 
     RenderService::RenderService(const RenderServiceConfig& config)

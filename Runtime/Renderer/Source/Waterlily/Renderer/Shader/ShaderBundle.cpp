@@ -26,7 +26,7 @@ namespace Wl
 
         for (auto [name, shader]: m_graphicsShaders)
         {
-            m_pipelineManager->Recreate(name, shader.PipelineState);
+            m_pipelineManager->RecreateGraphicsPipeline(name, shader.PipelineState);
         }
     }
 

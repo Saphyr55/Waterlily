@@ -1,7 +1,7 @@
-#include "Waterlily/RHIVulkan/vulkanDevice.hpp"
+#include "Waterlily/RHIVulkan/VulkanDevice.hpp"
 
+#include "VulkanComputePipeline.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
@@ -28,6 +28,7 @@
 #include "Waterlily/RHIVulkan/VulkanTexture.hpp"
 #include "Waterlily/RHIVulkan/VulkanTextureView.hpp"
 #include "Waterlily/RHIVulkan/vulkanBindlessShaderResources.hpp"
+
 
 namespace Wl
 {
@@ -95,11 +96,13 @@ namespace Wl
                 VulkanAPI::vkWaitForFences(m_context.Device, 1, &vulkanFence->GetHandle(), VK_TRUE, UINT64_MAX);
         switch (resultWait)
         {
-            case VK_SUCCESS: {
+            case VK_SUCCESS:
+            {
                 vulkanFence->SetSignaled(true);
                 return;
             }
-            default: {
+            default:
+            {
                 WL_VULKAN_CHECK(resultWait);
                 break;
             }
@@ -211,7 +214,7 @@ namespace Wl
         VulkanBuffer* vulkanBuffer = Wl::New(m_allocator, VulkanBuffer());
         vulkanBuffer->Create(description);
         vulkanBuffer->SetID(bufferAllocationCount++);
-           
+
         size_t id = vulkanBuffer->GetID();
 
         s_bufferIdentifiers.Add(vulkanBuffer->GetID());
@@ -294,10 +297,24 @@ namespace Wl
         vulkanGraphicsPipeline->Destroy();
         Wl::Delete(m_allocator, vulkanGraphicsPipeline);
     }
-
-    RHISwapchain* VulkanDevice::CreateSwapchain(uint32_t width, uint32_t height, uint32_t image_count)
+    
+    RHIComputePipeline* VulkanDevice::CreateComputePipeline(const RHIComputePipelineDescription& description)
     {
-        VulkanSwapchain* vulkanSwapchain = Wl::New(m_allocator, VulkanSwapchain(m_context, width, height, image_count));
+        VulkanComputePipeline* vulkanPipeline = Wl::New(m_allocator, VulkanComputePipeline());
+        vulkanPipeline->Create(description);
+        return vulkanPipeline;
+    }
+    
+    void VulkanDevice::DestroyComputePipeline(RHIComputePipeline* pipeline)
+    {
+        VulkanComputePipeline* vulkanPipeline = static_cast<VulkanComputePipeline*>(pipeline);
+        vulkanPipeline->Destroy();
+        Wl::Delete(m_allocator, vulkanPipeline);
+    }
+
+    RHISwapchain* VulkanDevice::CreateSwapchain(uint32_t width, uint32_t height, uint32_t imageCount)
+    {
+        VulkanSwapchain* vulkanSwapchain = Wl::New(m_allocator, VulkanSwapchain(m_context, width, height, imageCount));
         vulkanSwapchain->Create();
         return vulkanSwapchain;
     }

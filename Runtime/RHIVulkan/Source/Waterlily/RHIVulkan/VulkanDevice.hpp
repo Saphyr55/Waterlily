@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Memory/HeapAllocator.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/BufferPool.hpp"
@@ -44,7 +43,7 @@ namespace Wl
         virtual const RHIDeviceProperties& GetDeviceProperties() const override;
 
         virtual RHIBindlessShaderResources* CreateBindlessShaderResources(
-                uint32_t max_resources,
+                uint32_t maxResources,
                 const Array<RHIShaderResourceBinding>& bindings) override;
         virtual void DestroyBindlessShaderResources(RHIBindlessShaderResources* group) override;
 
@@ -53,12 +52,12 @@ namespace Wl
         virtual void DestroySRGLayout(RHIShaderResourceGroupLayout* layout) override;
 
         virtual RHIShaderResourceGroupPool* CreateSRGPool(
-                size_t max_groups,
-                const Array<RHIShaderResourceBinding>& total_bindings) override;
-        virtual void DestroySRGPool(RHIShaderResourceGroupPool* descriptor_set_layout) override;
+                size_t maxGroups,
+                const Array<RHIShaderResourceBinding>& totalBindings) override;
+        virtual void DestroySRGPool(RHIShaderResourceGroupPool* pool) override;
 
         virtual RHICommandAllocator* CreateCommandAllocatorr(const RHICommandAllocatorDescription& description) override;
-        virtual void DestroyCommandAllocator(RHICommandAllocator* command_allocator) override;
+        virtual void DestroyCommandAllocator(RHICommandAllocator* commandAllocator) override;
 
         virtual RHITexture* CreateTexturre(const RHITextureDescription& description) override;
         virtual void DestroyTexture(RHITexture* texture) override;
@@ -67,18 +66,21 @@ namespace Wl
         virtual void DestroyBuffer(RHIBuffer* buffer) override;
 
         virtual RHITextureView* CreateTextureView(const RHITextureViewDescription& description) override;
-        virtual void DestroyTextureView(RHITextureView* texture_view) override;
+        virtual void DestroyTextureView(RHITextureView* textureView) override;
 
         virtual RHISampler* CreateSampler(const RHISamplerDescription& description) override;
         virtual void DestroySampler(RHISampler* sampler) override;
 
         virtual RHIRenderPass* CreateRenderPass(const RHIRenderPassDescription& description) override;
-        virtual void DestroyRenderPass(RHIRenderPass* render_pass) override;
+        virtual void DestroyRenderPass(RHIRenderPass* renderRass) override;
 
         virtual RHIGraphicsPipeline* CreateGraphicsPipeline(const RHIGraphicsPipelineDescription& description) override;
         virtual void DestroyGraphicsPipeline(RHIGraphicsPipeline* pipeline) override;
 
-        virtual RHISwapchain* CreateSwapchain(uint32_t width, uint32_t height, uint32_t image_count) override;
+        virtual RHIComputePipeline* CreateComputePipeline(const RHIComputePipelineDescription& description) override;
+        virtual void DestroyComputePipeline(RHIComputePipeline* pipeline) override;
+
+        virtual RHISwapchain* CreateSwapchain(uint32_t width, uint32_t height, uint32_t imageCount) override;
         virtual void RecreateSwapchain(RHISwapchain* swapchain, uint32_t width, uint32_t height) override;
         virtual void DestroySwapchain(RHISwapchain* swapchain) override;
 

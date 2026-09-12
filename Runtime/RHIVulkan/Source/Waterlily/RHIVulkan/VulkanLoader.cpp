@@ -112,6 +112,7 @@ namespace Wl
     WL_DEFINE_RHI_FUNCTION_IMPL(vkCreatePipelineLayout);
     WL_DEFINE_RHI_FUNCTION_IMPL(vkDestroyPipelineLayout);
     WL_DEFINE_RHI_FUNCTION_IMPL(vkCreateGraphicsPipelines);
+    WL_DEFINE_RHI_FUNCTION_IMPL(vkCreateComputePipelines);
     WL_DEFINE_RHI_FUNCTION_IMPL(vkDestroyPipeline);
     WL_DEFINE_RHI_FUNCTION_IMPL(vkCmdBindPipeline);
     WL_DEFINE_RHI_FUNCTION_IMPL(vkAllocateDescriptorSets);
@@ -252,6 +253,7 @@ namespace Wl
         WL_LOAD_RHI_DEVICE_FUNCTION(vkCreatePipelineLayout);
         WL_LOAD_RHI_DEVICE_FUNCTION(vkDestroyPipelineLayout);
         WL_LOAD_RHI_DEVICE_FUNCTION(vkCreateGraphicsPipelines);
+        WL_LOAD_RHI_DEVICE_FUNCTION(vkCreateComputePipelines);
         WL_LOAD_RHI_DEVICE_FUNCTION(vkDestroyPipeline);
         WL_LOAD_RHI_DEVICE_FUNCTION(vkCmdBindPipeline);
         WL_LOAD_RHI_DEVICE_FUNCTION(vkAllocateDescriptorSets);

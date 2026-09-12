@@ -18,6 +18,8 @@ namespace Wl
             return m_pipelineLayout;
         };
 
+        void Destroy();
+
     protected:
         VkPipeline m_pipeline = VK_NULL_HANDLE;
         VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;

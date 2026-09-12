@@ -1,5 +1,6 @@
 #include "Waterlily/Renderer/Passes/ForwardPass.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
+#include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
@@ -75,7 +76,7 @@ namespace Wl
 
             commandBuffer->BeginRenderPass(renderPassBeginInfo);
             {
-                RHIPipeline* pipeline = passContext.PipelineManager->GetPipeline(LudoForwardPassName);
+                RHIGraphicsPipeline* pipeline = passContext.PipelineManager->GetGraphicsPipeline(LudoForwardPassName);
                 commandBuffer->BindPipeline(pipeline);
 
                 commandBuffer->SetViewport(viewport);

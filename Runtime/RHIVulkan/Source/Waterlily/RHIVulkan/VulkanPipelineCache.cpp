@@ -1,6 +1,5 @@
 #include "Waterlily/RHIVulkan/vulkanPipelineCache.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"

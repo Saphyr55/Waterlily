@@ -2,14 +2,15 @@
 
 #include "Waterlily/Core/Algorithms/Algorithms.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/RHI/CompiledShader.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
+#include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanDescriptorSetLayout.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderPass.hpp"
 #include "Waterlily/RHIVulkan/VulkanShaderModule.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <vk_mem_alloc.h>
 
@@ -35,22 +36,20 @@ namespace Wl
         return vulkanDescription;
     };
 
-    VulkanGraphicsPipeline::VulkanGraphicsPipeline() = default;
-
     void VulkanGraphicsPipeline::Create(const RHIGraphicsPipelineDescription& description)
     {
         m_description = description;
 
         VulkanContext& context = VulkanContextGet();
         VulkanRenderPass* renderPass = static_cast<VulkanRenderPass*>(m_description.RenderPass);
-
+            
         SPIRVShader& vertexCompiledShader = m_description.VertexShaderInfo.Shader;
         VulkanShaderModule vertexShaderModule(vertexCompiledShader.GetByteCode());
 
         SPIRVShader& fragmentCompiledShader = m_description.FragmentShaderInfo.Shader;
         VulkanShaderModule fragmentShaderModule(fragmentCompiledShader.GetByteCode());
 
-        VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo{};
+        VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo = {};
         pipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         pipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         pipelineInputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
@@ -97,13 +96,27 @@ namespace Wl
         {
             cullMode = VK_CULL_MODE_FRONT_BIT;
         }
+        else if (m_description.CullMode == (RHICullModeFlags::Front | RHICullModeFlags::Back))
+        {
+            cullMode = VK_CULL_MODE_FRONT_AND_BACK;
+        }
         else if (m_description.CullMode == RHICullModeFlags::None)
         {
             cullMode = VK_CULL_MODE_NONE;
         }
 
+        VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        if (m_description.FrontFace == RHIFrontFace::Clockwise)
+        {
+            frontFace = VK_FRONT_FACE_CLOCKWISE;
+        }
+        else if (m_description.FrontFace == RHIFrontFace::CounterClockwise)
+        {
+            frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        }
+
         pipelineRasterizerStateCreateInfo.cullMode = cullMode;
-        pipelineRasterizerStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        pipelineRasterizerStateCreateInfo.frontFace = frontFace;
         pipelineRasterizerStateCreateInfo.depthBiasEnable = VK_FALSE;
         pipelineRasterizerStateCreateInfo.depthBiasConstantFactor = 0.0f;// Optional
         pipelineRasterizerStateCreateInfo.depthBiasClamp = 0.0f;         // Optional
@@ -280,10 +293,7 @@ namespace Wl
 
     void VulkanGraphicsPipeline::Destroy()
     {
-        VulkanContext& context = VulkanContextGet();
-
-        VulkanAPI::vkDestroyPipeline(context.Device, m_handle.GetPipeline(), context.Allocator);
-        VulkanAPI::vkDestroyPipelineLayout(context.Device, m_handle.GetPipelineLayout(), context.Allocator);
+        m_handle.Destroy();
     }
 
 }// namespace Wl

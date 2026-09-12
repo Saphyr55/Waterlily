@@ -7,8 +7,10 @@
 #include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/EngineService.hpp"
+#include "Waterlily/RHI/ComputePipeline.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/DeviceFactory.hpp"
+#include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
@@ -69,6 +71,7 @@ namespace Wl
         void Resize(float width, float height);
 
         RHIPipeline* GetOrCreatePipeline(FrameGraphPass& pass, GraphicsPipelineState& state);
+        RHIPipeline* GetOrCreatePipeline(FrameGraphPass& pass, ComputePipelineState& state);
 
     public:
         inline SharedPtr<RHIDevice> GetDevice() const
@@ -91,7 +94,7 @@ namespace Wl
             return m_pipelineManager;
         }
 
-        inline SharedPtr<ShaderBundle> GetShaderBundle() const 
+        inline SharedPtr<ShaderBundle> GetShaderBundle() const
         {
             return m_shaderBundle;
         }

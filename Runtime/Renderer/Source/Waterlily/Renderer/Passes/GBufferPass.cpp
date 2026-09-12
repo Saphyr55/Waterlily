@@ -1,5 +1,6 @@
 #include "Waterlily/Renderer/Passes/GBufferPass.hpp"
 
+#include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
@@ -68,7 +69,7 @@ namespace Wl
 
             commandBuffer->BeginRenderPass(renderPassBeginInfo);
             {
-                RHIPipeline* pipeline = passContext.PipelineManager->GetPipeline(GBufferPassName);
+                RHIGraphicsPipeline* pipeline = passContext.PipelineManager->GetGraphicsPipeline(GBufferPassName);
                 commandBuffer->BindPipeline(pipeline);
 
                 commandBuffer->SetViewport(pipelineState.Viewport);

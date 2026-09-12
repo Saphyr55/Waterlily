@@ -7,6 +7,7 @@
 #include "Waterlily/RHI/BufferPool.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/CommandQueue.hpp"
+#include "Waterlily/RHI/ComputePipeline.hpp"
 #include "Waterlily/RHI/Framebuffer.hpp"
 #include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
@@ -61,7 +62,7 @@ namespace Wl
         virtual void DestroySRGPool(RHIShaderResourceGroupPool* pool) = 0;
 
         virtual RHICommandAllocator* CreateCommandAllocatorr(const RHICommandAllocatorDescription& description) = 0;
-        virtual void DestroyCommandAllocator(RHICommandAllocator* command_allocator) = 0;
+        virtual void DestroyCommandAllocator(RHICommandAllocator* commandAllocator) = 0;
 
         virtual RHITexture* CreateTexturre(const RHITextureDescription& description) = 0;
         virtual void DestroyTexture(RHITexture* texture) = 0;
@@ -91,6 +92,9 @@ namespace Wl
         virtual RHIGraphicsPipeline* CreateGraphicsPipeline(const RHIGraphicsPipelineDescription& description) = 0;
         virtual void DestroyGraphicsPipeline(RHIGraphicsPipeline* pipeline) = 0;
 
+        virtual RHIComputePipeline* CreateComputePipeline(const RHIComputePipelineDescription& description) = 0;
+        virtual void DestroyComputePipeline(RHIComputePipeline* pipeline) = 0;
+
         virtual RHISwapchain* CreateSwapchain(uint32_t width, uint32_t height, uint32_t imageCount) = 0;
         virtual void RecreateSwapchain(RHISwapchain* swapchain, uint32_t width, uint32_t height) = 0;
         virtual void DestroySwapchain(RHISwapchain* swapchain) = 0;
@@ -108,25 +112,25 @@ namespace Wl
 
         inline SharedPtr<RHICommandQueue> GetGraphicsQueue()
         {
-            return GetQueueIf([](const SharedPtr<RHICommandQueue>& command_queue) -> bool
+            return GetQueueIf([](const SharedPtr<RHICommandQueue>& commandQueue) -> bool
             {
-                return command_queue->IsGraphicsQueueType();
+                return commandQueue->IsGraphicsQueueType();
             });
         }
 
         inline SharedPtr<RHICommandQueue> GetPresentQueue()
         {
-            return GetQueueIf([](const SharedPtr<RHICommandQueue>& command_queue) -> bool
+            return GetQueueIf([](const SharedPtr<RHICommandQueue>& commandQueue) -> bool
             {
-                return command_queue->IsPresentMode();
+                return commandQueue->IsPresentMode();
             });
         }
 
         inline SharedPtr<RHICommandQueue> GetTransferQueue()
         {
-            return GetQueueIf([](const SharedPtr<RHICommandQueue>& command_queue) -> bool
+            return GetQueueIf([](const SharedPtr<RHICommandQueue>& commandQueue) -> bool
             {
-                return command_queue->IsTransferQueueType();
+                return commandQueue->IsTransferQueueType();
             });
         }
 

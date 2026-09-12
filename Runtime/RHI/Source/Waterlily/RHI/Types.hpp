@@ -154,6 +154,12 @@ namespace Wl
     };
     WL_ENUM_FLAGS(RHITextureUsageFlags)
 
+    enum class RHIFrontFace
+    {
+        Clockwise,
+        CounterClockwise
+    };
+
     enum class RHITextureDimension
     {
         Dim1D,

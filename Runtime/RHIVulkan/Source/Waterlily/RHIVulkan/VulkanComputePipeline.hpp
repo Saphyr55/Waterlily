@@ -3,17 +3,17 @@
 #include <vulkan/vulkan_core.h>
 
 #include "VulkanPipeline.hpp"
-#include "Waterlily/RHI/GraphicsPipeline.hpp"
+#include "Waterlily/RHI/ComputePipeline.hpp"
 
 namespace Wl
 {
 
     struct VulkanContext;
 
-    class VulkanGraphicsPipeline : public RHIGraphicsPipeline
+    class VulkanComputePipeline : public RHIComputePipeline
     {
     public:
-        void Create(const RHIGraphicsPipelineDescription& description);
+        void Create(const RHIComputePipelineDescription& description);
 
         void Destroy();
 
@@ -28,12 +28,12 @@ namespace Wl
         }
 
     public:
-        VulkanGraphicsPipeline() = default;
-        ~VulkanGraphicsPipeline() override = default;
+        VulkanComputePipeline() = default;
+        ~VulkanComputePipeline() override = default;
 
     private:
         VulkanPipeline m_handle;
-        RHIGraphicsPipelineDescription m_description;
+        RHIComputePipelineDescription m_description;
     };
 
 }// namespace Wl

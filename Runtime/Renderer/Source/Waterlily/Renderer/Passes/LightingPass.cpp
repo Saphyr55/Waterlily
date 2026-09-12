@@ -1,4 +1,5 @@
 #include "Waterlily/Renderer/Passes/LightingPass.hpp"
+#include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 
@@ -91,7 +92,7 @@ namespace Wl
             RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
             commandBuffer->BeginRenderPass(renderPassBeginInfo);
             {
-                RHIPipeline* pipeline = passContext.PipelineManager->GetPipeline(LightingPassName);
+                RHIGraphicsPipeline* pipeline = passContext.PipelineManager->GetGraphicsPipeline(LightingPassName);
 
                 commandBuffer->BindPipeline(pipeline);
 
