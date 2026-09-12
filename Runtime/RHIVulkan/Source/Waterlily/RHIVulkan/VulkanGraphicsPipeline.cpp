@@ -42,7 +42,31 @@ namespace Wl
 
         VulkanContext& context = VulkanContextGet();
         VulkanRenderPass* renderPass = static_cast<VulkanRenderPass*>(m_description.RenderPass);
-            
+
+        bool useDynamicRendering = renderPass == nullptr;
+
+        uint32_t colorAttachmentCount = 0;
+        Array<VkFormat> dynamicColorAttachmentFormats;
+        VkFormat dynamicDepthAttachmentFormat = VK_FORMAT_UNDEFINED;
+        VkFormat dynamicStencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+        if (useDynamicRendering)
+        {
+            colorAttachmentCount = static_cast<uint32_t>(m_description.RenderingInfo.ColorAttachmentFormats.GetSize());
+
+            dynamicColorAttachmentFormats.Resize(colorAttachmentCount);
+            Wl::Transform(m_description.RenderingInfo.ColorAttachmentFormats.begin(),
+                          m_description.RenderingInfo.ColorAttachmentFormats.end(),
+                          dynamicColorAttachmentFormats.begin(),
+                          VulkanFormatGet);
+
+            dynamicDepthAttachmentFormat = VulkanFormatGet(m_description.RenderingInfo.DepthAttachmentFormat);
+            dynamicStencilAttachmentFormat = VulkanFormatGet(m_description.RenderingInfo.StencilAttachmentFormat);
+        }
+        else
+        {
+            colorAttachmentCount = static_cast<uint32_t>(renderPass->GetDescription().ColorAttachmentDecriptions.GetSize());
+        }
+
         SPIRVShader& vertexCompiledShader = m_description.VertexShaderInfo.Shader;
         VulkanShaderModule vertexShaderModule(vertexCompiledShader.GetByteCode());
 
@@ -179,7 +203,7 @@ namespace Wl
         pipelineViewportStateCreateInfo.pScissors = &scissor;
 
         Array<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
-        colorBlendAttachments.Resize(renderPass->GetDescription().ColorAttachmentDecriptions.GetSize());
+        colorBlendAttachments.Resize(colorAttachmentCount);
 
         for (size_t i = 0; i < colorBlendAttachments.GetSize(); i++)
         {
@@ -262,8 +286,16 @@ namespace Wl
         depthStencil.front = {};
         depthStencil.back = {};
 
+        VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = {};
+        pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+        pipelineRenderingCreateInfo.colorAttachmentCount = colorAttachmentCount;
+        pipelineRenderingCreateInfo.pColorAttachmentFormats = dynamicColorAttachmentFormats.GetData();
+        pipelineRenderingCreateInfo.depthAttachmentFormat = dynamicDepthAttachmentFormat;
+        pipelineRenderingCreateInfo.stencilAttachmentFormat = dynamicStencilAttachmentFormat;
+
         VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
         graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        graphicsPipelineCreateInfo.pNext = useDynamicRendering ? &pipelineRenderingCreateInfo : nullptr;
         graphicsPipelineCreateInfo.stageCount = pipelineShaderStateCreateInfo.GetSize();
         graphicsPipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
         graphicsPipelineCreateInfo.pInputAssemblyState = &pipelineInputAssemblyStateCreateInfo;
@@ -275,7 +307,7 @@ namespace Wl
         graphicsPipelineCreateInfo.pColorBlendState = &pipelineColorBlendStateCreateInfo;
         graphicsPipelineCreateInfo.pDynamicState = &pipelineDymanicStateCreateInfo;
         graphicsPipelineCreateInfo.layout = m_handle.GetPipelineLayout();
-        graphicsPipelineCreateInfo.renderPass = renderPass->GetHandle();
+        graphicsPipelineCreateInfo.renderPass = useDynamicRendering ? VK_NULL_HANDLE : renderPass->GetHandle();
         graphicsPipelineCreateInfo.subpass = 0;                        // TODO: Configurable
         graphicsPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;// TODO: Configurable
         graphicsPipelineCreateInfo.basePipelineIndex = -1;             // TODO: Configurable

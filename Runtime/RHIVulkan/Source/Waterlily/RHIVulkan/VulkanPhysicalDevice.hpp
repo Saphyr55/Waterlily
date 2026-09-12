@@ -17,8 +17,12 @@ namespace Wl
         VkPhysicalDeviceProperties Properties = {};
         VkPhysicalDeviceFeatures Features = {};
         VkPhysicalDeviceFeatures2 Features2 = {};
+        
         VkPhysicalDeviceVulkan11Features VulkanFeatures11 = {};
         VkPhysicalDeviceVulkan12Features VulkanFeatures12 = {};
+        VkPhysicalDeviceVulkan13Features VulkanFeatures13 = {};
+        VkPhysicalDeviceVulkan14Features VulkanFeatures14 = {};
+
         Array<VkQueueFamilyProperties> QueueFamilies;
 
         uint32_t GraphicsQueueIndex = UINT32_MAX;
@@ -26,11 +30,11 @@ namespace Wl
 
         bool IsSuitable = false;
     };
-    
+
     struct VulkanPhysicalDeviceRequirements
     {
         VkPhysicalDeviceType PreferredDeviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
-        Array<StringRef> RequiredExtensions;
+        Array<String> RequiredExtensions;
     };
 
     class VulkanPhysicalDeviceSelector
@@ -57,7 +61,12 @@ namespace Wl
         bool CheckExtensionSupport();
 
     public:
-        inline const VulkanPhysicalDeviceInformation& GetInfo()
+        inline const VulkanPhysicalDeviceRequirements& GetRequirements() const
+        {   
+            return m_requirements;
+        } 
+        
+        inline const VulkanPhysicalDeviceInformation& GetInfo() const
         {
             return m_info;
         }

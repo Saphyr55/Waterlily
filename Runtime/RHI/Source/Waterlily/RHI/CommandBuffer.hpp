@@ -2,11 +2,11 @@
 
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Math/Vector4.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
 #include "Waterlily/RHI/Texture.hpp"
+#include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/RHI/Types.hpp"
 
 namespace Wl
@@ -121,6 +121,27 @@ namespace Wl
         uint32_t Stencil = 0;
     };
 
+    struct RHIRenderingAttachmentInfo
+    {
+        Vector4f ClearValue;
+        RHIAttachmentLoadOp LoadOp = RHIAttachmentLoadOp::Clear;
+        RHIAttachmentStoreOp StoreOp = RHIAttachmentStoreOp::Store;
+        RHITextureView* TextureView;
+        RHITextureLayout TextureLayout;
+        RHITextureView* ResolvedTextureView;
+        RHITextureLayout ResolvedTextureLayout;
+    };
+
+    struct RHIBeginRenderingInfo
+    {
+        Array<RHIRenderingAttachmentInfo> ColorAttachments;
+        RHIRenderingAttachmentInfo DepthAttachment;
+        RHIRenderingAttachmentInfo StencilAttachment;
+        Rect2D RenderArea;
+        uint32_t LayerCount;
+        uint32_t ViewMask;
+    };
+
     /**
      * @brief Abstract interface representing a command buffer for recording GPU commands.
      */
@@ -137,11 +158,14 @@ namespace Wl
          */
         virtual void End() = 0;
 
+        virtual void BeginRendering(const RHIBeginRenderingInfo& info) = 0;
+        virtual void EndRendering() = 0;
+
         /**
          * @brief Begin a render pass.
          * @param render_pass_beginfo Information describing the render pass begin.
          */
-        virtual void BeginRenderPass(const RHIRenderPassBeginInfo& render_pass_beginfo) = 0;
+        virtual void BeginRenderPass(const RHIRenderPassBeginInfo& info) = 0;
 
         /**
          * @brief End the current render pass.

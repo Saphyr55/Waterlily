@@ -30,6 +30,13 @@ namespace Wl
         Array<RHIVertexAttributeDescription> Attributes;
     };
 
+    struct RHIGraphicsPipelineRenderingDescription
+    {
+        Array<RHIFormat> ColorAttachmentFormats;
+        RHIFormat DepthAttachmentFormat = RHIFormat::Undefined;
+        RHIFormat StencilAttachmentFormat = RHIFormat::Undefined;
+    };
+
     struct RHIGraphicsPipelineDescription
     {
         RHIFrontFace FrontFace = RHIFrontFace::CounterClockwise;
@@ -40,7 +47,10 @@ namespace Wl
         RHIGraphicsPipelineVertexBindingInformation VertexBindingInfo = {};
         Array<RHIShaderResourceGroupLayout*> SRGLayouts;
         Array<RHIShaderConstantRange> ShaderConstantRanges;
+        
+        // Either the Render Pass or Dynamic Rendering.
         RHIRenderPass* RenderPass = nullptr;
+        RHIGraphicsPipelineRenderingDescription RenderingInfo;
     };
 
     class RHIGraphicsPipelineDescriptionBuilder
@@ -84,7 +94,7 @@ namespace Wl
             return *this;
         }
 
-        RHIGraphicsPipelineDescriptionBuilder& with_shader_constant_ranges(const Array<RHIShaderConstantRange>& ranges)
+        RHIGraphicsPipelineDescriptionBuilder& WithShaderConstantRanges(const Array<RHIShaderConstantRange>& ranges)
         {
             m_description.ShaderConstantRanges = ranges;
             return *this;

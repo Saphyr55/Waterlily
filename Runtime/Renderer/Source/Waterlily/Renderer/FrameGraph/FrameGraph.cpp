@@ -185,7 +185,7 @@ namespace Wl
             context.Pass = &pass;
             context.Framebuffer = BuildFramebuffer(pass);
             context.RenderPass = GetRenderPass(pass);
-
+            
             pass.Execute(context);
 
             DeallocatePhysicalPassResources(passIndex);
@@ -332,111 +332,131 @@ namespace Wl
         }
     }
 
+    FrameGraph::ResolvedStoreLoadResult FrameGraph::ResolveStoreLoadOp(size_t passIndex, FrameGraphTextureHandle handle)
+    {
+        FrameGraphPass& pass = m_passes[passIndex];
+        FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+        FrameGraphResourceLifetime& lifetime = resource.Lifetime;
+
+        bool isFirstUsage = lifetime.FirstUse == passIndex;
+        bool isLastUsage = lifetime.LastUse == passIndex;
+        bool isFrameGraphOutputResource = IsOutputResource(handle);
+
+        pass.m_isFrameGraphOutput = pass.m_isFrameGraphOutput || isFrameGraphOutputResource;
+
+        // TODO: Handle the case with LOAD_OP_DONTCARE.
+        RHIAttachmentLoadOp loadOp =
+                isFirstUsage ? RHIAttachmentLoadOp::Clear : RHIAttachmentLoadOp::Load;
+
+        RHIAttachmentStoreOp outStoreOp = RHIAttachmentStoreOp::Store;
+
+        return {loadOp, outStoreOp};
+    }
+
+    FrameGraph::ResolvedLayoutResult FrameGraph::ResolveLayouts(size_t passIndex, FrameGraphTextureHandle handle)
+    {
+        FrameGraphPass& pass = m_passes[passIndex];
+        FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+        FrameGraphResourceLifetime& lifetime = resource.Lifetime;
+
+        bool isFirstUsage = lifetime.FirstUse == passIndex;
+        bool isLastUsage = lifetime.LastUse == passIndex;
+        bool isResourceFrameGraphOutput = IsOutputResource(handle);
+        bool isRead = pass.m_textureReads.Contains(handle);
+        bool isWrite = pass.m_textureWrites.Contains(handle);
+
+        RHITextureLayout initialLayout = RHITextureLayout::Undefined;
+        RHITextureLayout finalLayout = RHITextureLayout::Undefined;
+
+        if (isFirstUsage)
+        {
+            initialLayout = RHITextureLayout::Undefined;
+        }
+        else
+        {
+            initialLayout = resource.InitialLayout;
+        }
+
+        finalLayout = pass.m_textureWriteStates[handle.GetIndex()];
+        if (isLastUsage && isResourceFrameGraphOutput)
+        {
+            finalLayout = RHITextureLayout::Present;
+        }
+
+        return {initialLayout, finalLayout};
+    }
+
     void FrameGraph::BuildPasses()
     {
-        using ResolveStoreLoadResultType = std::pair<RHIAttachmentLoadOp, RHIAttachmentStoreOp>;
-        using ResolveLayoutResultType = std::pair<RHITextureLayout, RHITextureLayout>;
-
-        auto resolveStoreLoadOp = [&](size_t passIndex, FrameGraphTextureHandle handle) -> ResolveStoreLoadResultType
-        {
-            FrameGraphPass& pass = m_passes[passIndex];
-            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-            FrameGraphResourceLifetime& lifetime = resource.Lifetime;
-
-            bool isFirstUsage = lifetime.FirstUse == passIndex;
-            bool isLastUsage = lifetime.LastUse == passIndex;
-            bool isFrameGraphOutputResource = IsOutputResource(handle);
-
-            pass.m_isFrameGraphOutput = pass.m_isFrameGraphOutput || isFrameGraphOutputResource;
-
-            // TODO: Handle the case with LOAD_OP_DONTCARE.
-            RHIAttachmentLoadOp loadOp =
-                    isFirstUsage ? RHIAttachmentLoadOp::Clear : RHIAttachmentLoadOp::Load;
-
-            RHIAttachmentStoreOp outStoreOp = RHIAttachmentStoreOp::Store;
-
-            return {loadOp, outStoreOp};
-        };
-
-        auto resolveLayouts = [&](size_t passIndex, FrameGraphTextureHandle handle) -> ResolveLayoutResultType
-        {
-            FrameGraphPass& pass = m_passes[passIndex];
-            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-            FrameGraphResourceLifetime& lifetime = resource.Lifetime;
-
-            bool isFirstUsage = lifetime.FirstUse == passIndex;
-            bool isLastUsage = lifetime.LastUse == passIndex;
-            bool isResourceFrameGraphOutput = IsOutputResource(handle);
-            bool isRead = pass.m_textureReads.Contains(handle);
-            bool isWrite = pass.m_textureWrites.Contains(handle);
-
-            RHITextureLayout initialLayout = RHITextureLayout::Undefined;
-            RHITextureLayout finalLayout = RHITextureLayout::Undefined;
-
-            if (isFirstUsage)
-            {
-                initialLayout = RHITextureLayout::Undefined;
-            }
-            else
-            {
-                initialLayout = resource.InitialLayout;
-            }
-
-            finalLayout = pass.m_textureWriteStates[handle.GetIndex()];
-            if (isLastUsage && isResourceFrameGraphOutput)
-            {
-                finalLayout = RHITextureLayout::Present;
-            }
-
-            return {initialLayout, finalLayout};
-        };
-
         for (size_t passIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[passIndex];
-
-            if (GetRenderPass(pass))
+            switch (pass.GetStage())
             {
-                continue;
+                case FrameGraphPassStage::Graphics:
+                {
+                    BuildGraphicsPass(passIndex);
+                    break;
+                }
+                case FrameGraphPassStage::Compute:
+                {
+                    BuildComputePass(passIndex);
+                    break;
+                }
             }
-
-            RHIRenderPassDescription renderPassDescription = {};
-
-            renderPassDescription.ColorAttachmentDecriptions.Reserve(pass.m_textureWrites.GetSize());
-            for (FrameGraphTextureHandle& handle: pass.m_textureWrites)
-            {
-                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
-                auto [loadOp, storeOp] = resolveStoreLoadOp(passIndex, handle);
-                auto [initialLayout, finalLayout] = resolveLayouts(passIndex, handle);
-
-                RHIColorAttachmentDescription colorAttachment = {};
-                colorAttachment.Format = resource.Info.Format;
-                colorAttachment.LoadOp = loadOp;
-                colorAttachment.StoreOp = storeOp;
-                colorAttachment.InitialLayout = initialLayout;
-                colorAttachment.FinalLayout = finalLayout;
-
-                renderPassDescription.ColorAttachmentDecriptions.Append(colorAttachment);
-            }
-
-            if (pass.m_depthStencil.HasValue())
-            {
-                FrameGraphTextureHandle& handle = *pass.m_depthStencil;
-                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
-                auto [loadOp, storeOp] = resolveStoreLoadOp(passIndex, handle);
-
-                RHIDepthAttachmentDescription depthStencilAttachmentDescription = {};
-                depthStencilAttachmentDescription.Format = resource.Info.Format;
-                depthStencilAttachmentDescription.LoadOp = RHIAttachmentLoadOp::Clear;
-                depthStencilAttachmentDescription.StoreOp = storeOp;
-
-                renderPassDescription.DepthAttachmentDescription = depthStencilAttachmentDescription;
-            }
-
-            m_renderPassRegistry.Create(pass.GetName(), renderPassDescription);
         }
+    }
+
+    void FrameGraph::BuildGraphicsPass(size_t passIndex)
+    {
+        FrameGraphPass& pass = m_passes[passIndex];
+
+        if (GetRenderPass(pass))
+        {
+            return;
+        }
+
+        RHIRenderPassDescription renderPassDescription = {};
+
+        renderPassDescription.ColorAttachmentDecriptions.Reserve(pass.m_textureWrites.GetSize());
+        for (FrameGraphTextureHandle& handle: pass.m_textureWrites)
+        {
+            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+
+            auto [loadOp, storeOp] = ResolveStoreLoadOp(passIndex, handle);
+            auto [initialLayout, finalLayout] = ResolveLayouts(passIndex, handle);
+
+            RHIColorAttachmentDescription colorAttachment = {};
+            colorAttachment.Format = resource.Info.Format;
+            colorAttachment.LoadOp = loadOp;
+            colorAttachment.StoreOp = storeOp;
+            colorAttachment.InitialLayout = initialLayout;
+            colorAttachment.FinalLayout = finalLayout;
+
+            renderPassDescription.ColorAttachmentDecriptions.Append(colorAttachment);
+        }
+
+        if (pass.m_depthStencil.HasValue())
+        {
+            FrameGraphTextureHandle& handle = *pass.m_depthStencil;
+            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+
+            auto [loadOp, storeOp] = ResolveStoreLoadOp(passIndex, handle);
+
+            RHIDepthAttachmentDescription depthStencilAttachmentDescription = {};
+            depthStencilAttachmentDescription.Format = resource.Info.Format;
+            depthStencilAttachmentDescription.LoadOp = RHIAttachmentLoadOp::Clear;
+            depthStencilAttachmentDescription.StoreOp = storeOp;
+
+            renderPassDescription.DepthAttachmentDescription = depthStencilAttachmentDescription;
+        }
+
+        m_renderPassRegistry.Create(pass.GetName(), renderPassDescription);
+    }
+
+    void FrameGraph::BuildComputePass(size_t passIndex)
+    {
+        
     }
 
     FrameGraphPhysicalTexture& FrameGraph::ResolvePhysicalTexture(const FrameGraphTextureHandle& handle)

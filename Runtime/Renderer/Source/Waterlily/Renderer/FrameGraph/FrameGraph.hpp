@@ -20,6 +20,7 @@
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResourcePool.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
+#include <cstddef>
 
 namespace Wl
 {
@@ -120,7 +121,10 @@ namespace Wl
         void TopoligicalSort();
         void BuildBarriers();
         void ComputeResourceLifetimes();
+        
         void BuildPasses();
+        void BuildGraphicsPass(size_t passIndex);
+        void BuildComputePass(size_t passIndex);
 
         void AllocatePhysicalPassResources(size_t passIndex);
         void DeallocatePhysicalPassResources(size_t passIndex);
@@ -135,6 +139,22 @@ namespace Wl
         RHITextureLayoutTransition BarrierToRHITransition(const FrameGraphTextureBarrier& barrier);
 
         bool IsOutputResource(FrameGraphTextureHandle handle);
+
+    private:
+        struct ResolvedStoreLoadResult
+        {
+            RHIAttachmentLoadOp loadOp;
+            RHIAttachmentStoreOp storeOp;
+        };
+
+        struct ResolvedLayoutResult
+        {
+            RHITextureLayout initialLayout;
+            RHITextureLayout finalLayout;
+        };
+
+        ResolvedStoreLoadResult ResolveStoreLoadOp(size_t passIndex, FrameGraphTextureHandle handle);
+        ResolvedLayoutResult ResolveLayouts(size_t passIndex, FrameGraphTextureHandle handle);
 
     private:
         SharedPtr<RHIDevice> m_device;

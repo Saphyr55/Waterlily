@@ -23,9 +23,6 @@
 namespace Wl
 {
 
-    static const Array<StringRef> s_PhysicalDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME};
-
     struct VulkanContext
     {
         const uint32_t VulkanAPIVersion = VK_API_VERSION_1_4;

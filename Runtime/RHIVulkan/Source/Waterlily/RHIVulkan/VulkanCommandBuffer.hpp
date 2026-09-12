@@ -20,8 +20,10 @@ namespace Wl
 
         virtual void End() override;
 
-        virtual void BeginRenderPass(const RHIRenderPassBeginInfo& beginInfo) override;
+        virtual void BeginRendering(const RHIBeginRenderingInfo& info) override;
+        virtual void EndRendering() override;
 
+        virtual void BeginRenderPass(const RHIRenderPassBeginInfo& beginInfo) override;
         virtual void EndRenderPass() override;
 
         virtual void BindPipeline(RHIPipeline* pipeline) override;

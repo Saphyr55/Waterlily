@@ -20,6 +20,8 @@
 #include "Waterlily/RHIVulkan/VulkanPipeline.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderPass.hpp"
 #include "Waterlily/RHIVulkan/VulkanTexture.hpp"
+#include "Waterlily/RHIVulkan/VulkanTextureView.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace Wl
 {
@@ -611,6 +613,67 @@ namespace Wl
         bufferCopy.size = command.Size;
 
         VulkanAPI::vkCmdCopyBuffer(m_handle, vulkanSource->GetHandle(), vulkanDestination->GetHandle(), 1, &bufferCopy);
+    }
+
+    void VulkanCommandBuffer::BeginRendering(const RHIBeginRenderingInfo& info)
+    {
+        auto mapToVkRenderingAttachmentInfo = [](const RHIRenderingAttachmentInfo& attachmentInfo, bool depthStencil = false) -> VkRenderingAttachmentInfo
+        {
+            VulkanTextureView* textureView = static_cast<VulkanTextureView*>(attachmentInfo.TextureView);
+            VulkanTextureView* resolvedTextureView = static_cast<VulkanTextureView*>(attachmentInfo.ResolvedTextureView);
+
+            VkRenderingAttachmentInfo vkAttachmentInfo = {};
+            vkAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+
+            vkAttachmentInfo.loadOp = VulkanLoadOpGet(attachmentInfo.LoadOp);
+            vkAttachmentInfo.storeOp = VulkanStoreOpGet(attachmentInfo.StoreOp);
+
+            vkAttachmentInfo.imageView = textureView->GetHandle();
+            vkAttachmentInfo.imageLayout = VulkanTextureLayoutGet(attachmentInfo.TextureLayout);
+
+            vkAttachmentInfo.resolveImageView = resolvedTextureView->GetHandle();
+            vkAttachmentInfo.resolveImageLayout = VulkanTextureLayoutGet(attachmentInfo.ResolvedTextureLayout);
+
+            if (depthStencil)
+            {
+                // TODO:
+                vkAttachmentInfo.clearValue.depthStencil.depth = 0.0f;
+                vkAttachmentInfo.clearValue.depthStencil.stencil = 0u;
+            }
+            else
+            {
+                vkAttachmentInfo.clearValue.color = {
+                        attachmentInfo.ClearValue.x,
+                        attachmentInfo.ClearValue.y,
+                        attachmentInfo.ClearValue.z,
+                        attachmentInfo.ClearValue.w};
+            }
+
+            return vkAttachmentInfo;
+        };
+
+        Array<VkRenderingAttachmentInfo> colorAttachments;
+        colorAttachments.Resize(info.ColorAttachments.GetSize());
+        Wl::Transform(info.ColorAttachments.begin(), info.ColorAttachments.end(), colorAttachments.data(), mapToVkRenderingAttachmentInfo);
+
+        VkRenderingAttachmentInfo depthAttachment = mapToVkRenderingAttachmentInfo(info.DepthAttachment, true);
+        VkRenderingAttachmentInfo stencilAttachment = mapToVkRenderingAttachmentInfo(info.StencilAttachment, true);
+
+        VkRenderingInfo vkRenderingInfo = {};
+        vkRenderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        vkRenderingInfo.colorAttachmentCount = info.ColorAttachments.GetSize();
+        vkRenderingInfo.pColorAttachments = colorAttachments.GetData();
+        vkRenderingInfo.pDepthAttachment = &depthAttachment;
+        vkRenderingInfo.pStencilAttachment = &stencilAttachment;
+        vkRenderingInfo.layerCount = info.LayerCount;
+        vkRenderingInfo.viewMask = info.ViewMask;
+
+        VulkanAPI::vkCmdBeginRendering(m_handle, &vkRenderingInfo);
+    }
+
+    void VulkanCommandBuffer::EndRendering()
+    {
+        VulkanAPI::vkCmdEndRendering(m_handle);
     }
 
     void VulkanCommandBuffer::BeginRenderPass(const RHIRenderPassBeginInfo& beginInfo)
