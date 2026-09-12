@@ -24,22 +24,12 @@ namespace Wl
 
         ShaderGraphicsPass& GetShaderGraphicsPass(StringID passName);
 
-        void LoadAssets()
-        {
-            LoadInternal(false);
-        }
-
-        void ReloadAssets()
-        {
-            LoadInternal(true);
-            for (auto [name, shader]: m_graphicsShaders)
-            {
-                m_pipelineManager->Recreate(name, shader.PipelineState);
-            }
-        }
+        void LoadAssets();
+        void ReloadAssets();
 
     public:
-        ShaderBundle(const SharedPtr<AssetRegistry>& assetRegistry,
+        ShaderBundle(const SharedPtr<RHIDevice>& device,
+                     const SharedPtr<AssetRegistry>& assetRegistry,
                      const SharedPtr<AssetManager>& assetManager,
                      const SharedPtr<PipelineManager>& pipelineManager);
 
@@ -47,6 +37,7 @@ namespace Wl
         void LoadInternal(bool reload);
 
     private:
+        SharedPtr<RHIDevice> m_device;
         SharedPtr<AssetRegistry> m_assetRegistry;
         SharedPtr<AssetManager> m_assetManager;
         SharedPtr<PipelineManager> m_pipelineManager;

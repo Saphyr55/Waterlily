@@ -1,4 +1,4 @@
-#include "LudoUpdater.hpp"
+#include "LudoSubSystem.hpp"
 #include "LightSystem.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
@@ -22,8 +22,8 @@
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Passes/GBufferPass.hpp"
 #include "Waterlily/Renderer/Passes/LightingPass.hpp"
-#include "Waterlily/Renderer/Proxies/RenderView.hpp"
 #include "Waterlily/Renderer/Proxies/RenderInstance.hpp"
+#include "Waterlily/Renderer/Proxies/RenderView.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RenderService.hpp"
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
@@ -33,13 +33,18 @@
 #include "Waterlily/Scene/PointLight.hpp"
 #include "Waterlily/Scene/SceneComponent.hpp"
 
+
 namespace Wl
 {
 
-    void LudoUpdater::OnStartup()
+    void LudoSubSystem::OnStartup()
     {
-        SharedPtr<ShaderBundle> shaderBundle = m_renderService->GetShaderBundle();
         SharedPtr<RHIDevice> device = m_renderService->GetDevice();
+
+        SharedPtr<FrameContext> frameContext = m_renderService->GetFrameContext();
+        SharedPtr<ShaderBundle> shaderBundle = m_renderService->GetShaderBundle();
+        SharedPtr<PipelineManager> pipelineManager = m_renderService->GetPipelineManager();
+
         SharedPtr<TextureRegistry> textureRegistry = m_renderService->GetTextureRegistry();
         SharedPtr<MaterialRegistry> materialRegistry = m_renderService->GetMaterialRegistry();
 
@@ -94,10 +99,10 @@ namespace Wl
         materialRegistry->UpdateSRG();
 
         m_camera = CreateCamera();
-        
+
         RegisterLights(m_entityRegistry);
 
-        Input::OnKeyRelease.Connect([this, device, shaderBundle](VirtualKey key) mutable
+        Input::OnKeyRelease.Connect([=, this](VirtualKey key) mutable
         {
             if (key == VirtualKey::F2)
             {
@@ -105,6 +110,7 @@ namespace Wl
                 if (CompileShaders())
                 {
                     shaderBundle->ReloadAssets();
+                    pipelineManager->ResetFrameSRGPool();
                 }
                 else
                 {
@@ -137,12 +143,9 @@ namespace Wl
         });
 
         m_renderService->GetWindow()->Show();
-
-        // This must be done after filled all SRG layout in the cache.
-        m_renderService->GetFrameContext()->InitSRGPools();
     }
 
-    void LudoUpdater::OnTick(double deltaTime)
+    void LudoSubSystem::OnTick(double deltaTime)
     {
         SharedPtr<FrameContext> frameContext = m_renderService->GetFrameContext();
         SharedPtr<FrameGraph> frameGraph = m_renderService->GetFrameGraph();
@@ -326,13 +329,15 @@ namespace Wl
 
         m_renderService->GetOrCreatePipeline(gBufferPass, shaderGBufferPass.PipelineState);
         m_renderService->GetOrCreatePipeline(lightingPass, shaderLightingPass.PipelineState);
+        m_renderService->GetPipelineManager()->CreateFrameSRGPool(frameContext->GetFrames());
 
         frameGraph->Execute(frame.CommandBuffer);
+
         frameGraph->EndFrame();
         frameContext->EndFrame();
     }
 
-    void LudoUpdater::OnShutdown()
+    void LudoSubSystem::OnShutdown()
     {
         m_sponzaMesh->Destroy();
 

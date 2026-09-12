@@ -68,7 +68,7 @@ namespace Wl
                 FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(params.Albedo);
                 FrameGraphPhysicalTexture& metallicRoughnessResource = context.FrameGraph->ResolvePhysicalTexture(params.MetallicRoughness);
 
-                RHISampler* pointSampler = context.FrameContext->GetDefaultSampler();
+                RHISampler* pointSampler = passContext.TextureRegistry->GetDefaultSampler();
 
                 RHIWriteTextureSamplerResource writePosition(0, positionResource.View, pointSampler);
                 RHIWriteTextureSamplerResource writeNormal(1, normalResource.View, pointSampler);

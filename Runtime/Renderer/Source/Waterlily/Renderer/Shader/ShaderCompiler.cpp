@@ -5,8 +5,6 @@
 #include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Renderer/Shader/Shader.hpp"
-#include "Waterlily/Renderer/Shader/ShaderReflection.hpp"
-
 
 #include <slang-com-ptr.h>
 #include <slang.h>

@@ -5,10 +5,43 @@
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
+#include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/Shader/ShaderParser.hpp"
 
 namespace Wl
 {
+
+    void PipelineManager::CreateFrameSRGPool(ArrayView<Frame> frames)
+    {
+        if (!m_isResetSRGPool)
+        {
+            return;
+        }
+
+        for (Frame& frame: frames)
+        {
+            Array<RHIShaderResourceBinding> totalBindings;
+            for (const RHIShaderResourceGroupLayout* srgLayout: GetSRGLayoutCache().GetResources())
+            {
+                totalBindings.AppendRange(srgLayout->GetBindings());
+            }
+
+            if (frame.SRGPool != nullptr)
+            {
+                m_device->DestroySRGPool(frame.SRGPool);
+            }
+
+            frame.SRGPool = m_device->CreateSRGPool(256, totalBindings);
+        }
+
+        m_isResetSRGPool = false;
+    }
+
+    void PipelineManager::ResetFrameSRGPool()
+    {
+        GetSRGLayoutCache().Dispose();
+        m_isResetSRGPool = true;
+    }
 
     RHIGraphicsPipeline* PipelineManager::Create(const StringID& name, GraphicsPipelineState& state)
     {

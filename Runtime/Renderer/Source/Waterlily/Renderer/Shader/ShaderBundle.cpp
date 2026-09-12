@@ -3,15 +3,33 @@
 namespace Wl
 {
 
-    ShaderBundle::ShaderBundle(const SharedPtr<AssetRegistry>& assetRegistry,
+    ShaderBundle::ShaderBundle(const SharedPtr<RHIDevice>& device,
+                               const SharedPtr<AssetRegistry>& assetRegistry,
                                const SharedPtr<AssetManager>& assetManager,
                                const SharedPtr<PipelineManager>& pipelineManager)
-        : m_assetRegistry(assetRegistry)
+        : m_device(device)
+        , m_assetRegistry(assetRegistry)
         , m_assetManager(assetManager)
         , m_pipelineManager(pipelineManager)
     {
     }
-    
+
+    void ShaderBundle::LoadAssets()
+    {
+        LoadInternal(false);
+    }
+
+    void ShaderBundle::ReloadAssets()
+    {
+
+        LoadInternal(true);
+
+        for (auto [name, shader]: m_graphicsShaders)
+        {
+            m_pipelineManager->Recreate(name, shader.PipelineState);
+        }
+    }
+
     ShaderGraphicsPass& ShaderBundle::GetShaderGraphicsPass(StringID passName)
     {
         return m_graphicsShaders[passName];

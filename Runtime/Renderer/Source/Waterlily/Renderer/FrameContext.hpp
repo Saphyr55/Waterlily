@@ -11,7 +11,6 @@
 #include "Waterlily/RHI/DeviceFactory.hpp"
 #include "Waterlily/RHI/Fence.hpp"
 #include "Waterlily/RHI/Semaphore.hpp"
-#include "Waterlily/RHI/ShaderResourceCache.hpp"
 #include "Waterlily/RHI/Swapchain.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
@@ -31,14 +30,14 @@ namespace Wl
 
     struct Frame
     {
-        RHICommandAllocator* CommandAllocator;
-        RHICommandBuffer* CommandBuffer;
+        RHICommandAllocator* CommandAllocator = nullptr;
+        RHICommandBuffer* CommandBuffer = nullptr;
 
-        RHIShaderResourceGroupPool* SRGPool;
+        RHIShaderResourceGroupPool* SRGPool = nullptr;
 
-        RHISemaphore* FrameAvailableSemaphore;
-        RHISemaphore* RenderFinishedSemaphore;
-        RHIFence* InFlightFence;
+        RHISemaphore* FrameAvailableSemaphore = nullptr;
+        Array<RHISemaphore*> RenderFinishedSemaphore;
+        RHIFence* InFlightFence = nullptr;
 
         RenderAllocator UniformAllocator;
         RenderAllocator StorageAllocator;
@@ -78,17 +77,22 @@ namespace Wl
         FrameResult BeginFrame();
         void EndFrame();
 
-        RHISampler* GetDefaultSampler();
-
         SharedPtr<RHIDevice> GetDevice() const;
         Frame& GetCurrentFrame();
+
+        ArrayView<Frame> GetFrames() const
+        {
+            return m_frames;
+        }
 
         uint64_t GetFrameIndex() const;
         uint64_t GetMaxFrameInFlight() const;
         uint64_t GetFrameCount() const;
 
         RHISwapchain* GetSwapchain();
-        SharedPtr<RHIShaderResourceGroupLayoutCache> GetSRGLayoutCache();
+
+    private:
+        void NextFrame();
 
     public:
         FrameContext(const SharedPtr<RHIDevice>& device)
@@ -98,13 +102,7 @@ namespace Wl
         ~FrameContext() = default;
 
     private:
-        void NextFrame();
-
-    private:
         SharedPtr<RHIDevice> m_device;
-        RHISampler* m_defaultSampler = nullptr;
-
-        SharedPtr<RHIShaderResourceGroupLayoutCache> m_srgLayoutCache;
 
         Array<RHIFence**> m_frameInFlightFences;
         FixedArray<Frame, MaxFrameInFlight> m_frames;

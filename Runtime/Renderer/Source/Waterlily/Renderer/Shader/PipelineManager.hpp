@@ -15,6 +15,8 @@
 namespace Wl
 {
 
+    struct Frame;
+
     struct GraphicsPipelineState
     {
         RHIRenderPass* RenderPass = nullptr;
@@ -28,6 +30,10 @@ namespace Wl
 
     class WL_RENDERER_API PipelineManager
     {
+    public:
+        void CreateFrameSRGPool(ArrayView<Frame> frames);
+        void ResetFrameSRGPool();
+
     public:
         RHIGraphicsPipeline* GetPipeline(const StringID& name);
         RHIGraphicsPipeline* GetOrCreate(const StringID& name, GraphicsPipelineState& state);
@@ -52,14 +58,26 @@ namespace Wl
             {
                 Destroy(name);
             }
+
+            m_srgLayoutCache.Dispose();
         }
+
+        const RHIShaderResourceGroupLayoutCache& GetSRGLayoutCache() const
+        {
+            return m_srgLayoutCache;
+        }
+
+        RHIShaderResourceGroupLayoutCache& GetSRGLayoutCache()
+        {
+            return m_srgLayoutCache;
+        }
+
 
     public:
         PipelineManager(SharedPtr<RHIDevice> device,
-                        SharedPtr<RHIShaderResourceGroupLayoutCache> srgLayoutCache,
                         FileSystem& fileSystem)
             : m_device(device)
-            , m_srgLayoutCache(srgLayoutCache)
+            , m_srgLayoutCache(device)
             , m_fileSystem(fileSystem)
         {
         }
@@ -70,9 +88,10 @@ namespace Wl
 
     private:
         SharedPtr<RHIDevice> m_device;
-        SharedPtr<RHIShaderResourceGroupLayoutCache> m_srgLayoutCache;
+        RHIShaderResourceGroupLayoutCache m_srgLayoutCache;
         FileSystem& m_fileSystem;
         HashMap<StringID, RHIGraphicsPipeline*> m_cache;
+        bool m_isResetSRGPool = true;
     };
 
 }// namespace Wl

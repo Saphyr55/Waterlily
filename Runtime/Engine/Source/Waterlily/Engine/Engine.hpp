@@ -8,7 +8,7 @@
 #include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/Engine/EngineExports.hpp"
 #include "Waterlily/Engine/EngineService.hpp"
-#include "Waterlily/Engine/EngineUpdater.hpp"
+#include "Waterlily/Engine/EngineSubSystem.hpp"
 
 #include <type_traits>
 
@@ -48,9 +48,9 @@ namespace Wl
             m_paused = false;
         }
 
-        void RegisterUpdater(StringID name, const SharedPtr<EngineUpdater>& updater);
+        void RegisterSubSystem(StringID name, const SharedPtr<EngineSubSystem>& updater);
 
-        void UnregisterUpdater(StringID name);
+        void UnRegisterSubSystem(StringID name);
 
         void RegisterService(StringID name, const SharedPtr<EngineService>& updater);
 
@@ -84,7 +84,7 @@ namespace Wl
 
     private:
         HashMap<StringID, SharedPtr<EngineService>> m_services;
-        HashMap<StringID, SharedPtr<EngineUpdater>> m_engineUpdaters;
+        HashMap<StringID, SharedPtr<EngineSubSystem>> m_EngineSubSystems;
         Array<const ModuleInformation*> m_orderedModuleInformations;
         ModuleManifest m_manifest;
         StringRef m_projectDirectory;

@@ -200,7 +200,7 @@ namespace Wl
     }
 
     HashMap<uint32_t, RHIShaderResourceGroupLayout*> SPIRVPipelineReflector::BuildLayouts(const SPIRVPipelineReflection& reflect,
-                                                                                          SharedPtr<RHIShaderResourceGroupLayoutCache> cache,
+                                                                                          RHIShaderResourceGroupLayoutCache& cache,
                                                                                           ArrayView<uint32_t> externGroups)
     {
         Array<uint32_t> groupIndices;
@@ -224,7 +224,7 @@ namespace Wl
                 rhiBindings.Emplace(binding.Binding, binding.Type, binding.Stage, binding.Count);
             }
             RHIShaderResourceGroupLayoutDescription desc(rhiBindings);
-            layouts.Put(group, cache->Obtain(desc));
+            layouts.Put(group, cache.Obtain(desc));
         }
 
         return layouts;
