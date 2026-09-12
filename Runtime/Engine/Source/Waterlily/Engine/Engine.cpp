@@ -26,7 +26,7 @@ namespace Wl
             service->OnStartup();
         }
 
-        for (auto [name, updater]: m_engineUpdaters)
+        for (auto [name, updater]: m_EngineSubSystems)
         {
             updater->OnStartup();
         }
@@ -34,7 +34,7 @@ namespace Wl
 
     void Engine::Shutdown()
     {
-        for (auto [name, updater]: m_engineUpdaters)
+        for (auto [name, updater]: m_EngineSubSystems)
         {
             updater->OnShutdown();
         }
@@ -61,7 +61,7 @@ namespace Wl
 
             if (!IsPaused())
             {
-                for (auto [name, updater]: m_engineUpdaters)
+                for (auto [name, updater]: m_EngineSubSystems)
                 {
                     updater->OnTick(deltaTime);
                 }
@@ -74,14 +74,14 @@ namespace Wl
         m_isRunning = false;
     }
 
-    void Engine::RegisterUpdater(StringID name, const SharedPtr<EngineUpdater>& updater)
+    void Engine::RegisterSubSystem(StringID name, const SharedPtr<EngineSubSystem>& updater)
     {
-        m_engineUpdaters[name] = updater;
+        m_EngineSubSystems[name] = updater;
     }
 
-    void Engine::UnregisterUpdater(StringID name)
+    void Engine::UnRegisterSubSystem(StringID name)
     {
-        m_engineUpdaters.Remove(name);
+        m_EngineSubSystems.Remove(name);
     }
 
     void Engine::RegisterService(StringID name, const SharedPtr<EngineService>& service)

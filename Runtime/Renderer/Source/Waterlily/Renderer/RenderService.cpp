@@ -26,8 +26,8 @@ namespace Wl
 
         m_textureRegistry = MakeShared<TextureRegistry>(m_device, *m_config.Assets, m_config.SRGBindingTextures);
         m_materialRegistry = MakeShared<MaterialRegistry>(m_device, m_config.SRGBindingMaterials);
-        m_pipelineManager = MakeShared<PipelineManager>(m_device, m_frameContext->GetSRGLayoutCache(), m_config.AssetFileSystem);
-        m_shaderBundle = MakeShared<ShaderBundle>(m_config.Assets->GetRegistry(), m_config.Assets, m_pipelineManager);
+        m_pipelineManager = MakeShared<PipelineManager>(m_device, m_config.AssetFileSystem);
+        m_shaderBundle = MakeShared<ShaderBundle>(m_device, m_config.Assets->GetRegistry(), m_config.Assets, m_pipelineManager);
         m_frameGraph = MakeShared<FrameGraph>(m_frameContext);
     }
 

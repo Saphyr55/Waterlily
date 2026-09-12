@@ -1,6 +1,6 @@
 #include "LudoModule.hpp"
 
-#include "LudoUpdater.hpp"
+#include "LudoSubSystem.hpp"
 #include "Waterlily/Assets/AssetManager.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/WLCAFile.hpp"
@@ -34,10 +34,10 @@ namespace Wl
         RenderServiceConfig renderServiceConfig(window, assetManager, assetsFileSystem);
         SharedPtr<RenderService> renderService = MakeShared<RenderService>(renderServiceConfig);
 
-        SharedPtr<LudoUpdater> updater = MakeShared<LudoUpdater>(renderService, assetManager);
+        SharedPtr<LudoSubSystem> subSystem = MakeShared<LudoSubSystem>(renderService, assetManager);
 
         engine.RegisterService(RenderServiceName, renderService);
-        engine.RegisterUpdater(LudoName, updater);
+        engine.RegisterSubSystem(LudoName, subSystem);
 
         window->GetEventHandler().OnMinimized.Connect([]()
         {
@@ -66,7 +66,7 @@ namespace Wl
     {
         Engine& engine = Engine::GetInstance();
 
-        engine.UnregisterUpdater(LudoName);
+        engine.UnRegisterSubSystem(LudoName);
         engine.UnregisterService(RenderServiceName);
 
         WL_LOG_INFO("Ludo", "Ludo Module stopped.");

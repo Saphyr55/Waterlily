@@ -22,7 +22,7 @@ namespace Wl
 
         virtual void Update() override;
 
-        inline uint32_t GetIndexPool() const override
+        inline uint32_t SetIndexPool() const override
         {
             return m_indexPool;
         }
@@ -32,19 +32,14 @@ namespace Wl
             return m_handle;
         }
 
-        inline void Init(size_t indexPool)
-        {
-            GetIndexPool(indexPool);
-        }
-
-        inline void GetIndexPool(size_t indexPool)
+        inline void SetIndexPool(size_t indexPool)
         {
             m_indexPool = indexPool;
         }
 
         inline void Reset()
         {
-            Init(0);
+            SetIndexPool(0);
             m_handle = VK_NULL_HANDLE;
         }
 

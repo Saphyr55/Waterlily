@@ -1,4 +1,5 @@
 #include "Waterlily/RHIVulkan/VulkanCommandQueue.hpp"
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/RHI/Semaphore.hpp"
 #include "Waterlily/RHI/Swapchain.hpp"
@@ -41,6 +42,10 @@ namespace Wl
                                     const Array<RHISemaphore*>& signalSemaphores,
                                     const RHIFence* fence) const
     {
+        // Fence
+        const VulkanFence* vulkanFence = static_cast<const VulkanFence*>(fence);
+        WL_CHECK(vulkanFence);
+
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -79,16 +84,14 @@ namespace Wl
         Array<VkPipelineStageFlags> waitStages(waitSemaphores.GetSize());
         for (size_t i = 0; i < waitSemaphores.GetSize(); i++)
         {
-            waitStages.Append(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+            // TODO: This generic solution should not be use.
+            waitStages.Append(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
         }
 
         submitInfo.pWaitDstStageMask = waitStages.GetData();
-        // Fence
-        const VulkanFence* vulkanFence = static_cast<const VulkanFence*>(fence);
-        VkFence vulkanFenceHandle = vulkanFence ? vulkanFence->GetHandle() : VK_NULL_HANDLE;
 
         // Submit
-        WL_VULKAN_CHECK(VulkanAPI::vkQueueSubmit(m_handle, 1, &submitInfo, vulkanFenceHandle));
+        WL_VULKAN_CHECK(VulkanAPI::vkQueueSubmit(m_handle, 1, &submitInfo, vulkanFence->GetHandle()));
     }
 
     void VulkanCommandQueue::Present(RHISwapchain* swapchain, RHISemaphore* semaphore) const

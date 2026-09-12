@@ -34,7 +34,7 @@ namespace Wl
         }
 
         VulkanShaderResourceGroup* newGroup = &m_allocatedGroups[groupIndex];
-        newGroup->Init(groupIndex);
+        newGroup->SetIndexPool(groupIndex);
 
         WL_VULKAN_CHECK(VulkanAPI::vkAllocateDescriptorSets(context.Device, &allocationInfo, &newGroup->GetHandle()));
 
@@ -57,23 +57,32 @@ namespace Wl
 
         VulkanContext& context = VulkanContextGet();
         VulkanShaderResourceGroup* vulkanSRG = static_cast<VulkanShaderResourceGroup*>(group);
+
         VkDescriptorSet& descriptorSet = vulkanSRG->GetHandle();
+        if (descriptorSet == VK_NULL_HANDLE)
+        {
+            m_freeGroups.Add(vulkanSRG->SetIndexPool());
 
-        m_freeGroups.Add(vulkanSRG->GetIndexPool());
+            WL_VULKAN_CHECK(VulkanAPI::vkFreeDescriptorSets(context.Device, m_handle, 1, &descriptorSet));
 
-        WL_VULKAN_CHECK(VulkanAPI::vkFreeDescriptorSets(context.Device, m_handle, 1, &descriptorSet));
-
-        vulkanSRG->Reset();
+            vulkanSRG->Reset();
+        }
     }
 
     void VulkanShaderResourceGroupPool::Reset()
     {
-        m_nextIndexToAllocate = 0;
         VulkanAPI::vkResetDescriptorPool(VulkanContextGet().Device, m_handle, 0);
+        
+        m_nextIndexToAllocate = 0;
         m_freeGroups.Clear();
+
+        for (VulkanShaderResourceGroup& group: m_allocatedGroups)
+        {
+            group.Reset();
+        }
     }
 
-    void VulkanShaderResourceGroupPool::Create(size_t maxGroupsCount, const Array<RHIShaderResourceBinding>& totalBindings)
+    void VulkanShaderResourceGroupPool::Create(uint32_t maxGroupsCount, const Array<RHIShaderResourceBinding>& totalBindings)
     {
         m_maxGroupsCount = maxGroupsCount;
 
@@ -82,18 +91,18 @@ namespace Wl
 
         VulkanContext& context = VulkanContextGet();
 
-        HashMap<VkDescriptorType, uint32_t> type_counts(totalBindings.GetSize());
+        HashMap<VkDescriptorType, uint32_t> typeCounts(totalBindings.GetSize());
         for (const RHIShaderResourceBinding& binding: totalBindings)
         {
-            type_counts[VulkanDescriptorTypeGet(binding.Type)] += binding.Count;
+            typeCounts[VulkanDescriptorTypeGet(binding.Type)] += binding.Count;
         }
 
         Array<VkDescriptorPoolSize> poolSizes;
-        for (const auto [type, count]: type_counts)
+        for (const auto [type, count]: typeCounts)
         {
             VkDescriptorPoolSize poolSize = {};
             poolSize.type = type;
-            poolSize.descriptorCount = count * static_cast<uint32_t>(maxGroupsCount);
+            poolSize.descriptorCount = count * maxGroupsCount;
             poolSizes.Append(poolSize);
         }
 
@@ -102,7 +111,7 @@ namespace Wl
         createInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         createInfo.poolSizeCount = poolSizes.GetSize();
         createInfo.pPoolSizes = poolSizes.GetData();
-        createInfo.maxSets = static_cast<uint32_t>(maxGroupsCount);
+        createInfo.maxSets = maxGroupsCount;
 
         WL_VULKAN_CHECK(VulkanAPI::vkCreateDescriptorPool(context.Device,
                                                           &createInfo,

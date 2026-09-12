@@ -90,7 +90,7 @@ namespace Wl
         descriptorSetAllocationInfo.descriptorSetCount = 1;
         descriptorSetAllocationInfo.pSetLayouts = &m_layout.GetHandle();
 
-        m_srg.GetIndexPool(0);
+        m_srg.SetIndexPool(0);
 
         WL_VULKAN_CHECK(
                 VulkanAPI::vkAllocateDescriptorSets(context.Device, &descriptorSetAllocationInfo, &m_srg.GetHandle()));

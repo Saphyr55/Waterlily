@@ -193,7 +193,7 @@ namespace Wl
         /**
          * @brief
          */
-        virtual uint32_t GetIndexPool() const = 0;
+        virtual uint32_t SetIndexPool() const = 0;
 
         virtual ~RHIShaderResourceGroup() = default;
     };

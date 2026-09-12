@@ -18,7 +18,7 @@ namespace Wl
     {
     public:
         inline static constexpr MaterialHandle InvalidHandle = UINT16_MAX;
-        inline static constexpr uint16_t MaxResources = 4096;
+        inline static constexpr uint32_t MaxResources = 4096;
 
         MaterialHandle ObtainMaterial(const MaterialData& data = {});
         void RemoveMaterial(MaterialHandle handle);

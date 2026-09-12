@@ -3,9 +3,6 @@
 #include "Waterlily/Core/Platform/Display.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/Sampler.hpp"
-#include "Waterlily/RHI/ShaderResource.hpp"
-#include "Waterlily/RHI/ShaderResourceCache.hpp"
 #include "Waterlily/RHI/ShaderResourcePool.hpp"
 #include "Waterlily/RHI/Swapchain.hpp"
 #include "Waterlily/RHI/Types.hpp"
@@ -19,15 +16,11 @@ namespace Wl
 
         Display& display = Display::GetDefault();
 
-        m_defaultSampler = m_device->CreateSampler(RHISamplerDescription());
-
         m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_maxFrameInFlight);
 
         m_frameInFlightFences.Resize(m_swapchain->GetTextureViews().GetSize(), nullptr);
 
         constexpr uint32_t renderFrameFramebufferIndex = 0;
-
-        m_srgLayoutCache = MakeShared<RHIShaderResourceGroupLayoutCache>(m_device);
 
         const RHIDeviceProperties& properties = m_device->GetDeviceProperties();
 
@@ -41,7 +34,12 @@ namespace Wl
             frame.CommandBuffer = frame.CommandAllocator->OpenCommandBuffer(renderFrameFramebufferIndex);
 
             frame.FrameAvailableSemaphore = m_device->CreateSemaphore();
-            frame.RenderFinishedSemaphore = m_device->CreateSemaphore();
+
+            for (size_t i = 0; i < m_swapchain->GetTextureViews().GetSize(); i++)
+            {
+                frame.RenderFinishedSemaphore.Append(m_device->CreateSemaphore());
+            }
+            
             frame.InFlightFence = m_device->CreateFence();
 
             RHIBuffer* uniformBuffer = m_device->CreateBuffer(RHIBufferDescription {
@@ -70,24 +68,6 @@ namespace Wl
         }
     }
 
-    void FrameContext::InitSRGPools()
-    {
-        for (Frame& frame: m_frames)
-        {
-            Array<RHIShaderResourceBinding> totalBindings;
-            // FIXME: This is absurd because we have to loop through all frames and all their SRG layouts in cache (so
-            // probably not entirely filled) to get the total bindings to create the pool. By using the FrameGraph we can
-            // easily get the total bindings for all SRG layouts used in the frame and create the pool without this absurd
-            // loop.
-            for (const RHIShaderResourceGroupLayout* srgLayout: m_srgLayoutCache->GetResources())
-            {
-                totalBindings.AppendRange(srgLayout->GetBindings());
-            }
-
-            frame.SRGPool = m_device->CreateSRGPool(100, totalBindings);
-        }
-    }
-
     void FrameContext::Resize(uint32_t width, uint32_t height)
     {
         m_device->WaitIdle();
@@ -112,13 +92,15 @@ namespace Wl
     void FrameContext::Destroy()
     {
         m_device->WaitIdle();
-        m_device->DestroySampler(m_defaultSampler);
 
         for (Frame& frame: m_frames)
         {
             m_device->DestroyCommandAllocator(frame.CommandAllocator);
             m_device->DestroySemaphore(frame.FrameAvailableSemaphore);
-            m_device->DestroySemaphore(frame.RenderFinishedSemaphore);
+            for (size_t i = 0; i < m_swapchain->GetTextureViews().GetSize(); i++)
+            {
+                m_device->DestroySemaphore(frame.RenderFinishedSemaphore[i]);
+            }
             m_device->DestroyFence(frame.InFlightFence);
 
             m_device->DestroyBuffer(static_cast<RHIBuffer*>(frame.UniformAllocator.GetBuffer()));
@@ -129,7 +111,6 @@ namespace Wl
             m_device->DestroySRGPool(frame.SRGPool);
         }
 
-        m_srgLayoutCache->Dispose();
         m_device->DestroySwapchain(m_swapchain);
     }
 
@@ -137,17 +118,19 @@ namespace Wl
     {
         Frame& frame = GetCurrentFrame();
 
-        frame.UniformAllocator.Reset();
-        frame.StorageAllocator.Reset();
-        frame.Uploader.Reset();
-        frame.SRGPool->Reset();
-
         RHISwapchainAcquireResult result = m_swapchain->AcquireNextFrame(frame.FrameAvailableSemaphore);
 
         if (result.IsOutOfDate || result.IsNotReady)
         {
             m_device->RecreateSwapchain(m_swapchain, m_swapchain->GetWidth(), m_swapchain->GetHeight());
         }
+
+        if (RHIFence** fence = m_frameInFlightFences[result.ImageIndex])
+        {
+            m_device->WaitFence(*fence);
+        }
+
+        m_frameInFlightFences[result.ImageIndex] = &frame.InFlightFence;
 
         frame.CommandAllocator->ResetCommandBuffer(frame.CommandBuffer);
         frame.CommandBuffer->Begin();
@@ -168,28 +151,24 @@ namespace Wl
 
         m_device->GetGraphicsQueue()->Submit({frame.CommandBuffer},
                                              {frame.FrameAvailableSemaphore},
-                                             {frame.RenderFinishedSemaphore},
+                                             {frame.RenderFinishedSemaphore[result.ImageIndex]},
                                              frame.InFlightFence);
 
-        m_device->GetPresentQueue()->Present(m_swapchain, frame.RenderFinishedSemaphore);
+        m_device->GetPresentQueue()->Present(m_swapchain, frame.RenderFinishedSemaphore[result.ImageIndex]);
         m_device->WaitFence(frame.InFlightFence);
 
-        NextFrame();
-    }
+        frame.UniformAllocator.Reset();
+        frame.StorageAllocator.Reset();
+        frame.Uploader.Reset();
+        frame.SRGPool->Reset();
 
-    RHISampler* FrameContext::GetDefaultSampler()
-    {
-        return m_defaultSampler;
+
+        NextFrame();
     }
 
     SharedPtr<RHIDevice> FrameContext::GetDevice() const
     {
         return m_device;
-    }
-
-    SharedPtr<RHIShaderResourceGroupLayoutCache> FrameContext::GetSRGLayoutCache()
-    {
-        return m_srgLayoutCache;
     }
 
     uint64_t FrameContext::GetFrameIndex() const

@@ -6,6 +6,7 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/BindlessShaderResources.hpp"
 #include "Waterlily/RHI/Device.hpp"
+#include "Waterlily/RHI/Sampler.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
 #include "Waterlily/Renderer/Texture/Texture.hpp"
@@ -19,7 +20,7 @@ namespace Wl
     {
     public:
         static constexpr TextureHandle InvalidTexture = UINT32_MAX;
-        static constexpr const uint32_t MaxResources = 1024u;
+        static constexpr const uint32_t MaxResources = 2048u;
 
     public:
         TextureHandle ObtainTexture(AssetHandle asset, bool normalize = false);
@@ -55,6 +56,11 @@ namespace Wl
             return m_group;
         }
 
+        inline RHISampler* GetDefaultSampler()
+        {
+            return m_defaultSampler;
+        }
+
     public:
         TextureRegistry(const SharedPtr<RHIDevice>& device, AssetManager& assets, uint32_t binding = 0)
             : m_device(device)
@@ -66,6 +72,8 @@ namespace Wl
         {
             InitDummyTexture();
             InitSRG();
+
+            m_defaultSampler = m_device->CreateSampler(RHISamplerDescription());
         }
 
     private:
@@ -91,8 +99,10 @@ namespace Wl
         Array<PendingUploadTexture> m_pendings;
         HashMap<AssetHandle, TextureHandle> m_handles;
         HashMap<TextureHandle, Texture> m_registry;
+
         TextureHandle m_count;
         Texture m_dummyTexture;
+        RHISampler* m_defaultSampler;
     };
 
 }// namespace Wl

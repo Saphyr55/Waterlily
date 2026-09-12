@@ -3,7 +3,7 @@
 namespace Wl
 {
 
-    class EngineUpdater
+    class EngineSubSystem
     {
     public:
         virtual void OnStartup() = 0;
@@ -12,7 +12,7 @@ namespace Wl
 
         virtual void OnTick(double deltaTime) = 0;
 
-        virtual ~EngineUpdater() = default;
+        virtual ~EngineSubSystem() = default;
     };
 
 }// namespace Wl

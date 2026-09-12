@@ -102,7 +102,10 @@ namespace Wl
         m_device->DestroyTexture(m_dummyTexture.Texture);
         m_device->DestroySampler(m_dummyTexture.Sampler);
         m_device->DestroyTextureView(m_dummyTexture.View);
+
         m_device->DestroyBindlessShaderResources(m_bindlessResources);
+        
+        m_device->DestroySampler(m_defaultSampler);
     }
 
     void TextureRegistry::InitDummyTexture()

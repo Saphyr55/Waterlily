@@ -44,7 +44,7 @@ namespace Wl
         static bool Reflect(SPIRVPipelineReflection& outReflect, const SPIRVShader& shader);
 
         static HashMap<uint32_t, RHIShaderResourceGroupLayout*> BuildLayouts(const SPIRVPipelineReflection& reflect,
-                                                                             SharedPtr<RHIShaderResourceGroupLayoutCache> cache,
+                                                                             RHIShaderResourceGroupLayoutCache& cache,
                                                                              ArrayView<uint32_t> externGroups);
     };
 

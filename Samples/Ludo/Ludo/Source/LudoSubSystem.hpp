@@ -3,7 +3,7 @@
 #include "LudoExports.hpp"
 #include "Waterlily/Assets/AssetManager.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/Engine/EngineUpdater.hpp"
+#include "Waterlily/Engine/EngineSubSystem.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 #include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
@@ -27,7 +27,7 @@ namespace Wl
 
     inline const StringID LudoName = WL_SID("LudoSystem");
 
-    class LUDO_API LudoUpdater : public EngineUpdater
+    class LUDO_API LudoSubSystem : public EngineSubSystem
     {
     public:
         virtual void OnStartup() override;
@@ -70,12 +70,12 @@ namespace Wl
             return success;
         }
 
-        LudoUpdater(const SharedPtr<RenderService>& renderService, const SharedPtr<AssetManager>& assetManager)
+        LudoSubSystem(const SharedPtr<RenderService>& renderService, const SharedPtr<AssetManager>& assetManager)
             : m_renderService(renderService)
             , m_assetManager(assetManager)
         {
         }
-        virtual ~LudoUpdater() = default;
+        virtual ~LudoSubSystem() = default;
 
     private:
         SharedPtr<RenderService> m_renderService;
