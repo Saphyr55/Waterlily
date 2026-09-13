@@ -30,7 +30,7 @@ namespace Wl
         Array<RHIVertexAttributeDescription> Attributes;
     };
 
-    struct RHIGraphicsPipelineRenderingDescription
+    struct RHIGraphicsPipelineRenderingInfo
     {
         Array<RHIFormat> ColorAttachmentFormats;
         RHIFormat DepthAttachmentFormat = RHIFormat::Undefined;
@@ -50,7 +50,7 @@ namespace Wl
         
         // Either the Render Pass or Dynamic Rendering.
         RHIRenderPass* RenderPass = nullptr;
-        RHIGraphicsPipelineRenderingDescription RenderingInfo;
+        RHIGraphicsPipelineRenderingInfo RenderingInfo;
     };
 
     class RHIGraphicsPipelineDescriptionBuilder
@@ -103,6 +103,12 @@ namespace Wl
         RHIGraphicsPipelineDescriptionBuilder& WithRenderPass(RHIRenderPass* renderPass)
         {
             m_description.RenderPass = renderPass;
+            return *this;
+        }
+
+        RHIGraphicsPipelineDescriptionBuilder& WithRenderingInfo(const RHIGraphicsPipelineRenderingInfo& renderingInfo)
+        {
+            m_description.RenderingInfo = renderingInfo;
             return *this;
         }
 

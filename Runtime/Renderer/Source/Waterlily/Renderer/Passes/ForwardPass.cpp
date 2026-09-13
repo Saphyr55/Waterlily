@@ -13,7 +13,7 @@ namespace Wl
     FrameGraphPass& ForwardPassCreate(PassContext& passContext,
                                       FramePacket& packet,
                                       GraphicsPipelineState& pipelineState,
-                                      ForwardPassParameters& params)
+                                      ForwardPassParameters& paramaters)
     {
         FrameGraphPass& forwardPass = passContext.FrameGraph->AddPass(LudoForwardPassName);
         FrameGraphPassDelegate& forwardPassDelegate = forwardPass.EmplaceDefault();
@@ -21,27 +21,14 @@ namespace Wl
         forwardPassDelegate.SetOnSetup([&](FrameGraphPassSetupContext& context, FrameGraphPassBuilder& builder)
         {
             builder.SetStage(FrameGraphPassStage::Graphics);
-            builder.Write(params.Color);
-            builder.ReadStorage(params.Indirect);
-            builder.SetDepthStencil(params.DepthStencil);
+            builder.Write(paramaters.Color);
+            builder.ReadStorage(paramaters.Indirect);
+            builder.SetDepthStencil(paramaters.DepthStencil);
         });
 
         forwardPassDelegate.SetOnExecute([&](FrameGraphPassExecutionContext& context)
         {
-            RHISwapchain* swapchain = context.FrameContext->GetSwapchain();
-            RHICommandBuffer* commandBuffer = context.CommandBuffer;
             Frame& frame = context.FrameContext->GetCurrentFrame();
-
-            float width = static_cast<float>(swapchain->GetWidth());
-            float height = static_cast<float>(swapchain->GetHeight());
-
-            Rect2D area(0.0f, 0.0f, width, height);
-            Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
-            Rect2D scissor(0.0f, 0.0f, width, height);
-
-            Vector4f color(0.01f, 0.01f, 0.01f, 1.0f);
-
-            RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
 
             RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[0];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
@@ -52,9 +39,9 @@ namespace Wl
                                                    packet.ViewAllocation.Size);
 
             RHIWriteBufferResource writeLight(1,
-                                              params.LightAllocation->Buffer,
-                                              params.LightAllocation->Offset,
-                                              params.LightAllocation->Size);
+                                              paramaters.LightAllocation->Buffer,
+                                              paramaters.LightAllocation->Offset,
+                                              paramaters.LightAllocation->Size);
 
             globalSRG->SetBuffer(writeRenderView);
             globalSRG->SetBuffer(writeLight);
@@ -74,34 +61,31 @@ namespace Wl
             RHIShaderResourceGroup* textureSRG = passContext.TextureRegistry->GetSRG();
             RHIShaderResourceGroup* materialSRG = passContext.MaterialRegistry->GetSRG();
 
-            commandBuffer->BeginRenderPass(renderPassBeginInfo);
-            {
-                RHIGraphicsPipeline* pipeline = passContext.PipelineManager->GetGraphicsPipeline(LudoForwardPassName);
-                commandBuffer->BindPipeline(pipeline);
+            RHIGraphicsPipeline* pipeline = passContext.PipelineManager->GetGraphicsPipeline(LudoForwardPassName);
 
-                commandBuffer->SetViewport(viewport);
-                commandBuffer->SetScissor(scissor);
+            RHICommandBuffer* commandBuffer = context.CommandBuffer;
+            commandBuffer->BindPipeline(pipeline);
 
-                commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
-                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, 1);
-                commandBuffer->BindSRG(pipeline, {textureSRG}, 2);
-                commandBuffer->BindSRG(pipeline, {materialSRG}, 3);
+            commandBuffer->SetViewport(pipelineState.Viewport);
+            commandBuffer->SetScissor(pipelineState.Scissor);
 
-                commandBuffer->BindVertexBuffers(packet.VertexBuffers);
-                commandBuffer->BindIndexBuffer(packet.IndexBuffers);
+            commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
+            commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, 1);
+            commandBuffer->BindSRG(pipeline, {textureSRG}, 2);
+            commandBuffer->BindSRG(pipeline, {materialSRG}, 3);
 
-                FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(params.Indirect);
+            commandBuffer->BindVertexBuffers(packet.VertexBuffers);
+            commandBuffer->BindIndexBuffer(packet.IndexBuffers);
 
-                RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand;
-                drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalBuffer.Handle;
-                drawIndexedIndirectCommand.Offset = 0;
-                drawIndexedIndirectCommand.DrawCount = packet.DrawCount;
-                drawIndexedIndirectCommand.Stride = sizeof(RHIDrawIndexedCommand);
+            FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(paramaters.Indirect);
 
-                commandBuffer->Draw(drawIndexedIndirectCommand);
-            }
+            RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand;
+            drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalBuffer.Handle;
+            drawIndexedIndirectCommand.Offset = 0;
+            drawIndexedIndirectCommand.DrawCount = packet.DrawCount;
+            drawIndexedIndirectCommand.Stride = sizeof(RHIDrawIndexedCommand);
 
-            commandBuffer->EndRenderPass();
+            commandBuffer->Draw(drawIndexedIndirectCommand);
         });
 
         return forwardPass;

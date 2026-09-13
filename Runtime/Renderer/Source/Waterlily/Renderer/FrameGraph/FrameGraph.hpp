@@ -9,18 +9,17 @@
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/Framebuffer.hpp"
+#include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
-#include "Waterlily/RHI/RenderPass.hpp"
+#include "Waterlily/RHI/Semaphore.hpp"
 #include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
-#include "Waterlily/Renderer/FrameGraph/FrameGraphCache.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResourcePool.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
-#include <cstddef>
+
 
 namespace Wl
 {
@@ -51,9 +50,6 @@ namespace Wl
             return *delegatePass;
         }
 
-        RHIRenderPass* GetRenderPass(const FrameGraphPass& pass);
-        RHIRenderPass* GetRenderPass(const StringID& name);
-
         void BeginFrame();
         void EndFrame();
 
@@ -83,6 +79,12 @@ namespace Wl
         inline const FrameGraphBufferResource& GetBuffer(const FrameGraphBufferHandle& handle) const
         {
             return m_buffers[handle.GetIndex()];
+        }
+        
+        inline const RHIGraphicsPipelineRenderingInfo GetPassRenderingInfo(FrameGraphPass& pass) const
+        {
+            WL_CHECK_MSG(m_passRenderingInfos.Contains(pass.GetIndex()), "Pass rendering info not found for pass %s", pass.GetName().GetText().GetData());
+            return m_passRenderingInfos[pass.GetIndex()];
         }
 
         inline const Array<size_t>& GetSortedPasses() const
@@ -122,17 +124,16 @@ namespace Wl
         void BuildBarriers();
         void ComputeResourceLifetimes();
         
-        void BuildPasses();
-        void BuildGraphicsPass(size_t passIndex);
-        void BuildComputePass(size_t passIndex);
+        void ComputeRenderingInfoPasses();
+        RHIGraphicsPipelineRenderingInfo ComputeRenderingInfoPass(const FrameGraphPass& pass) const;
+        
+        RHIBeginRenderingInfo BuildRenderingInfo(FrameGraphPass& pass);
 
         void AllocatePhysicalPassResources(size_t passIndex);
         void DeallocatePhysicalPassResources(size_t passIndex);
 
         void AllocatePhysicalResource(FrameGraphTextureResource& resource);
         void DeallocatePhysicalResource(FrameGraphTextureResource& resource);
-
-        RHIFramebuffer* BuildFramebuffer(FrameGraphPass& pass);
 
         void DestroyPasses();
 
@@ -147,14 +148,7 @@ namespace Wl
             RHIAttachmentStoreOp storeOp;
         };
 
-        struct ResolvedLayoutResult
-        {
-            RHITextureLayout initialLayout;
-            RHITextureLayout finalLayout;
-        };
-
-        ResolvedStoreLoadResult ResolveStoreLoadOp(size_t passIndex, FrameGraphTextureHandle handle);
-        ResolvedLayoutResult ResolveLayouts(size_t passIndex, FrameGraphTextureHandle handle);
+        ResolvedStoreLoadResult ResolveStoreLoadOp(FrameGraphPass& pass, FrameGraphTextureHandle handle);
 
     private:
         SharedPtr<RHIDevice> m_device;
@@ -165,14 +159,15 @@ namespace Wl
 
         HashSet<FrameGraphTextureHandle> m_outputs;
 
+        HashMap<size_t, RHIGraphicsPipelineRenderingInfo> m_passRenderingInfos;
         HashMap<StringID, size_t> m_passNames;
         Array<FrameGraphPass> m_passes;
         Array<size_t> m_sortedPasses;
 
+        Array<RHISemaphore*> m_semaphores;
+        
         FrameGraphPhysicalTexturePool m_texturePool;
-
-        FrameGraphFramebufferCache m_framebufferCache;
-        FrameGraphRenderPassRegistry m_renderPassRegistry;
+        HashMap<const RHISwapchainBuffer*, bool> isFirstFrame;
     };
 
 }// namespace Wl

@@ -1,6 +1,5 @@
 #include "Waterlily/RHIVulkan/VulkanRenderPass.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/RHI/RenderPass.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
@@ -18,16 +17,16 @@ namespace Wl
 
         for (size_t attachmenIndex = 0; attachmenIndex < m_description.ColorAttachmentDecriptions.GetSize(); attachmenIndex++)
         {
-            const RHIColorAttachmentDescription& attachment_description = m_description.ColorAttachmentDecriptions[attachmenIndex];
+            const RHIColorAttachmentDescription& attachmentDescription = m_description.ColorAttachmentDecriptions[attachmenIndex];
             VkAttachmentDescription colorAttachmentDescription = {};
-            colorAttachmentDescription.format = VulkanFormatGet(attachment_description.Format);
+            colorAttachmentDescription.format = VulkanFormatGet(attachmentDescription.Format);
             colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-            colorAttachmentDescription.loadOp = VulkanLoadOpGet(attachment_description.LoadOp);
-            colorAttachmentDescription.storeOp = VulkanStoreOpGet(attachment_description.StoreOp);
-            colorAttachmentDescription.stencilLoadOp = VulkanLoadOpGet(attachment_description.StencilLoadOp);
-            colorAttachmentDescription.stencilStoreOp = VulkanStoreOpGet(attachment_description.StencilStoreOp);
-            colorAttachmentDescription.initialLayout = VulkanTextureLayoutGet(attachment_description.InitialLayout);
-            colorAttachmentDescription.finalLayout = VulkanTextureLayoutGet(attachment_description.FinalLayout);
+            colorAttachmentDescription.loadOp = VulkanLoadOpGet(attachmentDescription.LoadOp);
+            colorAttachmentDescription.storeOp = VulkanStoreOpGet(attachmentDescription.StoreOp);
+            colorAttachmentDescription.stencilLoadOp = VulkanLoadOpGet(attachmentDescription.StencilLoadOp);
+            colorAttachmentDescription.stencilStoreOp = VulkanStoreOpGet(attachmentDescription.StencilStoreOp);
+            colorAttachmentDescription.initialLayout = VulkanTextureLayoutGet(attachmentDescription.InitialLayout);
+            colorAttachmentDescription.finalLayout = VulkanTextureLayoutGet(attachmentDescription.FinalLayout);
             attachments.Append(colorAttachmentDescription);
             
             VkAttachmentReference colorAttachmentReference = {};

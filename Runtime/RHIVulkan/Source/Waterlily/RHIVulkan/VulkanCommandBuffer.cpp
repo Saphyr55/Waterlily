@@ -619,25 +619,25 @@ namespace Wl
     {
         auto mapToVkRenderingAttachmentInfo = [](const RHIRenderingAttachmentInfo& attachmentInfo, bool depthStencil = false) -> VkRenderingAttachmentInfo
         {
-            VulkanTextureView* textureView = static_cast<VulkanTextureView*>(attachmentInfo.TextureView);
-            VulkanTextureView* resolvedTextureView = static_cast<VulkanTextureView*>(attachmentInfo.ResolvedTextureView);
-
             VkRenderingAttachmentInfo vkAttachmentInfo = {};
             vkAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
 
             vkAttachmentInfo.loadOp = VulkanLoadOpGet(attachmentInfo.LoadOp);
             vkAttachmentInfo.storeOp = VulkanStoreOpGet(attachmentInfo.StoreOp);
 
+            VulkanTextureView* textureView = static_cast<VulkanTextureView*>(attachmentInfo.TextureView);
+
             vkAttachmentInfo.imageView = textureView->GetHandle();
             vkAttachmentInfo.imageLayout = VulkanTextureLayoutGet(attachmentInfo.TextureLayout);
 
-            vkAttachmentInfo.resolveImageView = resolvedTextureView->GetHandle();
-            vkAttachmentInfo.resolveImageLayout = VulkanTextureLayoutGet(attachmentInfo.ResolvedTextureLayout);
+            // VulkanTextureView* resolvedTextureView = static_cast<VulkanTextureView*>(attachmentInfo.ResolvedTextureView);
+            // vkAttachmentInfo.resolveImageView = resolvedTextureView->GetHandle();
+            // vkAttachmentInfo.resolveImageLayout = VulkanTextureLayoutGet(attachmentInfo.ResolvedTextureLayout);
 
             if (depthStencil)
             {
                 // TODO:
-                vkAttachmentInfo.clearValue.depthStencil.depth = 0.0f;
+                vkAttachmentInfo.clearValue.depthStencil.depth = 1.0f;
                 vkAttachmentInfo.clearValue.depthStencil.stencil = 0u;
             }
             else
@@ -656,17 +656,28 @@ namespace Wl
         colorAttachments.Resize(info.ColorAttachments.GetSize());
         Wl::Transform(info.ColorAttachments.begin(), info.ColorAttachments.end(), colorAttachments.data(), mapToVkRenderingAttachmentInfo);
 
-        VkRenderingAttachmentInfo depthAttachment = mapToVkRenderingAttachmentInfo(info.DepthAttachment, true);
-        VkRenderingAttachmentInfo stencilAttachment = mapToVkRenderingAttachmentInfo(info.StencilAttachment, true);
+        VkRenderingAttachmentInfo depthAttachment;
+        if (info.DepthAttachment.HasValue())
+        {
+            depthAttachment = mapToVkRenderingAttachmentInfo(*info.DepthAttachment, true);
+        }
+
+        VkRenderingAttachmentInfo stencilAttachment = {};
+        if (info.StencilAttachment.HasValue())
+        {
+            stencilAttachment = mapToVkRenderingAttachmentInfo(*info.StencilAttachment, true);
+        }
 
         VkRenderingInfo vkRenderingInfo = {};
         vkRenderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
         vkRenderingInfo.colorAttachmentCount = info.ColorAttachments.GetSize();
         vkRenderingInfo.pColorAttachments = colorAttachments.GetData();
-        vkRenderingInfo.pDepthAttachment = &depthAttachment;
-        vkRenderingInfo.pStencilAttachment = &stencilAttachment;
+        vkRenderingInfo.pDepthAttachment = info.DepthAttachment.HasValue() ? &depthAttachment : nullptr;
+        vkRenderingInfo.pStencilAttachment = info.StencilAttachment.HasValue() ? &stencilAttachment : nullptr;
         vkRenderingInfo.layerCount = info.LayerCount;
-        vkRenderingInfo.viewMask = info.ViewMask;
+        vkRenderingInfo.viewMask = 0;
+        vkRenderingInfo.renderArea.offset = {static_cast<int32_t>(info.RenderArea.X), static_cast<int32_t>(info.RenderArea.Y)};
+        vkRenderingInfo.renderArea.extent = {static_cast<uint32_t>(info.RenderArea.Width), static_cast<uint32_t>(info.RenderArea.Height)};
 
         VulkanAPI::vkCmdBeginRendering(m_handle, &vkRenderingInfo);
     }

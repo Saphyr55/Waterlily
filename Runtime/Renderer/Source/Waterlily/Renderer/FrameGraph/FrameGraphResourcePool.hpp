@@ -30,7 +30,7 @@ namespace Wl
     public:
         using Handle = size_t;
 
-        void BeginFrame(uint64_t maxFrameLifetime);
+        void GarbageCollect(uint64_t maxFrameLifetime);
 
         inline PooledPhysicalTexture& GetResource(PooledPhysicalTextureHandle handle)
         {
@@ -55,7 +55,7 @@ namespace Wl
         FrameGraphPhysicalTexture Create(const FrameGraphPhysicalTextureKey& key);
         void Destroy(PooledPhysicalTexture& handle);
 
-        void GarbageCollect(uint64_t maxFrameLifetime);
+        void InternalGarbageCollect(uint64_t maxFrameLifetime);
 
     private:
         SharedPtr<RHIDevice> m_device;

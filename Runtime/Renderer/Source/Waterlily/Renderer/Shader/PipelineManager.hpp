@@ -22,8 +22,9 @@ namespace Wl
     struct GraphicsPipelineState
     {
         RHIRenderPass* RenderPass = nullptr;
-        Shader* VertexShader;
-        Shader* FragmentShader;
+        RHIGraphicsPipelineRenderingInfo RenderingInfo = {};
+        Shader* VertexShader = nullptr;
+        Shader* FragmentShader = nullptr;
         Viewport Viewport = {};
         Rect2D Scissor = {};
         RHICullModeFlags CullMode = RHICullModeFlags::Back;

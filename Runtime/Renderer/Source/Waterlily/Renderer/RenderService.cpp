@@ -56,12 +56,7 @@ namespace Wl
     {
         state.SRGLayouts[m_config.SRGIndexTextures] = m_textureRegistry->GetSRGLayout();
         state.SRGLayouts[m_config.SRGIndexMaterials] = m_materialRegistry->GetSRGLayout();
-        state.CullMode = state.CullMode;
-        state.Viewport = state.Viewport;
-        state.Scissor = state.Scissor;
-        state.VertexShader = state.VertexShader;
-        state.FragmentShader = state.FragmentShader;
-        state.RenderPass = m_frameGraph->GetRenderPass(pass.GetName());
+        state.RenderingInfo = m_frameGraph->GetPassRenderingInfo(pass);
 
         return m_pipelineManager->GetOrCreateGraphicsPipeline(pass.GetName(), state);
     }

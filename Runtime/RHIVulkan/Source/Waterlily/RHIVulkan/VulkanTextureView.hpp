@@ -15,7 +15,7 @@ namespace Wl
             return m_handle;
         }
 
-        void Create(const RHITextureViewDescription& description, VkImageView image_view);
+        void Create(const RHITextureViewDescription& description, VkImageView imageView);
         void Create(const RHITextureViewDescription& description);
 
         void Destroy();

@@ -110,7 +110,6 @@ namespace Wl
                 if (CompileShaders())
                 {
                     shaderBundle->ReloadAssets();
-                    pipelineManager->ResetFrameSRGPool();
                 }
                 else
                 {

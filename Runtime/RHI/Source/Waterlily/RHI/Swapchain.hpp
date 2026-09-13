@@ -8,6 +8,12 @@
 namespace Wl
 {
 
+    struct RHISwapchainBuffer
+    {
+        RHITexture* Texture;
+        RHITextureView* View;
+    };
+
     struct RHISwapchainAcquireResult
     {
         uint32_t ImageIndex = 0;
@@ -30,9 +36,9 @@ namespace Wl
 
         virtual RHIFormat GetFormat() = 0;
 
-        virtual ArrayView<RHITextureView*> GetTextureViews() const = 0;
+        virtual ArrayView<RHISwapchainBuffer> GetBuffers() const = 0;
 
-        virtual RHITextureView* GetCurrentTextureView() const = 0;
+        virtual const RHISwapchainBuffer& GetCurrentBuffer() const = 0;
     };
 
 }// namespace Wl

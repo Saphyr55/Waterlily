@@ -12,23 +12,23 @@ namespace Wl
     FrameGraphPass& GBufferPassCreate(PassContext& passContext,
                                       FramePacket& packet,
                                       GraphicsPipelineState& pipelineState,
-                                      GBufferPassParameters& data)
+                                      GBufferPassParameters& parameters)
     {
         FrameGraphPass& gBufferPass = passContext.FrameGraph->AddPass(GBufferPassName);
         FrameGraphPassDelegate& gBufferPassDelegate = gBufferPass.EmplaceDefault();
 
-        gBufferPassDelegate.SetOnSetup([&](FrameGraphPassSetupContext& /* context */, FrameGraphPassBuilder& builder)
+        gBufferPassDelegate.SetOnSetup([=, &parameters](FrameGraphPassSetupContext& /* context */, FrameGraphPassBuilder& builder)
         {
             builder.SetStage(FrameGraphPassStage::Graphics);
-            builder.Write(data.Position);
-            builder.Write(data.Normal);
-            builder.Write(data.Albedo);
-            builder.Write(data.MetallicRoughness);
-            builder.ReadStorage(data.Indirect);
-            builder.SetDepthStencil(data.DepthStencil);
+            builder.Write(parameters.Position);
+            builder.Write(parameters.Normal);
+            builder.Write(parameters.Albedo);
+            builder.Write(parameters.MetallicRoughness);
+            builder.ReadStorage(parameters.Indirect);
+            builder.SetDepthStencil(parameters.DepthStencil);
         });
 
-        gBufferPassDelegate.SetOnExecute([&](FrameGraphPassExecutionContext& context)
+        gBufferPassDelegate.SetOnExecute([=, &passContext, &packet, &pipelineState, &parameters](FrameGraphPassExecutionContext& context)
         {
             RHICommandBuffer* commandBuffer = context.CommandBuffer;
             Frame& frame = context.FrameContext->GetCurrentFrame();
@@ -60,41 +60,29 @@ namespace Wl
             RHIShaderResourceGroup* texturesSRG = passContext.TextureRegistry->GetSRG();
             RHIShaderResourceGroup* materialsSRG = passContext.MaterialRegistry->GetSRG();
 
-            float width = static_cast<float>(context.FrameContext->GetWidth());
-            float height = static_cast<float>(context.FrameContext->GetHeight());
+            RHIGraphicsPipeline* pipeline = passContext.PipelineManager->GetGraphicsPipeline(GBufferPassName);
+            commandBuffer->BindPipeline(pipeline);
 
-            Rect2D area(0.0f, 0.0f, width, height);
-            Vector4f color(0.01f, 0.01f, 0.01f, 1.0f);
-            RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
+            commandBuffer->SetViewport(pipelineState.Viewport);
+            commandBuffer->SetScissor(pipelineState.Scissor);
 
-            commandBuffer->BeginRenderPass(renderPassBeginInfo);
-            {
-                RHIGraphicsPipeline* pipeline = passContext.PipelineManager->GetGraphicsPipeline(GBufferPassName);
-                commandBuffer->BindPipeline(pipeline);
+            commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
+            commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, 1);
+            commandBuffer->BindSRG(pipeline, {texturesSRG}, 2);
+            commandBuffer->BindSRG(pipeline, {materialsSRG}, 3);
 
-                commandBuffer->SetViewport(pipelineState.Viewport);
-                commandBuffer->SetScissor(pipelineState.Scissor);
-                
-                commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
-                commandBuffer->BindSRG(pipeline, {renderInstanceSRG}, 1);
-                commandBuffer->BindSRG(pipeline, {texturesSRG}, 2);
-                commandBuffer->BindSRG(pipeline, {materialsSRG}, 3);
+            commandBuffer->BindVertexBuffers(packet.VertexBuffers);
+            commandBuffer->BindIndexBuffer(packet.IndexBuffers);
 
-                commandBuffer->BindVertexBuffers(packet.VertexBuffers);
-                commandBuffer->BindIndexBuffer(packet.IndexBuffers);
+            FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(parameters.Indirect);
 
-                FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(data.Indirect);
+            RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand = {};
+            drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalBuffer.Handle;
+            drawIndexedIndirectCommand.Offset = 0;
+            drawIndexedIndirectCommand.DrawCount = packet.DrawCount;
+            drawIndexedIndirectCommand.Stride = sizeof(RHIDrawIndexedCommand);
 
-                RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand = {};
-                drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalBuffer.Handle;
-                drawIndexedIndirectCommand.Offset = 0;
-                drawIndexedIndirectCommand.DrawCount = packet.DrawCount;
-                drawIndexedIndirectCommand.Stride = sizeof(RHIDrawIndexedCommand);
-
-                commandBuffer->Draw(drawIndexedIndirectCommand);
-            }
-
-            commandBuffer->EndRenderPass();
+            commandBuffer->Draw(drawIndexedIndirectCommand);
         });
 
         return gBufferPass;

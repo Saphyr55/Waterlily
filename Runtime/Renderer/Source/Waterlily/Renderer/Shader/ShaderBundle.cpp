@@ -22,7 +22,6 @@ namespace Wl
 
     void ShaderBundle::ReloadAssets()
     {
-
         LoadInternal(true);
 
         for (auto [name, shader]: m_graphicsShaders)

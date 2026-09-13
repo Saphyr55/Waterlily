@@ -3,9 +3,11 @@
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Cast.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Semaphore.hpp"
+#include "Waterlily/RHI/Swapchain.hpp"
 #include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
@@ -122,6 +124,8 @@ namespace Wl
 
     void VulkanSwapchain::Create()
     {
+        m_allocator = MemoryStack::GetCurrentAllocator();
+
         VulkanSwapchainSupportDetails swapchainSupportDetails = QuerySupportDetails();
 
         bool isSwapchainAdequate =
@@ -178,7 +182,7 @@ namespace Wl
         }
 
         m_images.Resize(imageCount);
-        m_textureViews.Reserve(imageCount);
+        m_buffers.Reserve(imageCount);
 
         VulkanAPI::vkGetSwapchainImagesKHR(m_context.Device, m_handle, &imageCount, m_images.data());
 
@@ -188,9 +192,9 @@ namespace Wl
         for (uint32_t i = 0; i < imageCount; i++)
         {
             VkImage image = m_images[i];
-
-            Allocator* allocator = MemoryStack::GetCurrentAllocator();
-            VulkanTextureView* textureView = Wl::New(allocator, VulkanTextureView());
+            
+            VulkanTexture* texture = Wl::New(m_allocator, VulkanTexture(image));
+            VulkanTextureView* textureView = Wl::New(m_allocator, VulkanTextureView());
 
             VkImageViewCreateInfo imageViewCreateInfo = {};
             imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -210,21 +214,24 @@ namespace Wl
             WL_VULKAN_CHECK(VulkanAPI::vkCreateImageView(
                     m_context.Device, &imageViewCreateInfo, m_context.Allocator, &textureView->GetHandle()));
 
-            m_textureViews.Append(textureView);
+            m_buffers.Append(RHISwapchainBuffer(texture, textureView));
         }
 
-        WL_CHECK(m_textureViews.size() == m_images.size());
+        WL_CHECK(m_buffers.size() == m_images.size());
     }
 
     void VulkanSwapchain::Destroy()
     {
-        for (RHITextureView* textureView: m_textureViews)
+        for (RHISwapchainBuffer& buffer: m_buffers)
         {
-            VulkanTextureView* vulkanTextureView = static_cast<VulkanTextureView*>(textureView);
+            VulkanTextureView* vulkanTextureView = static_cast<VulkanTextureView*>(buffer.View);
             vulkanTextureView->Destroy();
+            
+            Wl::Delete(m_allocator, buffer.View);
+            Wl::Delete(m_allocator, buffer.Texture);
         }
 
-        m_textureViews.Clear();
+        m_buffers.Clear();
         VulkanAPI::vkDestroySwapchainKHR(m_context.Device, m_handle, m_context.Allocator);
     }
 

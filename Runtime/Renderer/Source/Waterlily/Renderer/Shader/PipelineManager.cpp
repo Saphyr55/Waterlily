@@ -143,7 +143,6 @@ namespace Wl
 
     RHIGraphicsPipeline* PipelineManager::CreateInternalGraphicsPipeline(GraphicsPipelineState& state)
     {
-        WL_CHECK_MSG(state.RenderPass, "The GraphicsPipelineProperties.RenderPass is not nullable to create a graphics pipeline.");
         WL_CHECK_MSG(state.VertexShader, "The GraphicsPipelineProperties.VertexShader is not nullable to create a graphics pipeline.");
         WL_CHECK_MSG(state.FragmentShader, "The GraphicsPipelineProperties.FragmentShader is not nullable to create a graphics pipeline.");
 
@@ -167,16 +166,24 @@ namespace Wl
         }
 
         RHIGraphicsPipelineDescriptionBuilder builder;
-        builder.WithRenderPass(state.RenderPass)
-                .WithVertexShader(vertexShader, reflection.EntryPointNames[RHIShaderStage::Vertex])
+
+        if (state.RenderPass)
+        {
+            builder.WithRenderPass(state.RenderPass);
+        }
+        else
+        {
+            builder.WithRenderingInfo(state.RenderingInfo);
+        }
+
+        builder.WithVertexShader(vertexShader, reflection.EntryPointNames[RHIShaderStage::Vertex])
                 .WithFragmentShader(fragmentShader, reflection.EntryPointNames[RHIShaderStage::Fragment])
                 .WithVertexBindings(bindings, attributes)
                 .WithViewport(state.Viewport, state.Scissor)
                 .WithSRGLayout(srgLayouts)
                 .WithCullMode(state.CullMode);
 
-        const RHIGraphicsPipelineDescription& description = builder.Build();
-        return m_device->CreateGraphicsPipeline(description);
+        return m_device->CreateGraphicsPipeline(builder.Build());
     }
 
     RHIComputePipeline* PipelineManager::CreateInternalComputePipeline(ComputePipelineState& state)

@@ -30,6 +30,13 @@ namespace Wl
         }
 
     public:
+        VulkanTexture(VkImage handle)
+            : m_handle(handle)
+            , m_allocation(VK_NULL_HANDLE)
+            , m_memory(VK_NULL_HANDLE)
+        {
+        }
+        
         VulkanTexture() = default;
         virtual ~VulkanTexture() override = default;
 

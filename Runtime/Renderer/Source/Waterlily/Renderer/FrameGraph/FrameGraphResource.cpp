@@ -23,6 +23,7 @@ namespace Wl
         resource.Info.Layers = texture->GetDescription().Layers;
         resource.Info.Levels = texture->GetDescription().MipLevels;
         resource.Usage = texture->GetDescription().Usage;
+        resource.CurrentLayout = texture->GetDescription().Layout;
         resource.IsTransient = false;
         resource.PersistantResource.Texture = texture;
         resource.PersistantResource.View = view;

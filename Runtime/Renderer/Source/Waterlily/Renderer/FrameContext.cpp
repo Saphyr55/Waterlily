@@ -18,7 +18,7 @@ namespace Wl
 
         m_swapchain = m_device->CreateSwapchain(info.FrameWidth, info.FrameWidth, m_maxFrameInFlight);
 
-        m_frameInFlightFences.Resize(m_swapchain->GetTextureViews().GetSize(), nullptr);
+        m_frameInFlightFences.Resize(m_swapchain->GetBuffers().GetSize(), nullptr);
 
         constexpr uint32_t renderFrameFramebufferIndex = 0;
 
@@ -35,7 +35,7 @@ namespace Wl
 
             frame.FrameAvailableSemaphore = m_device->CreateSemaphore();
 
-            for (size_t i = 0; i < m_swapchain->GetTextureViews().GetSize(); i++)
+            for (size_t i = 0; i < m_swapchain->GetBuffers().GetSize(); i++)
             {
                 frame.RenderFinishedSemaphore.Append(m_device->CreateSemaphore());
             }
@@ -97,7 +97,7 @@ namespace Wl
         {
             m_device->DestroyCommandAllocator(frame.CommandAllocator);
             m_device->DestroySemaphore(frame.FrameAvailableSemaphore);
-            for (size_t i = 0; i < m_swapchain->GetTextureViews().GetSize(); i++)
+            for (size_t i = 0; i < m_swapchain->GetBuffers().GetSize(); i++)
             {
                 m_device->DestroySemaphore(frame.RenderFinishedSemaphore[i]);
             }

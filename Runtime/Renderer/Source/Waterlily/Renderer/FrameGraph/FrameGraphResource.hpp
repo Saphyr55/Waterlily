@@ -66,7 +66,6 @@ namespace Wl
         size_t PooledResource;
         FrameGraphPhysicalTexture PersistantResource;
         RHITextureUsageFlags Usage = RHITextureUsageFlags::None;
-        RHITextureLayout InitialLayout = RHITextureLayout::Undefined;
         RHITextureLayout CurrentLayout = RHITextureLayout::Undefined;
         FrameGraphResourceLifetime Lifetime;
         bool IsTransient = false;

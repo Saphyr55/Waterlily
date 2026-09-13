@@ -2,6 +2,7 @@
 
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
+#include "Waterlily/Core/Containers/Option.hpp"
 #include "Waterlily/Core/Math/Vector4.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
@@ -128,18 +129,15 @@ namespace Wl
         RHIAttachmentStoreOp StoreOp = RHIAttachmentStoreOp::Store;
         RHITextureView* TextureView;
         RHITextureLayout TextureLayout;
-        RHITextureView* ResolvedTextureView;
-        RHITextureLayout ResolvedTextureLayout;
     };
 
     struct RHIBeginRenderingInfo
     {
         Array<RHIRenderingAttachmentInfo> ColorAttachments;
-        RHIRenderingAttachmentInfo DepthAttachment;
-        RHIRenderingAttachmentInfo StencilAttachment;
+        Option<RHIRenderingAttachmentInfo> DepthAttachment = Option<RHIRenderingAttachmentInfo>::None();
+        Option<RHIRenderingAttachmentInfo> StencilAttachment = Option<RHIRenderingAttachmentInfo>::None();
         Rect2D RenderArea;
-        uint32_t LayerCount;
-        uint32_t ViewMask;
+        uint32_t LayerCount = 1;
     };
 
     /**
