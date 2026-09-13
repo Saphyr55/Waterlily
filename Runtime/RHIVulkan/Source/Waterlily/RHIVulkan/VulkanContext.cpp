@@ -8,11 +8,8 @@
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/RHIVulkan/VulkanCommandQueue.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
-#include "Waterlily/RHIVulkan/VulkanPhysicalDevice.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"
 #include "Waterlily/RHIVulkan/VulkanShaderModule.hpp"
-#include "vulkan/vulkan_core.h"
-
 
 #include <vk_mem_alloc.h>
 
@@ -75,27 +72,28 @@ namespace Wl
                         presentSupport ? "Yes" : "No");
         }
 
-        Array<const char*> physicalDeviceExtensions;
-        physicalDeviceExtensions.Resize(s_PhysicalDeviceExtensions.size());
+        const VulkanPhysicalDeviceRequirements& requirements = physicalDeviceSelector.GetRequirements();
 
-        for (int32_t i = 0; i < s_PhysicalDeviceExtensions.size(); i++)
+        Array<const char*> requiredDeviceExtensions;
+        requiredDeviceExtensions.Resize(requirements.RequiredExtensions.GetSize());
+        for (uint32_t i = 0; i < requirements.RequiredExtensions.GetSize(); i++)
         {
-            physicalDeviceExtensions[i] = s_PhysicalDeviceExtensions[i].data();
+            requiredDeviceExtensions[i] = requirements.RequiredExtensions[i].GetData();
         }
 
         VkDeviceCreateInfo deviceCreateInfo = {};
         deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        deviceCreateInfo.pNext = &physicalDeviceSelector.GetInfo().VulkanFeatures12;
+        deviceCreateInfo.pNext = &physicalDeviceSelector.GetInfo().VulkanFeatures14;
         deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
         deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
         deviceCreateInfo.pEnabledFeatures = &physicalDeviceSelector.GetInfo().Features;
-        deviceCreateInfo.ppEnabledExtensionNames = physicalDeviceExtensions.data();
-        deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(physicalDeviceExtensions.size());
+        deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+        deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
 
         WL_LOG_INFO("Vulkan", "Enabled Physical Device Extensions:");
-        for (int32_t i = 0; i < physicalDeviceExtensions.size(); i++)
+        for (int32_t i = 0; i < requiredDeviceExtensions.size(); i++)
         {
-            WL_LOG_INFO("Vulkan", "Extension: %s", physicalDeviceExtensions[i]);
+            WL_LOG_INFO("Vulkan", "Extension: %s", requiredDeviceExtensions[i]);
         }
 
         WL_VULKAN_CHECK(VulkanAPI::vkCreateDevice(
@@ -157,7 +155,9 @@ namespace Wl
         WL_CHECK(context.Surface->GetHandle());
 
         VulkanPhysicalDeviceRequirements requirements = {};
-        requirements.RequiredExtensions = s_PhysicalDeviceExtensions;
+        requirements.RequiredExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                                           VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                                           VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
         requirements.PreferredDeviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 
         VulkanPhysicalDeviceSelector selector(requirements);
@@ -204,20 +204,20 @@ namespace Wl
 
     RHIQueueType VulkanQueueType(VulkanContext& context, uint32_t queueFamilyIndex)
     {
-        const VkQueueFamilyProperties& queue_family_properties =
+        const VkQueueFamilyProperties& queueFamilyProperties =
                 context.PhysicalDeviceInfo.QueueFamilies[queueFamilyIndex];
 
-        if (queue_family_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        if (queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             return RHIQueueType::Graphics;
         }
 
-        if (queue_family_properties.queueFlags & VK_QUEUE_COMPUTE_BIT)
+        if (queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT)
         {
             return RHIQueueType::Compute;
         }
 
-        if (queue_family_properties.queueFlags & VK_QUEUE_TRANSFER_BIT)
+        if (queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT)
         {
             return RHIQueueType::Transfer;
         }
@@ -231,21 +231,21 @@ namespace Wl
         VulkanPhysicalDeviceInformation& info = context.PhysicalDeviceInfo;
         Array<uint32_t> indices(info.QueueFamilies.size());
 
-        for (uint32_t queue_family_index = 0; queue_family_index < info.QueueFamilies.size(); queue_family_index++)
+        for (uint32_t index = 0; index < info.QueueFamilies.size(); index++)
         {
-            if (predicate(info.QueueFamilies[queue_family_index], queue_family_index))
+            if (predicate(info.QueueFamilies[index], index))
             {
-                indices.Append(queue_family_index);
+                indices.Append(index);
             }
         }
 
         return indices;
     }
 
-    VkQueue VulkanQueryQueue(VulkanContext& context, uint32_t queue_family_index, uint32_t queue_index)
+    VkQueue VulkanQueryQueue(VulkanContext& context, uint32_t queueFamilyIndex, uint32_t queueIndex)
     {
         VkQueue queue;
-        VulkanAPI::vkGetDeviceQueue(context.Device, queue_family_index, queue_index, &queue);
+        VulkanAPI::vkGetDeviceQueue(context.Device, queueFamilyIndex, queueIndex, &queue);
         return queue;
     }
 

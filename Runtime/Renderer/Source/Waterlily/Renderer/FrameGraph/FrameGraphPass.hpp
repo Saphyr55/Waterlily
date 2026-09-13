@@ -12,8 +12,6 @@
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/Framebuffer.hpp"
-#include "Waterlily/RHI/RenderPass.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
 #include "Waterlily/Renderer/RendererExports.hpp"
@@ -50,22 +48,13 @@ namespace Wl
         }
     };
 
-    struct WL_RENDERER_API FrameGraphPassExecutionContext
+    struct FrameGraphPassExecutionContext
     {
-    public:
-        SharedPtr<RHIDevice> Device;
-        SharedPtr<FrameContext> FrameContext;
-        FrameGraph* FrameGraph;
+        SharedPtr<RHIDevice> Device = nullptr;
+        SharedPtr<FrameContext> FrameContext = nullptr;
+        FrameGraph* FrameGraph = nullptr;
         FrameGraphPass* Pass = nullptr;
-        RHIRenderPass* RenderPass = nullptr;
-        RHIFramebuffer* Framebuffer = nullptr;
         RHICommandBuffer* CommandBuffer = nullptr;
-
-    public:
-        RHIRenderPassBeginInfo CreateRenderPassBeginInfo(Vector4f color,
-                                                         Rect2D area,
-                                                         float depth = 1.0f,
-                                                         uint32_t stencil = 0);
     };
 
     class WL_RENDERER_API FrameGraphPassInterface

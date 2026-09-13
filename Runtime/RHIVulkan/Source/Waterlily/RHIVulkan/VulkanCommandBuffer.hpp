@@ -20,8 +20,10 @@ namespace Wl
 
         virtual void End() override;
 
-        virtual void BeginRenderPass(const RHIRenderPassBeginInfo& beginInfo) override;
+        virtual void BeginRendering(const RHIBeginRenderingInfo& info) override;
+        virtual void EndRendering() override;
 
+        virtual void BeginRenderPass(const RHIRenderPassBeginInfo& beginInfo) override;
         virtual void EndRenderPass() override;
 
         virtual void BindPipeline(RHIPipeline* pipeline) override;
@@ -57,6 +59,10 @@ namespace Wl
         virtual void Draw(const RHIDrawIndexedCommand& command) override;
 
         virtual void Draw(const RHIDrawIndexedIndirectCommand& command) override;
+        
+        virtual void Dispatch(const RHIDispatchCommand& command) override; 
+        
+        virtual void BlitTexture(const RHIBlitTextureCommand& command) override;
 
         inline VkCommandBuffer& GetHandle()
         {

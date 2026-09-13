@@ -7,13 +7,12 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/Framebuffer.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
-#include "Waterlily/RHI/RenderPass.hpp"
+#include "Waterlily/RHI/Swapchain.hpp"
 #include "Waterlily/RHI/Texture.hpp"
+#include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
-#include "Waterlily/Renderer/FrameGraph/FrameGraphCache.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
@@ -26,10 +25,12 @@ namespace Wl
     FrameGraph::FrameGraph(const SharedPtr<FrameContext>& frameContext)
         : m_device(frameContext->GetDevice())
         , m_frameContext(frameContext)
-        , m_framebufferCache(m_device)
-        , m_renderPassRegistry(m_device)
         , m_texturePool(frameContext)
     {
+        for (const RHISwapchainBuffer& buffer: m_frameContext->GetSwapchain()->GetBuffers())
+        {
+            isFirstFrame[&buffer] = true;
+        }
     }
 
     FrameGraphTextureHandle FrameGraph::CreateTexture(const FrameGraphTextureInfo& info)
@@ -86,7 +87,9 @@ namespace Wl
     void FrameGraph::AddOutput(FrameGraphTextureHandle& handle)
     {
         m_outputs.Add(handle);
-        m_textures[handle.GetIndex()].IsTransient = false;
+        FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+        // When a texture is an output, we are going to transfer it to the swapchain, and do a blit.
+        resource.Usage |= RHITextureUsageFlags::TransferSrc;
     }
 
     FrameGraphPass& FrameGraph::AddPass(const StringID& name)
@@ -104,16 +107,6 @@ namespace Wl
         return m_passes[index];
     }
 
-    RHIRenderPass* FrameGraph::GetRenderPass(const FrameGraphPass& pass)
-    {
-        return GetRenderPass(pass.GetName());
-    }
-
-    RHIRenderPass* FrameGraph::GetRenderPass(const StringID& name)
-    {
-        return m_renderPassRegistry.GetRenderPass(name);
-    }
-
     void FrameGraph::BeginFrame()
     {
         m_passes.Clear();
@@ -122,13 +115,19 @@ namespace Wl
         m_buffers.Clear();
         m_outputs.Clear();
         m_sortedPasses.Clear();
+        m_outputs.Clear();
 
-        uint64_t textureMaxFrameLifetime = 8;// TODO: Make it configurable
-        m_texturePool.BeginFrame(textureMaxFrameLifetime);
+        m_passRenderingInfos.Clear();
+
+        // TODO: Make it configurable
+        uint64_t textureMaxFrameLifetime = 8;
+        m_texturePool.GarbageCollect(textureMaxFrameLifetime);
     }
 
     void FrameGraph::EndFrame()
     {
+        const RHISwapchainBuffer& buffer = m_frameContext->GetSwapchain()->GetCurrentBuffer();
+        isFirstFrame[&buffer] = false;
     }
 
     void FrameGraph::Compile()
@@ -152,18 +151,27 @@ namespace Wl
         WL_CHECK_MSG(m_sortedPasses.GetSize() == m_passes.GetSize(), "The Frame Graph given is not a DAG.");
 
         ComputeResourceLifetimes();
+        ComputeRenderingInfoPasses();
 
-        BuildPasses();
         BuildBarriers();
     }
 
     void FrameGraph::Execute(RHICommandBuffer* commandBuffer)
     {
-        for (size_t passIndex: m_sortedPasses)
-        {
-            FrameGraphPass& pass = m_passes[passIndex];
+        const RHISwapchainBuffer& buffer = m_frameContext->GetSwapchain()->GetCurrentBuffer();
 
-            AllocatePhysicalPassResources(passIndex);
+        RHITextureLayoutTransition swapchainTransition = {};
+        swapchainTransition.OldLayout = isFirstFrame[&buffer] ? RHITextureLayout::Undefined : RHITextureLayout::Present;
+        swapchainTransition.NewLayout = RHITextureLayout::ColorAttachment;
+        swapchainTransition.Texture = buffer.Texture;
+
+        commandBuffer->TransitionTextureLayout(swapchainTransition);
+
+        for (size_t orderedPassIndex: m_sortedPasses)
+        {
+            FrameGraphPass& pass = m_passes[orderedPassIndex];
+
+            AllocatePhysicalPassResources(pass);
 
             for (FrameGraphTextureBarrier& barrier: pass.m_barriers)
             {
@@ -183,34 +191,85 @@ namespace Wl
             context.FrameGraph = this;
             context.CommandBuffer = commandBuffer;
             context.Pass = &pass;
-            context.Framebuffer = BuildFramebuffer(pass);
-            context.RenderPass = GetRenderPass(pass);
 
-            pass.Execute(context);
+            if (pass.IsComputeStage())
+            {
+                pass.Execute(context);
+            }
+            else
+            {
+                RHIBeginRenderingInfo beginRenderingInfo = BuildRenderingInfo(pass);
+                commandBuffer->BeginRendering(beginRenderingInfo);
+                pass.Execute(context);
+                commandBuffer->EndRendering();
+            }
 
-            DeallocatePhysicalPassResources(passIndex);
+            DeallocatePhysicalPassResources(pass);
         }
+
+        if (!m_outputs.IsEmpty())
+        {
+            swapchainTransition = {};
+            swapchainTransition.OldLayout = RHITextureLayout::ColorAttachment;
+            swapchainTransition.NewLayout = RHITextureLayout::TransferDst;
+            swapchainTransition.Texture = buffer.Texture;
+            commandBuffer->TransitionTextureLayout(swapchainTransition);
+        }
+
+        for (FrameGraphTextureHandle output: m_outputs)
+        {
+            FrameGraphTextureResource& resource = m_textures[output.GetIndex()];
+            FrameGraphPhysicalTexture& texture = ResolvePhysicalTexture(output);
+            RHITextureLayout oldLayout = resource.CurrentLayout;
+
+            RHITextureLayoutTransition transition = {};
+            transition.Texture = texture.Texture;
+            transition.OldLayout = resource.CurrentLayout;
+            transition.NewLayout = RHITextureLayout::TransferSrc;
+            commandBuffer->TransitionTextureLayout(transition);
+
+            RHIBlitTextureCommand blitCommand = {};
+            blitCommand.Source = texture.Texture;
+            blitCommand.Destination = buffer.Texture;
+            blitCommand.Width = m_frameContext->GetWidth();
+            blitCommand.Height = m_frameContext->GetHeight();
+            commandBuffer->BlitTexture(blitCommand);
+
+            transition = {};
+            transition.Texture = texture.Texture;
+            transition.OldLayout = RHITextureLayout::TransferSrc;
+            transition.NewLayout = oldLayout;
+            commandBuffer->TransitionTextureLayout(transition);
+        }
+
+        swapchainTransition = {};
+        swapchainTransition.OldLayout = m_outputs.IsEmpty() ? RHITextureLayout::ColorAttachment : RHITextureLayout::TransferDst;
+        swapchainTransition.NewLayout = RHITextureLayout::Present;
+        swapchainTransition.Texture = buffer.Texture;
+        commandBuffer->TransitionTextureLayout(swapchainTransition);
     }
 
     void FrameGraph::Resize()
     {
-        m_device->WaitIdle();
-        m_texturePool.Dispose();
-        DestroyPasses();
+        Destroy();
     }
 
     void FrameGraph::Destroy()
     {
+        for (const RHISwapchainBuffer& buffer: m_frameContext->GetSwapchain()->GetBuffers())
+        {
+            isFirstFrame[&buffer] = true;
+        }
+
         m_device->WaitIdle();
         m_texturePool.Dispose();
-        m_framebufferCache.Dispose();
         DestroyPasses();
     }
 
     void FrameGraph::BuildDependencies()
     {
-        HashMap<uint32_t, FrameGraphPass*> last_texture_producer;
-        HashMap<uint32_t, FrameGraphPass*> last_buffer_producer;
+        HashMap<uint32_t, FrameGraphPass*> lastTextureProducer;
+        HashMap<uint32_t, FrameGraphPass*> lastBufferProducer;
 
         using LastProducerIterator = HashMap<uint32_t, FrameGraphPass*>::iterator;
 
@@ -230,8 +289,8 @@ namespace Wl
         {
             for (FrameGraphTextureHandle read: current.m_textureReads)
             {
-                LastProducerIterator it = last_texture_producer.Find(read.GetIndex());
-                if (it != last_texture_producer.end())
+                LastProducerIterator it = lastTextureProducer.Find(read.GetIndex());
+                if (it != lastTextureProducer.end())
                 {
                     FrameGraphPass* producer = it->Value;
                     addEdge(producer, &current);
@@ -240,8 +299,8 @@ namespace Wl
 
             for (FrameGraphBufferHandle read: current.m_bufferReads)
             {
-                LastProducerIterator it = last_buffer_producer.Find(read.GetIndex());
-                if (it != last_buffer_producer.end())
+                LastProducerIterator it = lastBufferProducer.Find(read.GetIndex());
+                if (it != lastBufferProducer.end())
                 {
                     addEdge(it->Value, &current);
                 }
@@ -249,17 +308,17 @@ namespace Wl
 
             for (FrameGraphTextureHandle write: current.m_textureWrites)
             {
-                last_texture_producer[write.GetIndex()] = &current;
+                lastTextureProducer[write.GetIndex()] = &current;
             }
 
             if (current.m_depthStencil.HasValue())
             {
-                last_texture_producer[current.m_depthStencil->GetIndex()] = &current;
+                lastTextureProducer[current.m_depthStencil->GetIndex()] = &current;
             }
 
             for (FrameGraphBufferHandle write: current.m_bufferWrites)
             {
-                last_buffer_producer[write.GetIndex()] = &current;
+                lastBufferProducer[write.GetIndex()] = &current;
             }
         }
     }
@@ -310,133 +369,166 @@ namespace Wl
             resource.Lifetime.LastUse = Math::Max(resource.Lifetime.LastUse, order);
         };
 
-        for (size_t order = 0; order < m_sortedPasses.GetSize(); order++)
+        for (size_t orderPassIndex: m_sortedPasses)
         {
-            FrameGraphPass& pass = m_passes[m_sortedPasses[order]];
-            pass.m_order = order;
+            FrameGraphPass& pass = m_passes[orderPassIndex];
+            pass.m_order = orderPassIndex;
 
             for (const FrameGraphTextureHandle& handle: pass.m_textureReads)
             {
-                touch(handle, order);
+                touch(handle, orderPassIndex);
             }
 
             for (const FrameGraphTextureHandle& handle: pass.m_textureWrites)
             {
-                touch(handle, order);
+                touch(handle, orderPassIndex);
             }
 
             if (pass.m_depthStencil.HasValue())
             {
-                touch(*pass.m_depthStencil, order);
+                touch(*pass.m_depthStencil, orderPassIndex);
             }
         }
     }
 
-    void FrameGraph::BuildPasses()
+    void FrameGraph::ComputeRenderingInfoPasses()
     {
-        using ResolveStoreLoadResultType = std::pair<RHIAttachmentLoadOp, RHIAttachmentStoreOp>;
-        using ResolveLayoutResultType = std::pair<RHITextureLayout, RHITextureLayout>;
-
-        auto resolveStoreLoadOp = [&](size_t passIndex, FrameGraphTextureHandle handle) -> ResolveStoreLoadResultType
-        {
-            FrameGraphPass& pass = m_passes[passIndex];
-            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-            FrameGraphResourceLifetime& lifetime = resource.Lifetime;
-
-            bool isFirstUsage = lifetime.FirstUse == passIndex;
-            bool isLastUsage = lifetime.LastUse == passIndex;
-            bool isFrameGraphOutputResource = IsOutputResource(handle);
-
-            pass.m_isFrameGraphOutput = pass.m_isFrameGraphOutput || isFrameGraphOutputResource;
-
-            // TODO: Handle the case with LOAD_OP_DONTCARE.
-            RHIAttachmentLoadOp loadOp =
-                    isFirstUsage ? RHIAttachmentLoadOp::Clear : RHIAttachmentLoadOp::Load;
-
-            RHIAttachmentStoreOp outStoreOp = RHIAttachmentStoreOp::Store;
-
-            return {loadOp, outStoreOp};
-        };
-
-        auto resolveLayouts = [&](size_t passIndex, FrameGraphTextureHandle handle) -> ResolveLayoutResultType
-        {
-            FrameGraphPass& pass = m_passes[passIndex];
-            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-            FrameGraphResourceLifetime& lifetime = resource.Lifetime;
-
-            bool isFirstUsage = lifetime.FirstUse == passIndex;
-            bool isLastUsage = lifetime.LastUse == passIndex;
-            bool isResourceFrameGraphOutput = IsOutputResource(handle);
-            bool isRead = pass.m_textureReads.Contains(handle);
-            bool isWrite = pass.m_textureWrites.Contains(handle);
-
-            RHITextureLayout initialLayout = RHITextureLayout::Undefined;
-            RHITextureLayout finalLayout = RHITextureLayout::Undefined;
-
-            if (isFirstUsage)
-            {
-                initialLayout = RHITextureLayout::Undefined;
-            }
-            else
-            {
-                initialLayout = resource.InitialLayout;
-            }
-
-            finalLayout = pass.m_textureWriteStates[handle.GetIndex()];
-            if (isLastUsage && isResourceFrameGraphOutput)
-            {
-                finalLayout = RHITextureLayout::Present;
-            }
-
-            return {initialLayout, finalLayout};
-        };
-
         for (size_t passIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[passIndex];
-
-            if (GetRenderPass(pass))
+            if (pass.IsGraphicsStage())
             {
-                continue;
+                m_passRenderingInfos[passIndex] = ComputeRenderingInfoPass(pass);
             }
-
-            RHIRenderPassDescription renderPassDescription = {};
-
-            renderPassDescription.ColorAttachmentDecriptions.Reserve(pass.m_textureWrites.GetSize());
-            for (FrameGraphTextureHandle& handle: pass.m_textureWrites)
-            {
-                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
-                auto [loadOp, storeOp] = resolveStoreLoadOp(passIndex, handle);
-                auto [initialLayout, finalLayout] = resolveLayouts(passIndex, handle);
-
-                RHIColorAttachmentDescription colorAttachment = {};
-                colorAttachment.Format = resource.Info.Format;
-                colorAttachment.LoadOp = loadOp;
-                colorAttachment.StoreOp = storeOp;
-                colorAttachment.InitialLayout = initialLayout;
-                colorAttachment.FinalLayout = finalLayout;
-
-                renderPassDescription.ColorAttachmentDecriptions.Append(colorAttachment);
-            }
-
-            if (pass.m_depthStencil.HasValue())
-            {
-                FrameGraphTextureHandle& handle = *pass.m_depthStencil;
-                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
-                auto [loadOp, storeOp] = resolveStoreLoadOp(passIndex, handle);
-
-                RHIDepthAttachmentDescription depthStencilAttachmentDescription = {};
-                depthStencilAttachmentDescription.Format = resource.Info.Format;
-                depthStencilAttachmentDescription.LoadOp = RHIAttachmentLoadOp::Clear;
-                depthStencilAttachmentDescription.StoreOp = storeOp;
-
-                renderPassDescription.DepthAttachmentDescription = depthStencilAttachmentDescription;
-            }
-
-            m_renderPassRegistry.Create(pass.GetName(), renderPassDescription);
         }
+    }
+
+    RHIGraphicsPipelineRenderingInfo FrameGraph::ComputeRenderingInfoPass(const FrameGraphPass& pass) const
+    {
+        RHIGraphicsPipelineRenderingInfo info = {};
+        info.ColorAttachmentFormats.Reserve(pass.m_textureWrites.GetSize());
+
+        for (FrameGraphTextureHandle handle: pass.m_textureWrites)
+        {
+            const FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+            info.ColorAttachmentFormats.Append(resource.Info.Format);
+        }
+
+        if (pass.m_depthStencil.HasValue())
+        {
+            FrameGraphTextureHandle handle = pass.m_depthStencil.Unwrap();
+            const FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+            info.DepthAttachmentFormat = resource.Info.Format;
+
+            if (RHIFormatIsDepthStencil(resource.Info.Format))
+            {
+                info.StencilAttachmentFormat = resource.Info.Format;
+            }
+        }
+
+        return info;
+    }
+
+    FrameGraph::ResolvedStoreLoadResult FrameGraph::ResolveStoreLoadOp(FrameGraphPass& pass, FrameGraphTextureHandle handle)
+    {
+        FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+        FrameGraphResourceLifetime& lifetime = resource.Lifetime;
+
+        bool isFirstUsage = lifetime.FirstUse == pass.GetOrder();
+        bool isLastUsage = lifetime.LastUse == pass.GetOrder();
+        bool isFrameGraphOutputResource = IsOutputResource(handle);
+
+        pass.m_isFrameGraphOutput = pass.m_isFrameGraphOutput || isFrameGraphOutputResource;
+
+        // TODO: Handle the case with LOAD_OP_DONTCARE.
+        RHIAttachmentLoadOp loadOp = isFirstUsage ? RHIAttachmentLoadOp::Clear : RHIAttachmentLoadOp::Load;
+        RHIAttachmentStoreOp outStoreOp = RHIAttachmentStoreOp::Store;
+
+        return {loadOp, outStoreOp};
+    }
+
+    RHIBeginRenderingInfo FrameGraph::BuildRenderingInfo(FrameGraphPass& pass)
+    {
+        RHIBeginRenderingInfo info = {};
+        info.ColorAttachments.Reserve(pass.m_textureWrites.GetSize());
+
+        uint32_t width = 0;
+        uint32_t height = 0;
+
+        auto updateSize = [&](const FrameGraphTextureResource& resource)
+        {
+            if (width == 0 && height == 0)
+            {
+                width = resource.Info.Width;
+                height = resource.Info.Height;
+            }
+            else
+            {
+                WL_CHECK_MSG(width == resource.Info.Width && height == resource.Info.Height, "All attachments must have the same size.");
+            }
+        };
+
+        for (FrameGraphTextureHandle handle: pass.m_textureWrites)
+        {
+            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+
+            RHIRenderingAttachmentInfo attachment = {};
+
+            attachment.TextureView = ResolvePhysicalTexture(handle).View;
+
+            auto [loadOp, storeOp] = ResolveStoreLoadOp(pass, handle);
+
+            attachment.TextureLayout = RHITextureLayout::ColorAttachment;
+            attachment.LoadOp = loadOp;
+            attachment.StoreOp = storeOp;
+            // TODO:
+            // depthAttachment.ClearValue = resource.Description.ClearValue;
+
+            info.ColorAttachments.Append(attachment);
+
+            updateSize(resource);
+        }
+
+        if (pass.m_depthStencil.HasValue())
+        {
+            FrameGraphTextureHandle handle = pass.m_depthStencil.Unwrap();
+            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+            RHITextureView* textureView = ResolvePhysicalTexture(handle).View;
+
+            auto [loadOp, storeOp] = ResolveStoreLoadOp(pass, handle);
+
+            RHIRenderingAttachmentInfo depthAttachment = {};
+            depthAttachment.TextureView = textureView;
+            depthAttachment.TextureLayout = RHITextureLayout::DepthStencilAttachment;
+
+            depthAttachment.LoadOp = loadOp;
+            depthAttachment.StoreOp = storeOp;
+            // TODO:
+            // depthAttachment.ClearValue = resource.Description.ClearValue;
+
+            info.DepthAttachment = depthAttachment;
+
+            if (RHIFormatIsDepthStencil(resource.Info.Format))
+            {
+                RHIRenderingAttachmentInfo stencilAttachment = {};
+                stencilAttachment.TextureView = textureView;
+                stencilAttachment.TextureLayout = RHITextureLayout::DepthStencilAttachment;
+                stencilAttachment.LoadOp = loadOp;
+                stencilAttachment.StoreOp = storeOp;
+                // TODO: stencilAttachment.ClearValue = resource.Description.ClearValue;
+
+                info.StencilAttachment = stencilAttachment;
+            }
+
+            updateSize(resource);
+        }
+
+        info.RenderArea.Height = height;
+        info.RenderArea.Width = width;
+        info.RenderArea.X = 0.0f;
+        info.RenderArea.Y = 0.0f;
+
+        return info;
     }
 
     FrameGraphPhysicalTexture& FrameGraph::ResolvePhysicalTexture(const FrameGraphTextureHandle& handle)
@@ -444,7 +536,6 @@ namespace Wl
         FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
         if (resource.IsTransient)
         {
-            WL_CHECK_MSG(resource.IsAllocated, "Transient resource is not allocated.");
             return m_texturePool.GetResource(resource.PooledResource).PhysicalTexture;
         }
 
@@ -453,70 +544,67 @@ namespace Wl
 
     void FrameGraph::BuildBarriers()
     {
+
         for (size_t passIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[passIndex];
+
+            auto AddBarrier = [&](FrameGraphTextureHandle handle, RHITextureLayout layoutNeeded)
+            {
+                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+
+                if (resource.CurrentLayout != layoutNeeded)
+                {
+                    FrameGraphTextureBarrier barrier = {};
+                    barrier.Handle = handle;
+                    barrier.OldLayout = resource.CurrentLayout;
+                    barrier.NewLayout = layoutNeeded;
+                    pass.m_barriers.Append(barrier);
+                    resource.CurrentLayout = layoutNeeded;
+                }
+            };
 
             for (size_t i = 0; i < pass.m_textureReads.GetSize(); i++)
             {
                 FrameGraphTextureHandle handle = pass.m_textureReads[i];
                 RHITextureLayout layoutNeeded = pass.m_textureReadStates[handle];
-
-                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
-                if (resource.CurrentLayout != layoutNeeded)
-                {
-                    FrameGraphTextureBarrier barrier;
-                    barrier.Handle = handle;
-                    barrier.OldLayout = resource.CurrentLayout;
-                    barrier.NewLayout = layoutNeeded;
-                    pass.m_barriers.Append(barrier);
-                }
-
-                resource.CurrentLayout = layoutNeeded;
+                AddBarrier(handle, layoutNeeded);
             }
 
             for (size_t i = 0; i < pass.m_textureWrites.GetSize(); i++)
             {
                 FrameGraphTextureHandle handle = pass.m_textureWrites[i];
                 RHITextureLayout layoutNeeded = pass.m_textureWriteStates[handle];
+                AddBarrier(handle, layoutNeeded);
+            }
 
+            if (pass.m_depthStencil)
+            {
+                FrameGraphTextureHandle handle = *pass.m_depthStencil;
+                RHITextureLayout layoutNeeded = pass.m_textureWriteStates[handle];
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
-                if (resource.CurrentLayout != layoutNeeded)
-                {
-                    FrameGraphTextureBarrier barrier;
-                    barrier.Handle = handle;
-                    barrier.OldLayout = resource.CurrentLayout;
-                    barrier.NewLayout = layoutNeeded;
-                    pass.m_barriers.Append(barrier);
-                }
-
-                resource.CurrentLayout = layoutNeeded;
+                RHITextureLayout oldLayout = resource.CurrentLayout;
+                AddBarrier(handle, layoutNeeded);
+                // FIXME: This is a hack to fix the issue of depth stencil attachment being used as undefined layout.
+                resource.CurrentLayout = oldLayout;
             }
         }
     }
 
-    void FrameGraph::AllocatePhysicalPassResources(size_t passIndex)
+    void FrameGraph::AllocatePhysicalPassResources(FrameGraphPass& pass)
     {
         auto allocate = [&](Array<FrameGraphTextureHandle>& textures)
         {
             for (FrameGraphTextureHandle handle: textures)
             {
-                if (IsOutputResource(handle))
-                {
-                    continue;
-                }
-
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-                if (resource.Lifetime.FirstUse == passIndex)
+                if (resource.Lifetime.FirstUse == pass.GetOrder())
                 {
                     AllocatePhysicalResource(resource);
                 }
             }
         };
 
-        FrameGraphPass& pass = m_passes[passIndex];
         allocate(pass.m_textureReads);
         allocate(pass.m_textureWrites);
 
@@ -545,26 +633,20 @@ namespace Wl
         resource.PooledResource = pooledResource;
     }
 
-    void FrameGraph::DeallocatePhysicalPassResources(size_t passIndex)
+    void FrameGraph::DeallocatePhysicalPassResources(FrameGraphPass& pass)
     {
         auto deallocate = [&](Array<FrameGraphTextureHandle>& textures)
         {
             for (FrameGraphTextureHandle handle: textures)
             {
-                if (IsOutputResource(handle))
-                {
-                    continue;
-                }
-
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-                if (resource.Lifetime.LastUse == passIndex)
+                if (resource.Lifetime.LastUse == pass.GetOrder())
                 {
                     DeallocatePhysicalResource(resource);
                 }
             }
         };
 
-        FrameGraphPass& pass = m_passes[passIndex];
         deallocate(pass.m_textureReads);
         deallocate(pass.m_textureWrites);
 
@@ -586,68 +668,12 @@ namespace Wl
         resource.IsAllocated = false;
     }
 
-    RHIFramebuffer* FrameGraph::BuildFramebuffer(FrameGraphPass& pass)
-    {
-        RHIFramebufferDescription description = {};
-        description.RenderPass = m_renderPassRegistry.GetRenderPass(pass.GetName());
-        description.Width = 0;
-        description.Height = 0;
-        description.Layers = 1;
-
-        auto updateFramebufferSize = [&](uint32_t width, uint32_t height)
-        {
-            if (description.Width == 0 && description.Height == 0)
-            {
-                description.Width = width;
-                description.Height = height;
-            }
-            else
-            {
-                WL_CHECK_MSG(description.Width == width && description.Height == height, "All attachments in a framebuffer must have the same size!");
-            }
-        };
-
-        size_t depthCost = (pass.m_depthStencil.HasValue() ? 1 : 0);
-        description.Attachments.Reserve(pass.m_textureWrites.GetSize() + depthCost);
-
-        for (FrameGraphTextureHandle handle: pass.m_textureWrites)
-        {
-            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
-            if (IsOutputResource(handle))
-            {
-                RHITextureView* swapchainTextureView = m_frameContext->GetSwapchain()->GetCurrentTextureView();
-                resource.Info.Width = m_frameContext->GetSwapchain()->GetWidth();
-                resource.Info.Height = m_frameContext->GetSwapchain()->GetHeight();
-                description.Attachments.Append(swapchainTextureView);
-            }
-            else
-            {
-                description.Attachments.Append(ResolvePhysicalTexture(handle).View);
-            }
-
-            updateFramebufferSize(resource.Info.Width, resource.Info.Height);
-        }
-
-        if (pass.m_depthStencil.HasValue())
-        {
-            FrameGraphTextureHandle handle = *pass.m_depthStencil;
-            FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-            description.Attachments.Append(ResolvePhysicalTexture(handle).View);
-            updateFramebufferSize(resource.Info.Width, resource.Info.Height);
-        }
-
-        WL_CHECK_MSG(description.Width > 0 && description.Height > 0, "Framebuffer must have a valid size (> 0)");
-
-        return m_framebufferCache.Obtain(description);
-    }
-
     void FrameGraph::DestroyPasses()
     {
         m_passNames.Clear();
         m_passes.Clear();
-        m_renderPassRegistry.Clear();
         m_sortedPasses.Clear();
+        m_passRenderingInfos.Clear();
     }
 
     RHITextureLayoutTransition FrameGraph::BarrierToRHITransition(const FrameGraphTextureBarrier& barrier)

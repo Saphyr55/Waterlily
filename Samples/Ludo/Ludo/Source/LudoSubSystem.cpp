@@ -1,5 +1,5 @@
-#include "LudoSubSystem.hpp"
 #include "LightSystem.hpp"
+#include "LudoSubSystem.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Matrix4.hpp"
@@ -8,11 +8,9 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
+#include "Waterlily/Core/Memory/MemoryTrace.hpp"
 #include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/Entity/Entity.hpp"
-#include "Waterlily/RHI/Buffer.hpp"
-#include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
@@ -29,6 +27,9 @@
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 #include "Waterlily/Renderer/Shader/ShaderBundle.hpp"
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
+#include "Waterlily/RHI/Buffer.hpp"
+#include "Waterlily/RHI/Device.hpp"
+#include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PointLight.hpp"
 #include "Waterlily/Scene/SceneComponent.hpp"
@@ -52,7 +53,7 @@ namespace Wl
         WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
 
         shaderBundle->RegisterGraphicsPass(GBufferPassName, GBufferVertexShaderAssetURI, GBufferFragmentShaderAssetURI);
-        shaderBundle->RegisterGraphicsPass(LightingPassName, LightingVertexShaderAssetURI, LightingFragmentShaderAssetURI);
+        shaderBundle->RegisterComputePass(LightingPassName, LightingComputeShaderAssetURI);
         shaderBundle->LoadAssets();
 
         Model* sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
@@ -110,7 +111,6 @@ namespace Wl
                 if (CompileShaders())
                 {
                     shaderBundle->ReloadAssets();
-                    pipelineManager->ResetFrameSRGPool();
                 }
                 else
                 {
@@ -147,6 +147,8 @@ namespace Wl
 
     void LudoSubSystem::OnTick(double deltaTime)
     {
+        auto x = MemoryTrace::GlobalGetMemoryUsage();
+
         SharedPtr<FrameContext> frameContext = m_renderService->GetFrameContext();
         SharedPtr<FrameGraph> frameGraph = m_renderService->GetFrameGraph();
         SharedPtr<ShaderBundle> shaderBundle = m_renderService->GetShaderBundle();
@@ -259,7 +261,7 @@ namespace Wl
 
         FrameGraphTextureInfo colorTextureInfo = {};
         colorTextureInfo.Name = "Color";
-        colorTextureInfo.Format = frameContext->GetSwapchain()->GetFormat();
+        colorTextureInfo.Format = RHIFormat::RGBA16_FLOAT;
         colorTextureInfo.SizeClass = SizeClass::Swapchain;
         FrameGraphTextureHandle color = frameGraph->CreateTexture(colorTextureInfo);
 
@@ -317,10 +319,7 @@ namespace Wl
         lightingParams.Indirect = indirect;
         lightingParams.DepthStencil = depthStencil;
 
-        ShaderGraphicsPass& shaderLightingPass = shaderBundle->GetShaderGraphicsPass(LightingPassName);
-        shaderLightingPass.PipelineState.CullMode = RHICullModeFlags::None;
-        shaderLightingPass.PipelineState.Viewport = viewport;
-        shaderLightingPass.PipelineState.Scissor = scissor;
+        ShaderComputePass& shaderLightingPass = shaderBundle->GetShaderComputePass(LightingPassName);
 
         FrameGraphPass& lightingPass = LightingPassCreate(passContext, packet, shaderLightingPass.PipelineState, lightingParams);
 

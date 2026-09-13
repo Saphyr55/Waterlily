@@ -17,7 +17,7 @@ namespace Wl
         RHIAttachmentLoadOp StencilLoadOp = RHIAttachmentLoadOp::DontCare;
         RHIAttachmentStoreOp StencilStoreOp = RHIAttachmentStoreOp::DontCare;
 
-        RHITextureLayout InitialLayout = RHITextureLayout::Undefined;
+        RHITextureLayout InitialLayout = RHITextureLayout::General;
         RHITextureLayout FinalLayout = RHITextureLayout::Present;
     };
 

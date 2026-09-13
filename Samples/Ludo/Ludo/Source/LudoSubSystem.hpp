@@ -22,8 +22,7 @@ namespace Wl
 
     inline const StringID GBufferVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.vert.wlca");
     inline const StringID GBufferFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.frag.wlca");
-    inline const StringID LightingVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.vert.wlca");
-    inline const StringID LightingFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.frag.wlca");
+    inline const StringID LightingComputeShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.comp.wlca");
 
     inline const StringID LudoName = WL_SID("LudoSystem");
 
@@ -59,14 +58,10 @@ namespace Wl
                                                                Shader::Stage::Fragment});
 
             success = success && ShaderCompiler::CompileSlang({envPath, LightingShaderAssetURI.GetText(),
-                                                               LightingVertexShaderAssetURI.GetText(),
-                                                               "VSMain",
-                                                               Shader::Stage::Vertex});
+                                                               LightingComputeShaderAssetURI.GetText(),
+                                                               "Main",
+                                                               Shader::Stage::Compute});
 
-            success = success && ShaderCompiler::CompileSlang({envPath, LightingShaderAssetURI.GetText(),
-                                                               LightingFragmentShaderAssetURI.GetText(),
-                                                               "FSMain",
-                                                               Shader::Stage::Fragment});
             return success;
         }
 

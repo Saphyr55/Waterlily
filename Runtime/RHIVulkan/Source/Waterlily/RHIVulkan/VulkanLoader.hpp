@@ -104,6 +104,7 @@ namespace Wl
         WL_DEFINE_RHI_FUNCTION(vkCreatePipelineLayout);
         WL_DEFINE_RHI_FUNCTION(vkDestroyPipelineLayout);
         WL_DEFINE_RHI_FUNCTION(vkCreateGraphicsPipelines);
+        WL_DEFINE_RHI_FUNCTION(vkCreateComputePipelines);
         WL_DEFINE_RHI_FUNCTION(vkDestroyPipeline);
         WL_DEFINE_RHI_FUNCTION(vkCmdBindPipeline);
         WL_DEFINE_RHI_FUNCTION(vkAllocateDescriptorSets);
@@ -140,6 +141,7 @@ namespace Wl
         WL_DEFINE_RHI_FUNCTION(vkCmdDraw);
         WL_DEFINE_RHI_FUNCTION(vkCmdDrawIndexed);
         WL_DEFINE_RHI_FUNCTION(vkCmdDrawIndexedIndirect);
+        WL_DEFINE_RHI_FUNCTION(vkCmdDispatch);
         WL_DEFINE_RHI_FUNCTION(vkCmdBeginRenderPass);
         WL_DEFINE_RHI_FUNCTION(vkCmdEndRenderPass);
 

@@ -17,12 +17,20 @@ namespace Wl
         AssetHandle FragmentAssetHandle;
     };
 
+    struct ShaderComputePass
+    {
+        ComputePipelineState PipelineState;
+        AssetHandle ComputeAssetHandle;
+    };
+
     class WL_RENDERER_API ShaderBundle
     {
     public:
         void RegisterGraphicsPass(StringID passName, StringID vertexName, StringID fragmentName);
+        void RegisterComputePass(StringID passName, StringID computeName);
 
         ShaderGraphicsPass& GetShaderGraphicsPass(StringID passName);
+        ShaderComputePass& GetShaderComputePass(StringID passName);
 
         void LoadAssets();
         void ReloadAssets();
@@ -42,6 +50,7 @@ namespace Wl
         SharedPtr<AssetManager> m_assetManager;
         SharedPtr<PipelineManager> m_pipelineManager;
 
+        HashMap<StringID, ShaderComputePass> m_computeShaders;
         HashMap<StringID, ShaderGraphicsPass> m_graphicsShaders;
     };
 

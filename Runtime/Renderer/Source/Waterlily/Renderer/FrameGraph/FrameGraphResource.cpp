@@ -9,7 +9,6 @@ namespace Wl
         key.Usage = resource.Usage;
         key.Width = resource.Info.Width;
         key.Height = resource.Info.Height;
-
         return key;
     }
 
@@ -23,10 +22,10 @@ namespace Wl
         resource.Info.Layers = texture->GetDescription().Layers;
         resource.Info.Levels = texture->GetDescription().MipLevels;
         resource.Usage = texture->GetDescription().Usage;
+        resource.CurrentLayout = texture->GetDescription().Layout;
         resource.IsTransient = false;
         resource.PersistantResource.Texture = texture;
         resource.PersistantResource.View = view;
-
         return resource;
     }
 
@@ -38,7 +37,6 @@ namespace Wl
         resource.PhysicalBuffer.Handle = buffer;
         resource.Usage = buffer->GetUsage();
         resource.IsTransient = false;
-
         return resource;
     }
 

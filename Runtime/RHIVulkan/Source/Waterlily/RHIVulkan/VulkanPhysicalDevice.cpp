@@ -38,7 +38,7 @@ namespace Wl
 
     bool VulkanPhysicalDeviceSelector::CheckExtensionSupport()
     {
-        uint32_t count;
+        uint32_t count = 0;
         WL_VULKAN_CHECK(VulkanAPI::vkEnumerateDeviceExtensionProperties(m_context.PhysicalDevice,
                                                                         nullptr,
                                                                         &count,
@@ -52,7 +52,14 @@ namespace Wl
                                                                         &count,
                                                                         availableExtensions.data()));
 
-        Array<StringRef> copyExtensions = m_requirements.RequiredExtensions;
+        Array<String> copyExtensions;
+        copyExtensions.Resize(m_requirements.RequiredExtensions.GetSize());
+
+        for (uint32_t i = 0; i < m_requirements.RequiredExtensions.GetSize(); i++)
+        {
+            copyExtensions[i] = m_requirements.RequiredExtensions[i];
+        }
+
         for (const VkExtensionProperties& extension: availableExtensions)
         {
             copyExtensions.Remove(extension.extensionName);
@@ -119,7 +126,7 @@ namespace Wl
         bool isSuitableExtensionSupport = CheckExtensionSupport();
 
         VulkanAPI::vkGetPhysicalDeviceMemoryProperties(m_context.PhysicalDevice, &m_info.MemoryProperties);
-        
+
         VkPhysicalDeviceVulkan11Features& supportedFeatures11 = m_info.VulkanFeatures11;
         supportedFeatures11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
         supportedFeatures11.pNext = nullptr;
@@ -128,9 +135,17 @@ namespace Wl
         supportedFeatures12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
         supportedFeatures12.pNext = &supportedFeatures11;
 
+        VkPhysicalDeviceVulkan13Features& supportedFeatures13 = m_info.VulkanFeatures13;
+        supportedFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+        supportedFeatures13.pNext = &supportedFeatures12;
+
+        VkPhysicalDeviceVulkan14Features& supportedFeatures14 = m_info.VulkanFeatures14;
+        supportedFeatures14.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES;
+        supportedFeatures14.pNext = &supportedFeatures13;
+
         VkPhysicalDeviceFeatures2& features2 = m_info.Features2;
         features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        features2.pNext = &supportedFeatures12;
+        features2.pNext = &supportedFeatures14;
 
         VulkanAPI::vkGetPhysicalDeviceFeatures2(m_context.PhysicalDevice, &features2);
 

@@ -24,6 +24,7 @@ namespace Wl
         RHISharingMode SharingMode = RHISharingMode::Private;
         RHIMemoryUsage MemoryUsage = RHIMemoryUsage::Device;
         RHITextureDimension Dimension = RHITextureDimension::Dim2D;
+        RHITextureLayout Layout = RHITextureLayout::Undefined;
         uint32_t Width = 8;
         uint32_t Height = 8;
         size_t Depth = 1;

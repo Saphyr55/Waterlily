@@ -1,4 +1,5 @@
 #include "ShaderBundle.hpp"
+#include "Shader.hpp"
 
 namespace Wl
 {
@@ -21,18 +22,34 @@ namespace Wl
 
     void ShaderBundle::ReloadAssets()
     {
-
         LoadInternal(true);
 
         for (auto [name, shader]: m_graphicsShaders)
         {
-            m_pipelineManager->Recreate(name, shader.PipelineState);
+            m_pipelineManager->RecreateGraphicsPipeline(name, shader.PipelineState);
+        }
+
+        for (auto [name, shader]: m_computeShaders)
+        {
+            m_pipelineManager->RecreateComputePipeline(name, shader.PipelineState);
         }
     }
 
     ShaderGraphicsPass& ShaderBundle::GetShaderGraphicsPass(StringID passName)
     {
         return m_graphicsShaders[passName];
+    }
+
+    ShaderComputePass& ShaderBundle::GetShaderComputePass(StringID passName)
+    {
+        return m_computeShaders[passName];
+    }
+
+    void ShaderBundle::RegisterComputePass(StringID passName, StringID computeName)
+    {
+        ShaderComputePass shader = {};
+        shader.ComputeAssetHandle = m_assetRegistry->CreateAsset(AssetType_Shader, computeName);
+        m_computeShaders[passName] = shader;
     }
 
     void ShaderBundle::RegisterGraphicsPass(StringID passName, StringID vertexName, StringID fragmentName)
@@ -49,6 +66,11 @@ namespace Wl
         {
             shader.PipelineState.VertexShader = m_assetManager->GetAsset<Shader>(shader.VertexAssetHandle, reload);
             shader.PipelineState.FragmentShader = m_assetManager->GetAsset<Shader>(shader.FragmentAssetHandle, reload);
+        }
+
+        for (auto [name, shader]: m_computeShaders)
+        {
+            shader.PipelineState.ComputeShader = m_assetManager->GetAsset<Shader>(shader.ComputeAssetHandle, reload);
         }
     }
 

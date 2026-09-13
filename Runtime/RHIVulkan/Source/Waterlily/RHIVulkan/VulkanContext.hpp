@@ -23,9 +23,6 @@
 namespace Wl
 {
 
-    static const Array<StringRef> s_PhysicalDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME};
-
     struct VulkanContext
     {
         const uint32_t VulkanAPIVersion = VK_API_VERSION_1_4;
@@ -266,11 +263,14 @@ namespace Wl
         {
             flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
         }
-
-        // TODO:
-        // - VK_IMAGE_USAGE_STORAGE_BIT
-        // - VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
-
+        if (RHITextureUsageHas(usage, RHITextureUsageFlags::Storage))
+        {
+            flags |= VK_IMAGE_USAGE_STORAGE_BIT;
+        }
+        if (RHITextureUsageHas(usage, RHITextureUsageFlags::InputAttachment))
+        {
+            flags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+        }
         return flags;
     }
 
@@ -297,6 +297,14 @@ namespace Wl
         if (usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
         {
             flags |= RHITextureUsageFlags::TransferDst;
+        }
+        if (usage & VK_IMAGE_USAGE_STORAGE_BIT)
+        {
+            flags |= RHITextureUsageFlags::Storage;
+        }
+        if (usage & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT)
+        {
+            flags |= RHITextureUsageFlags::InputAttachment;
         }
 
         return flags;
@@ -614,9 +622,9 @@ namespace Wl
     {
         switch (filter)
         {
-            case RHIFilter::NEAREST:
+            case RHIFilter::Nearest:
                 return VK_FILTER_NEAREST;
-            case RHIFilter::LINEAR:
+            case RHIFilter::Linear:
                 return VK_FILTER_LINEAR;
             default:
                 return VK_FILTER_NEAREST;

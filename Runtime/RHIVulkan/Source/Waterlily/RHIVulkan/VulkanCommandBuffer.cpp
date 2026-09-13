@@ -12,6 +12,7 @@
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/RHIVulkan/VulkanBuffer.hpp"
 #include "Waterlily/RHIVulkan/VulkanCommandQueue.hpp"
+#include "Waterlily/RHIVulkan/VulkanComputePipeline.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanDescriptorSet.hpp"
 #include "Waterlily/RHIVulkan/VulkanFramebuffer.hpp"
@@ -20,6 +21,8 @@
 #include "Waterlily/RHIVulkan/VulkanPipeline.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderPass.hpp"
 #include "Waterlily/RHIVulkan/VulkanTexture.hpp"
+#include "Waterlily/RHIVulkan/VulkanTextureView.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace Wl
 {
@@ -174,12 +177,25 @@ namespace Wl
 
     void VulkanCommandBuffer::BindPipeline(RHIPipeline* pipeline)
     {
-        if (pipeline->GetType() == RHIPipeline::Type::Graphics)
+        switch (pipeline->GetType())
         {
-            VulkanGraphicsPipeline* vulkanPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline);
-            VulkanAPI::vkCmdBindPipeline(m_handle,
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         vulkanPipeline->GetHandle().GetPipeline());
+            case RHIPipeline::Type::Graphics:
+            {
+                VulkanGraphicsPipeline* vulkanPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline);
+                VulkanAPI::vkCmdBindPipeline(m_handle,
+                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             vulkanPipeline->GetHandle().GetPipeline());
+                break;
+            }
+            case RHIPipeline::Type::Compute:
+            {
+                VulkanComputePipeline* computePipeline = static_cast<VulkanComputePipeline*>(pipeline);
+                VulkanAPI::vkCmdBindPipeline(m_handle,
+                                             VK_PIPELINE_BIND_POINT_COMPUTE,
+                                             computePipeline->GetHandle().GetPipeline());
+
+                break;
+            }
         }
     }
 
@@ -203,10 +219,23 @@ namespace Wl
                                       size_t groupIndex)
     {
         VulkanPipeline* vulkanPipeline = nullptr;
-        if (pipeline->GetType() == RHIPipeline::Type::Graphics)
+        VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        switch (pipeline->GetType())
         {
-            VulkanGraphicsPipeline* vulkanGraphicsPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline);
-            vulkanPipeline = &vulkanGraphicsPipeline->GetHandle();
+            case RHIPipeline::Type::Graphics:
+            {
+                VulkanGraphicsPipeline* vulkanGraphicsPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline);
+                vulkanPipeline = &vulkanGraphicsPipeline->GetHandle();
+                bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+                break;
+            }
+            case RHIPipeline::Type::Compute:
+            {
+                VulkanComputePipeline* computePipeline = static_cast<VulkanComputePipeline*>(pipeline);
+                vulkanPipeline = &computePipeline->GetHandle();
+                bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+                break;
+            }
         }
 
         static constexpr auto mapGroup = [](RHIShaderResourceGroup*& srg) -> VkDescriptorSet
@@ -221,7 +250,7 @@ namespace Wl
         Wl::Transform(groups.begin(), groups.end(), vulkanDescriptorSetArray.begin(), mapGroup);
 
         VulkanAPI::vkCmdBindDescriptorSets(m_handle,
-                                           VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                           bindPoint,
                                            vulkanPipeline->GetPipelineLayout(),
                                            groupIndex,
                                            vulkanDescriptorSetArray.GetSize(),
@@ -613,6 +642,78 @@ namespace Wl
         VulkanAPI::vkCmdCopyBuffer(m_handle, vulkanSource->GetHandle(), vulkanDestination->GetHandle(), 1, &bufferCopy);
     }
 
+    void VulkanCommandBuffer::BeginRendering(const RHIBeginRenderingInfo& info)
+    {
+        auto mapToVkRenderingAttachmentInfo = [](const RHIRenderingAttachmentInfo& attachmentInfo, bool depthStencil = false) -> VkRenderingAttachmentInfo
+        {
+            VkRenderingAttachmentInfo vkAttachmentInfo = {};
+            vkAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+
+            vkAttachmentInfo.loadOp = VulkanLoadOpGet(attachmentInfo.LoadOp);
+            vkAttachmentInfo.storeOp = VulkanStoreOpGet(attachmentInfo.StoreOp);
+
+            VulkanTextureView* textureView = static_cast<VulkanTextureView*>(attachmentInfo.TextureView);
+
+            vkAttachmentInfo.imageView = textureView->GetHandle();
+            vkAttachmentInfo.imageLayout = VulkanTextureLayoutGet(attachmentInfo.TextureLayout);
+
+            // VulkanTextureView* resolvedTextureView = static_cast<VulkanTextureView*>(attachmentInfo.ResolvedTextureView);
+            // vkAttachmentInfo.resolveImageView = resolvedTextureView->GetHandle();
+            // vkAttachmentInfo.resolveImageLayout = VulkanTextureLayoutGet(attachmentInfo.ResolvedTextureLayout);
+
+            if (depthStencil)
+            {
+                // TODO:
+                vkAttachmentInfo.clearValue.depthStencil.depth = 1.0f;
+                vkAttachmentInfo.clearValue.depthStencil.stencil = 0u;
+            }
+            else
+            {
+                vkAttachmentInfo.clearValue.color = {
+                        attachmentInfo.ClearValue.x,
+                        attachmentInfo.ClearValue.y,
+                        attachmentInfo.ClearValue.z,
+                        attachmentInfo.ClearValue.w};
+            }
+
+            return vkAttachmentInfo;
+        };
+
+        Array<VkRenderingAttachmentInfo> colorAttachments;
+        colorAttachments.Resize(info.ColorAttachments.GetSize());
+        Wl::Transform(info.ColorAttachments.begin(), info.ColorAttachments.end(), colorAttachments.data(), mapToVkRenderingAttachmentInfo);
+
+        VkRenderingAttachmentInfo depthAttachment;
+        if (info.DepthAttachment.HasValue())
+        {
+            depthAttachment = mapToVkRenderingAttachmentInfo(*info.DepthAttachment, true);
+        }
+
+        VkRenderingAttachmentInfo stencilAttachment = {};
+        if (info.StencilAttachment.HasValue())
+        {
+            stencilAttachment = mapToVkRenderingAttachmentInfo(*info.StencilAttachment, true);
+        }
+
+        VkRenderingInfo vkRenderingInfo = {};
+        vkRenderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        vkRenderingInfo.colorAttachmentCount = info.ColorAttachments.GetSize();
+        vkRenderingInfo.pColorAttachments = colorAttachments.GetData();
+        vkRenderingInfo.pDepthAttachment = info.DepthAttachment.HasValue() ? &depthAttachment : nullptr;
+        vkRenderingInfo.pStencilAttachment = info.StencilAttachment.HasValue() ? &stencilAttachment : nullptr;
+        vkRenderingInfo.layerCount = info.LayerCount;
+        vkRenderingInfo.viewMask = 0;
+        vkRenderingInfo.renderArea.offset = {static_cast<int32_t>(info.RenderArea.X), static_cast<int32_t>(info.RenderArea.Y)};
+        vkRenderingInfo.renderArea.extent = {static_cast<uint32_t>(info.RenderArea.Width), static_cast<uint32_t>(info.RenderArea.Height)};
+
+        VulkanAPI::vkCmdBeginRendering(m_handle, &vkRenderingInfo);
+    }
+
+    void VulkanCommandBuffer::EndRendering()
+    {
+        VulkanAPI::vkCmdEndRendering(m_handle);
+    }
+
     void VulkanCommandBuffer::BeginRenderPass(const RHIRenderPassBeginInfo& beginInfo)
     {
         VulkanRenderPass* vulkanRenderPass = static_cast<VulkanRenderPass*>(beginInfo.RenderPass);
@@ -709,6 +810,47 @@ namespace Wl
                                             command.Offset,
                                             command.DrawCount,
                                             command.Stride);
+    }
+
+    void VulkanCommandBuffer::Dispatch(const RHIDispatchCommand& command)
+    {
+        VulkanAPI::vkCmdDispatch(m_handle, command.GroupCountX, command.GroupCountY, command.GroupCountZ);
+    }
+
+    void VulkanCommandBuffer::BlitTexture(const RHIBlitTextureCommand& command)
+    {
+        VulkanTexture* src = static_cast<VulkanTexture*>(command.Source);
+        VulkanTexture* dst = static_cast<VulkanTexture*>(command.Destination);
+
+        VkImageBlit blitRegion = {};
+
+        blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        blitRegion.srcSubresource.mipLevel = 0;
+        blitRegion.srcSubresource.baseArrayLayer = 0;
+        blitRegion.srcSubresource.layerCount = 1;
+        blitRegion.srcOffsets[0] = {0, 0, 0};
+        blitRegion.srcOffsets[1].x = static_cast<int32_t>(command.Width);
+        blitRegion.srcOffsets[1].y = static_cast<int32_t>(command.Height);
+        blitRegion.srcOffsets[1].z = 1;
+
+        blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        blitRegion.dstSubresource.mipLevel = 0;
+        blitRegion.dstSubresource.baseArrayLayer = 0;
+        blitRegion.dstSubresource.layerCount = 1;
+        blitRegion.dstOffsets[0] = {0, 0, 0};
+        blitRegion.dstOffsets[1].x = static_cast<int32_t>(command.Width);
+        blitRegion.dstOffsets[1].y = static_cast<int32_t>(command.Height);
+        blitRegion.dstOffsets[1].z = 1;
+
+        VulkanAPI::vkCmdBlitImage(
+                m_handle,
+                src->GetHandle(),
+                VulkanTextureLayoutGet(command.SourceLayout),
+                dst->GetHandle(),
+                VulkanTextureLayoutGet(command.DestinationLayout),
+                1,
+                &blitRegion,
+                VulkanFilterGet(command.Filter));
     }
 
     RHICommandBuffer* VulkanCommandAllocator::OpenCommandBuffer(uint32_t index)

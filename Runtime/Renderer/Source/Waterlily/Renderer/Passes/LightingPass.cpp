@@ -1,4 +1,5 @@
 #include "Waterlily/Renderer/Passes/LightingPass.hpp"
+#include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 
@@ -7,25 +8,25 @@ namespace Wl
 
     FrameGraphPass& LightingPassCreate(PassContext& passContext,
                                        FramePacket& packet,
-                                       GraphicsPipelineState& pipelineState,
-                                       LightingPassParameters& params)
+                                       ComputePipelineState& pipelineState,
+                                       LightingPassParameters& parameters)
     {
         FrameGraphPass& lightingPass = passContext.FrameGraph->AddPass(LightingPassName);
         FrameGraphPassDelegate& lightingPassDelegate = lightingPass.EmplaceDefault();
 
-        lightingPassDelegate.SetOnSetup([&](FrameGraphPassSetupContext& context, FrameGraphPassBuilder& builder)
+        lightingPassDelegate.SetOnSetup([=, &parameters](FrameGraphPassSetupContext& context, FrameGraphPassBuilder& builder)
         {
-            builder.SetStage(FrameGraphPassStage::Graphics);
-            builder.Write(params.Color);
-            builder.Read(params.Position);
-            builder.Read(params.Normal);
-            builder.Read(params.Albedo);
-            builder.Read(params.MetallicRoughness);
-            builder.ReadStorage(params.Indirect);
-            builder.SetDepthStencil(params.DepthStencil);
+            builder.SetStage(FrameGraphPassStage::Compute);
+            builder.WriteStorage(parameters.Color);
+            builder.Read(parameters.Position);
+            builder.Read(parameters.Normal);
+            builder.Read(parameters.Albedo);
+            builder.Read(parameters.MetallicRoughness);
+            builder.ReadStorage(parameters.Indirect);
+            builder.SetDepthStencil(parameters.DepthStencil);
         });
 
-        lightingPassDelegate.SetOnExecute([&](FrameGraphPassExecutionContext& context)
+        lightingPassDelegate.SetOnExecute([=, &passContext, &packet, &pipelineState, &parameters](FrameGraphPassExecutionContext& context)
         {
             RHICommandBuffer* commandBuffer = context.CommandBuffer;
             Frame& frame = context.FrameContext->GetCurrentFrame();
@@ -63,11 +64,10 @@ namespace Wl
             RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipelineState.SRGLayouts[1];
             RHIShaderResourceGroup* gBufferTexturesSRG = frame.SRGPool->AllocateSRG(gBufferTexturesSRGLayout);
             {
-                FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(params.Position);
-                FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(params.Normal);
-                FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(params.Albedo);
-                FrameGraphPhysicalTexture& metallicRoughnessResource = context.FrameGraph->ResolvePhysicalTexture(params.MetallicRoughness);
-
+                FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(parameters.Position);
+                FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(parameters.Normal);
+                FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(parameters.Albedo);
+                FrameGraphPhysicalTexture& metallicRoughnessResource = context.FrameGraph->ResolvePhysicalTexture(parameters.MetallicRoughness);
                 RHISampler* pointSampler = passContext.TextureRegistry->GetDefaultSampler();
 
                 RHIWriteTextureSamplerResource writePosition(0, positionResource.View, pointSampler);
@@ -80,36 +80,25 @@ namespace Wl
                 gBufferTexturesSRG->SetTextureSampler(writeAlbedo);
                 gBufferTexturesSRG->SetTextureSampler(writMetallicRoughness);
 
+                FrameGraphPhysicalTexture& colorTexture = context.FrameGraph->ResolvePhysicalTexture(parameters.Color);
+                RHIWriteTextureResource writeColor(4, colorTexture.View);
+                gBufferTexturesSRG->SetTexture(writeColor);
+
                 gBufferTexturesSRG->Update();
             }
-            float width = static_cast<float>(context.FrameContext->GetWidth());
-            float height = static_cast<float>(context.FrameContext->GetHeight());
 
-            Rect2D area(0.0f, 0.0f, width, height);
-            Vector4f color(0.01f, 0.01f, 0.01f, 1.0f);
+            RHIPipeline* pipeline = passContext.PipelineManager->GetComputePipeline(LightingPassName);
 
-            RHIRenderPassBeginInfo renderPassBeginInfo = context.CreateRenderPassBeginInfo(color, area);
-            commandBuffer->BeginRenderPass(renderPassBeginInfo);
-            {
-                RHIPipeline* pipeline = passContext.PipelineManager->GetPipeline(LightingPassName);
+            commandBuffer->BindPipeline(pipeline);
 
-                commandBuffer->BindPipeline(pipeline);
+            commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
+            commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, 1);
 
-                commandBuffer->SetViewport(pipelineState.Viewport);
-                commandBuffer->SetScissor(pipelineState.Scissor);
-
-                commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
-                commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, 1);
-
-                RHIDrawCommand drawCommand = {};
-                drawCommand.FirstInstance = 0;
-                drawCommand.FirstVertex = 0;
-                drawCommand.InstanceCount = 1;
-                drawCommand.VertexCount = 3;
-                commandBuffer->Draw(drawCommand);
-            }
-
-            commandBuffer->EndRenderPass();
+            RHIDispatchCommand dispatchCommand = {};
+            dispatchCommand.GroupCountX = Math::Ceil(context.FrameContext->GetWidth() / 16.0f);
+            dispatchCommand.GroupCountY = Math::Ceil(context.FrameContext->GetHeight() / 16.0f);
+            dispatchCommand.GroupCountZ = 1;
+            commandBuffer->Dispatch(dispatchCommand);
         });
 
         return lightingPass;

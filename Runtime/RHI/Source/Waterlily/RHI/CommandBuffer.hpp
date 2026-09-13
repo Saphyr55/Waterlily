@@ -2,12 +2,14 @@
 
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/ArrayView.hpp"
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Containers/Option.hpp"
 #include "Waterlily/Core/Math/Vector4.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
 #include "Waterlily/RHI/Texture.hpp"
+#include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/RHI/Types.hpp"
+#include <cstdint>
 
 namespace Wl
 {
@@ -17,6 +19,13 @@ namespace Wl
      */
     struct RHICommand
     {
+    };
+
+    struct RHIDispatchCommand : RHICommand
+    {
+        uint32_t GroupCountX;
+        uint32_t GroupCountY;
+        uint32_t GroupCountZ;
     };
 
     /**
@@ -60,6 +69,17 @@ namespace Wl
     {
         RHIBuffer* Source;
         RHITexture* Destination;
+    };
+    
+    struct RHIBlitTextureCommand : RHICommand
+    {
+        RHITexture* Source;
+        RHITexture* Destination;
+        RHITextureLayout SourceLayout = RHITextureLayout::TransferSrc;
+        RHITextureLayout DestinationLayout = RHITextureLayout::TransferDst;
+        uint32_t Width = 2;
+        uint32_t Height = 2;
+        RHIFilter Filter = RHIFilter::Nearest;
     };
 
     struct RHIShaderConstants
@@ -121,6 +141,24 @@ namespace Wl
         uint32_t Stencil = 0;
     };
 
+    struct RHIRenderingAttachmentInfo
+    {
+        Vector4f ClearValue;
+        RHIAttachmentLoadOp LoadOp = RHIAttachmentLoadOp::Clear;
+        RHIAttachmentStoreOp StoreOp = RHIAttachmentStoreOp::Store;
+        RHITextureView* TextureView;
+        RHITextureLayout TextureLayout;
+    };
+
+    struct RHIBeginRenderingInfo
+    {
+        Array<RHIRenderingAttachmentInfo> ColorAttachments;
+        Option<RHIRenderingAttachmentInfo> DepthAttachment = Option<RHIRenderingAttachmentInfo>::None();
+        Option<RHIRenderingAttachmentInfo> StencilAttachment = Option<RHIRenderingAttachmentInfo>::None();
+        Rect2D RenderArea;
+        uint32_t LayerCount = 1;
+    };
+
     /**
      * @brief Abstract interface representing a command buffer for recording GPU commands.
      */
@@ -137,11 +175,14 @@ namespace Wl
          */
         virtual void End() = 0;
 
+        virtual void BeginRendering(const RHIBeginRenderingInfo& info) = 0;
+        virtual void EndRendering() = 0;
+
         /**
          * @brief Begin a render pass.
          * @param render_pass_beginfo Information describing the render pass begin.
          */
-        virtual void BeginRenderPass(const RHIRenderPassBeginInfo& render_pass_beginfo) = 0;
+        virtual void BeginRenderPass(const RHIRenderPassBeginInfo& info) = 0;
 
         /**
          * @brief End the current render pass.
@@ -205,6 +246,10 @@ namespace Wl
         virtual void Draw(const RHIDrawCommand& command) = 0;
         virtual void Draw(const RHIDrawIndexedCommand& command) = 0;
         virtual void Draw(const RHIDrawIndexedIndirectCommand& command) = 0;
+
+        virtual void Dispatch(const RHIDispatchCommand& command) = 0;
+
+        virtual void BlitTexture(const RHIBlitTextureCommand& command) = 0;
 
         /**
          * @brief Destructor.

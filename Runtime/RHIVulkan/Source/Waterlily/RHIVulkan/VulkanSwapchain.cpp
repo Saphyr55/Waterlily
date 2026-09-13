@@ -2,17 +2,20 @@
 #include "Waterlily/Core/Math/Math.hpp"
 #include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Cast.hpp"
-#include "Waterlily/Core/Memory/Allocator.hpp"
+#include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Semaphore.hpp"
+#include "Waterlily/RHI/Swapchain.hpp"
 #include "Waterlily/RHI/Texture.hpp"
+#include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"
 #include "Waterlily/RHIVulkan/VulkanSync.hpp"
 #include "Waterlily/RHIVulkan/VulkanTexture.hpp"
 #include "Waterlily/RHIVulkan/VulkanTextureView.hpp"
+
 
 #include <vulkan/vulkan_core.h>
 
@@ -97,7 +100,7 @@ namespace Wl
 
         uint32_t formatCount = 0;
         WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfaceFormatsKHR(
-            physicalDevice, surface, &formatCount, nullptr));
+                physicalDevice, surface, &formatCount, nullptr));
 
         if (formatCount != 0)
         {
@@ -108,7 +111,7 @@ namespace Wl
 
         uint32_t presentModeCount = 0;
         WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfacePresentModesKHR(
-            physicalDevice, surface, &presentModeCount, nullptr));
+                physicalDevice, surface, &presentModeCount, nullptr));
 
         if (presentModeCount != 0)
         {
@@ -122,6 +125,8 @@ namespace Wl
 
     void VulkanSwapchain::Create()
     {
+        m_allocator = MemoryStack::GetCurrentAllocator();
+
         VulkanSwapchainSupportDetails swapchainSupportDetails = QuerySupportDetails();
 
         bool isSwapchainAdequate =
@@ -140,8 +145,8 @@ namespace Wl
         swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
         swapchainCreateInfo.imageExtent = extent;
         swapchainCreateInfo.imageArrayLayers = 1;
-        // TODO: use VK_IMAGE_USAGE_TRANSFER_DST_BIT mask for post-processing for the future.
-        swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        swapchainCreateInfo.imageUsage =
+                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         uint32_t graphicsQueueIndex = m_context.PhysicalDeviceInfo.GraphicsQueueIndex;
         uint32_t presentQueueIndex = m_context.PhysicalDeviceInfo.PresentQueueIndex;
@@ -167,7 +172,7 @@ namespace Wl
         swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
         WL_VULKAN_CHECK(VulkanAPI::vkCreateSwapchainKHR(
-            m_context.Device, &swapchainCreateInfo, m_context.Allocator, &m_handle));
+                m_context.Device, &swapchainCreateInfo, m_context.Allocator, &m_handle));
 
         uint32_t imageCount = 0;
         VulkanAPI::vkGetSwapchainImagesKHR(m_context.Device, m_handle, &imageCount, nullptr);
@@ -178,7 +183,7 @@ namespace Wl
         }
 
         m_images.Resize(imageCount);
-        m_textureViews.Reserve(imageCount);
+        m_buffers.Reserve(imageCount);
 
         VulkanAPI::vkGetSwapchainImagesKHR(m_context.Device, m_handle, &imageCount, m_images.data());
 
@@ -189,8 +194,13 @@ namespace Wl
         {
             VkImage image = m_images[i];
 
-            Allocator* allocator = MemoryStack::GetCurrentAllocator();
-            VulkanTextureView* textureView = Wl::New(allocator, VulkanTextureView());
+            VulkanTexture* texture = Wl::New(m_allocator, VulkanTexture(image));
+
+            RHITextureViewDescription viewDesc = {};
+            viewDesc.Texture = texture;
+            viewDesc.Format = RHIFormatGet(m_format);
+
+            VulkanTextureView* textureView = Wl::New(m_allocator, VulkanTextureView(viewDesc));
 
             VkImageViewCreateInfo imageViewCreateInfo = {};
             imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -210,21 +220,24 @@ namespace Wl
             WL_VULKAN_CHECK(VulkanAPI::vkCreateImageView(
                     m_context.Device, &imageViewCreateInfo, m_context.Allocator, &textureView->GetHandle()));
 
-            m_textureViews.Append(textureView);
+            m_buffers.Append(RHISwapchainBuffer(texture, textureView));
         }
 
-        WL_CHECK(m_textureViews.size() == m_images.size());
+        WL_CHECK(m_buffers.size() == m_images.size());
     }
 
     void VulkanSwapchain::Destroy()
     {
-        for (RHITextureView* textureView: m_textureViews)
+        for (RHISwapchainBuffer& buffer: m_buffers)
         {
-            VulkanTextureView* vulkanTextureView = static_cast<VulkanTextureView*>(textureView);
+            VulkanTextureView* vulkanTextureView = static_cast<VulkanTextureView*>(buffer.View);
             vulkanTextureView->Destroy();
+
+            Wl::Delete(m_allocator, buffer.View);
+            Wl::Delete(m_allocator, buffer.Texture);
         }
 
-        m_textureViews.Clear();
+        m_buffers.Clear();
         VulkanAPI::vkDestroySwapchainKHR(m_context.Device, m_handle, m_context.Allocator);
     }
 
@@ -240,11 +253,13 @@ namespace Wl
                                                                            &m_currentResult.ImageIndex);
         switch (acquireNextImageResult)
         {
-            case VK_SUCCESS: {
+            case VK_SUCCESS:
+            {
                 m_currentResult.IsSuccess = true;
                 return m_currentResult;
             }
-            case VK_SUBOPTIMAL_KHR: {
+            case VK_SUBOPTIMAL_KHR:
+            {
                 m_currentResult.IsSuccess = true;
                 m_currentResult.IsSuboptimal = true;
                 return m_currentResult;
@@ -253,12 +268,14 @@ namespace Wl
                 m_currentResult.IsSuccess = false;
                 m_currentResult.IsNotReady = true;
                 return m_currentResult;
-            case VK_ERROR_OUT_OF_DATE_KHR: {
+            case VK_ERROR_OUT_OF_DATE_KHR:
+            {
                 m_currentResult.IsSuccess = false;
                 m_currentResult.IsOutOfDate = true;
                 return m_currentResult;
             }
-            default: {
+            default:
+            {
                 return m_currentResult;
             }
         }

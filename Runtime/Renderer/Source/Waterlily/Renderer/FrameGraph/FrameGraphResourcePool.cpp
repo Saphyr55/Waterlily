@@ -5,7 +5,7 @@
 namespace Wl
 {
 
-    void FrameGraphPhysicalTexturePool::BeginFrame(uint64_t maxFrameLifetime)
+    void FrameGraphPhysicalTexturePool::GarbageCollect(uint64_t maxFrameLifetime)
     {
         if (maxFrameLifetime < m_frameContext->GetMaxFrameInFlight())
         {
@@ -13,7 +13,7 @@ namespace Wl
         }
 
         m_frameCount = m_frameContext->GetFrameCount();
-        GarbageCollect(maxFrameLifetime);
+        InternalGarbageCollect(maxFrameLifetime);
 
         for (const PendingRelease& pendingRelease: m_pendingReleases)
         {
@@ -58,7 +58,7 @@ namespace Wl
         m_resources.Clear();
     }
 
-    void FrameGraphPhysicalTexturePool::GarbageCollect(uint64_t maxFrameLifetime)
+    void FrameGraphPhysicalTexturePool::InternalGarbageCollect(uint64_t maxFrameLifetime)
     {
         // TODO:
     }
@@ -72,7 +72,7 @@ namespace Wl
     {
         FrameGraphPhysicalTexture physicalTexture;
 
-        physicalTexture.Texture = m_device->CreateTexturre(RHITextureDescription {
+        physicalTexture.Texture = m_device->CreateTexture(RHITextureDescription {
                 .Format = key.Format,
                 .Usage = key.Usage,
                 .SharingMode = RHISharingMode::Private,

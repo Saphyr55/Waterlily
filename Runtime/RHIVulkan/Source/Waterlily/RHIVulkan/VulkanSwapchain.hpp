@@ -2,11 +2,14 @@
 
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Semaphore.hpp"
 #include "Waterlily/RHI/Swapchain.hpp"
+#include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"
+#include "Waterlily/RHIVulkan/VulkanTexture.hpp"
 
 #include <vulkan/vulkan_core.h>
 
@@ -36,14 +39,14 @@ namespace Wl
 
         virtual RHIFormat GetFormat() override;
 
-        virtual ArrayView<RHITextureView*> GetTextureViews() const override
+        virtual ArrayView<RHISwapchainBuffer> GetBuffers() const override
         {
-            return m_textureViews;
+            return m_buffers;
         }
 
-        virtual RHITextureView* GetCurrentTextureView() const override
+        virtual const RHISwapchainBuffer& GetCurrentBuffer() const override
         {
-            return m_textureViews[m_currentResult.ImageIndex];
+            return m_buffers[m_currentResult.ImageIndex];
         }
 
         void Create();
@@ -78,12 +81,13 @@ namespace Wl
         VulkanSwapchainSupportDetails QuerySupportDetails();
 
     private:
+        Allocator* m_allocator;
         VulkanContext& m_context;
         RHISwapchainAcquireResult m_currentResult;
         VkFormat m_format;
         VkExtent2D m_extent;
         Array<VkImage> m_images;
-        Array<RHITextureView*> m_textureViews;
+        Array<RHISwapchainBuffer> m_buffers;
         VkSwapchainKHR m_handle = VK_NULL_HANDLE;
         uint32_t m_imageCount = 3;
     };
