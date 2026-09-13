@@ -20,6 +20,13 @@ namespace Wl
     {
     };
 
+    struct RHIDispatchCommand : RHICommand
+    {
+        uint32_t GroupCountX;
+        uint32_t GroupCountY;
+        uint32_t GroupCountZ;
+    };
+
     /**
      * @brief Represents a draw command for rendering.
      */
@@ -227,6 +234,8 @@ namespace Wl
         virtual void Draw(const RHIDrawCommand& command) = 0;
         virtual void Draw(const RHIDrawIndexedCommand& command) = 0;
         virtual void Draw(const RHIDrawIndexedIndirectCommand& command) = 0;
+
+        virtual void Dispatch(const RHIDispatchCommand& command) = 0;
 
         /**
          * @brief Destructor.

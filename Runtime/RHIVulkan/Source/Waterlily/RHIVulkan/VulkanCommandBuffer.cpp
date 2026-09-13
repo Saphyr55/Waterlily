@@ -12,6 +12,7 @@
 #include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/RHIVulkan/VulkanBuffer.hpp"
 #include "Waterlily/RHIVulkan/VulkanCommandQueue.hpp"
+#include "Waterlily/RHIVulkan/VulkanComputePipeline.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanDescriptorSet.hpp"
 #include "Waterlily/RHIVulkan/VulkanFramebuffer.hpp"
@@ -176,12 +177,25 @@ namespace Wl
 
     void VulkanCommandBuffer::BindPipeline(RHIPipeline* pipeline)
     {
-        if (pipeline->GetType() == RHIPipeline::Type::Graphics)
+        switch (pipeline->GetType())
         {
-            VulkanGraphicsPipeline* vulkanPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline);
-            VulkanAPI::vkCmdBindPipeline(m_handle,
-                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         vulkanPipeline->GetHandle().GetPipeline());
+            case RHIPipeline::Type::Graphics:
+            {
+                VulkanGraphicsPipeline* vulkanPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline);
+                VulkanAPI::vkCmdBindPipeline(m_handle,
+                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             vulkanPipeline->GetHandle().GetPipeline());
+                break;
+            }
+            case RHIPipeline::Type::Compute:
+            {
+                VulkanComputePipeline* computePipeline = static_cast<VulkanComputePipeline*>(pipeline);
+                VulkanAPI::vkCmdBindPipeline(m_handle,
+                                             VK_PIPELINE_BIND_POINT_COMPUTE,
+                                             computePipeline->GetHandle().GetPipeline());
+
+                break;
+            }
         }
     }
 
@@ -205,10 +219,23 @@ namespace Wl
                                       size_t groupIndex)
     {
         VulkanPipeline* vulkanPipeline = nullptr;
-        if (pipeline->GetType() == RHIPipeline::Type::Graphics)
+        VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        switch (pipeline->GetType())
         {
-            VulkanGraphicsPipeline* vulkanGraphicsPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline);
-            vulkanPipeline = &vulkanGraphicsPipeline->GetHandle();
+            case RHIPipeline::Type::Graphics:
+            {
+                VulkanGraphicsPipeline* vulkanGraphicsPipeline = static_cast<VulkanGraphicsPipeline*>(pipeline);
+                vulkanPipeline = &vulkanGraphicsPipeline->GetHandle();
+                bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+                break;
+            }
+            case RHIPipeline::Type::Compute:
+            {
+                VulkanComputePipeline* computePipeline = static_cast<VulkanComputePipeline*>(pipeline);
+                vulkanPipeline = &computePipeline->GetHandle();
+                bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+                break;
+            }
         }
 
         static constexpr auto mapGroup = [](RHIShaderResourceGroup*& srg) -> VkDescriptorSet
@@ -223,7 +250,7 @@ namespace Wl
         Wl::Transform(groups.begin(), groups.end(), vulkanDescriptorSetArray.begin(), mapGroup);
 
         VulkanAPI::vkCmdBindDescriptorSets(m_handle,
-                                           VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                           bindPoint,
                                            vulkanPipeline->GetPipelineLayout(),
                                            groupIndex,
                                            vulkanDescriptorSetArray.GetSize(),
@@ -783,6 +810,11 @@ namespace Wl
                                             command.Offset,
                                             command.DrawCount,
                                             command.Stride);
+    }
+
+    void VulkanCommandBuffer::Dispatch(const RHIDispatchCommand& command)
+    {
+        VulkanAPI::vkCmdDispatch(m_handle, command.GroupCountX, command.GroupCountY, command.GroupCountZ);
     }
 
     RHICommandBuffer* VulkanCommandAllocator::OpenCommandBuffer(uint32_t index)

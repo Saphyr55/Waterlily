@@ -141,6 +141,7 @@ namespace Wl
         WL_DEFINE_RHI_FUNCTION(vkCmdDraw);
         WL_DEFINE_RHI_FUNCTION(vkCmdDrawIndexed);
         WL_DEFINE_RHI_FUNCTION(vkCmdDrawIndexedIndirect);
+        WL_DEFINE_RHI_FUNCTION(vkCmdDispatch);
         WL_DEFINE_RHI_FUNCTION(vkCmdBeginRenderPass);
         WL_DEFINE_RHI_FUNCTION(vkCmdEndRenderPass);
 

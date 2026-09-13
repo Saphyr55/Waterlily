@@ -521,15 +521,13 @@ namespace Wl
 
     void FrameGraph::BuildBarriers()
     {
+
         for (size_t passIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[passIndex];
 
-            for (size_t i = 0; i < pass.m_textureReads.GetSize(); i++)
+            auto AddBarrier = [&](FrameGraphTextureHandle handle, RHITextureLayout layoutNeeded)
             {
-                FrameGraphTextureHandle handle = pass.m_textureReads[i];
-                RHITextureLayout layoutNeeded = pass.m_textureReadStates[handle];
-
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
 
                 if (resource.CurrentLayout != layoutNeeded)
@@ -539,46 +537,34 @@ namespace Wl
                     barrier.OldLayout = resource.CurrentLayout;
                     barrier.NewLayout = layoutNeeded;
                     pass.m_barriers.Append(barrier);
+                    resource.CurrentLayout = layoutNeeded;
                 }
 
-                resource.CurrentLayout = layoutNeeded;
+            };
+
+            for (size_t i = 0; i < pass.m_textureReads.GetSize(); i++)
+            {
+                FrameGraphTextureHandle handle = pass.m_textureReads[i];
+                RHITextureLayout layoutNeeded = pass.m_textureReadStates[handle];
+                AddBarrier(handle, layoutNeeded);
             }
 
             for (size_t i = 0; i < pass.m_textureWrites.GetSize(); i++)
             {
                 FrameGraphTextureHandle handle = pass.m_textureWrites[i];
                 RHITextureLayout layoutNeeded = pass.m_textureWriteStates[handle];
-
-                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
-                if (resource.CurrentLayout != layoutNeeded)
-                {
-                    FrameGraphTextureBarrier barrier = {};
-                    barrier.Handle = handle;
-                    barrier.OldLayout = resource.CurrentLayout;
-                    barrier.NewLayout = layoutNeeded;
-                    pass.m_barriers.Append(barrier);
-                }
-
-                resource.CurrentLayout = layoutNeeded;
+                AddBarrier(handle, layoutNeeded);
             }
             
-            if (pass.m_depthStencil.HasValue())
+            if (pass.m_depthStencil)
             {
-                FrameGraphTextureHandle handle = pass.m_depthStencil.Unwrap();
-                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-
+                FrameGraphTextureHandle handle = *pass.m_depthStencil;
                 RHITextureLayout layoutNeeded = pass.m_textureWriteStates[handle];
-                if (resource.CurrentLayout != layoutNeeded)
-                {
-                    FrameGraphTextureBarrier barrier = {};
-                    barrier.Handle = handle;
-                    barrier.OldLayout = resource.CurrentLayout;
-                    barrier.NewLayout = layoutNeeded;
-                    pass.m_barriers.Append(barrier);
-                }
-
-                resource.CurrentLayout = layoutNeeded;
+                FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
+                RHITextureLayout oldLayout = resource.CurrentLayout;
+                AddBarrier(handle, layoutNeeded);
+                // FIXME: This is a hack to fix the issue of depth stencil attachment being used as undefined layout. 
+                resource.CurrentLayout = oldLayout;
             }
         }
     }

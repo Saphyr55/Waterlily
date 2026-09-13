@@ -59,7 +59,9 @@ namespace Wl
         virtual void Draw(const RHIDrawIndexedCommand& command) override;
 
         virtual void Draw(const RHIDrawIndexedIndirectCommand& command) override;
-
+        
+        virtual void Dispatch(const RHIDispatchCommand& command) override; 
+        
         inline VkCommandBuffer& GetHandle()
         {
             return m_handle;
