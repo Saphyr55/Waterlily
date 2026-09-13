@@ -15,19 +15,14 @@ struct GBufferTextures
     Sampler2D metallicRoughnessTexture;
 }
 
-struct FSOutput
-{
-    float4 Color : SV_Target0;
-}
-
-struct VSOutput
-{
-    float4 Position : SV_Position;
-    float2 UV : TEXCOORD0;
-}
-
 [[vk::binding(0, 0)]]
 ConstantBuffer<View> view;
+
+[[vk::binding(0, 1)]]
+GBufferTextures gBufferTextures;
+
+[[vk::binding(4, 1)]]
+RWTexture2D outputColor;
 
 [[vk::binding(1, 0)]]
 ConstantBuffer<DirectionalLight> directionalLight;
@@ -36,27 +31,16 @@ ConstantBuffer<PointLight[kMaxPointLight]> pointLights;
 [[vk::binding(3, 0)]]
 ConstantBuffer<uint> pointLightCount;
 
-[[vk::binding(0, 1)]]
-GBufferTextures gBufferTextures;
-
-[shader("vertex")]
-VSOutput VSMain(uint vertexID: SV_VertexID)
+[shader("compute")]
+[numthreads(16, 16, 1)]
+void Main(uint3 dispatchThreadID: SV_DispatchThreadID)
 {
-    VSOutput output;
-    output.UV = float2((vertexID << 1) & 2, vertexID & 2);
-    output.Position = float4(output.UV * 2.0f - 1.0f, 0.0f, 1.0f);
-    return output;
-}
+    uint2 pixel = dispatchThreadID.xy;
 
-[shader("fragment")]
-FSOutput FSMain(VSOutput input)
-{
-    FSOutput output;
-
-    float3 position = gBufferTextures.positionTexture.Sample(input.UV).rgb;
-    float3 normal = gBufferTextures.normalTexture.Sample(input.UV).rgb;
-    float4 albedo = gBufferTextures.albedoTexture.Sample(input.UV);
-    float3 metallicRoughness = gBufferTextures.metallicRoughnessTexture.Sample(input.UV).rgb;
+    float3 position = gBufferTextures.positionTexture[pixel].rgb;
+    float3 normal = gBufferTextures.normalTexture[pixel].rgb;
+    float4 albedo = gBufferTextures.albedoTexture[pixel];
+    float3 metallicRoughness = gBufferTextures.metallicRoughnessTexture[pixel].rgb;
 
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
@@ -80,7 +64,7 @@ FSOutput FSMain(VSOutput input)
     float3 Lo = float3(0.0f, 0.0f, 0.0f);
 
     DirectionalLight dl = directionalLight;
-    dl.color = float3(0.0f, 0.0f, 0.0f); // Turn off directional light.
+    dl.color = float3(0.0f, 0.0f, 0.0f);// Turn off directional light.
     Lo += PBR.CookTorranceBRDF(dl, materialBRDF, normal, viewDirection, position);
 
     for (uint i = 0; i < pointLightCount; i++)
@@ -91,7 +75,5 @@ FSOutput FSMain(VSOutput input)
     float3 color = Lo;
     color = color / (color + float3(1.0, 1.0, 1.0));
 
-    output.Color = float4(color, albedo.a);
-
-    return output;
+    outputColor[pixel] = float4(color, albedo.a);
 }

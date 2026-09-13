@@ -193,7 +193,7 @@ namespace Wl
         Wl::Delete(m_allocator, vulkanBindlessShaderResources);
     }
 
-    RHITexture* VulkanDevice::CreateTexturre(const RHITextureDescription& description)
+    RHITexture* VulkanDevice::CreateTexture(const RHITextureDescription& description)
     {
         VulkanTexture* vulkanTexture = Wl::New(m_allocator, VulkanTexture());
         vulkanTexture->Create(description);

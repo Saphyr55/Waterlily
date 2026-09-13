@@ -50,7 +50,7 @@ namespace Wl
         pendingWrite.Binding = resource.Binding;
         pendingWrite.View = vulkanTextureView->GetHandle();
         pendingWrite.Sampler = vulkanSampler->GetHandle();
-        pendingWrite.Layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        pendingWrite.Layout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
         pendingWrite.Type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
         m_pendingImageWrites.Append(pendingWrite);
@@ -65,8 +65,8 @@ namespace Wl
         WL_CHECK(vulkanTexture);
 
         RHITextureUsageFlags usage = vulkanTexture->GetDescription().Usage;
+
         bool isStorage = (usage & RHITextureUsageFlags::Storage) == RHITextureUsageFlags::Storage;
-        
         WL_CHECK_MSG(isStorage, "Only storage textures or read-only texture views can be bound without a sampler.");
 
         PendingImageWrite pendingWrite = {};
@@ -74,7 +74,7 @@ namespace Wl
         pendingWrite.Binding = resource.Binding;
         pendingWrite.View = vulkanTextureView->GetHandle();
         pendingWrite.Sampler = VK_NULL_HANDLE;
-        pendingWrite.Layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        pendingWrite.Layout = VK_IMAGE_LAYOUT_GENERAL;
         pendingWrite.Type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 
         m_pendingImageWrites.Append(pendingWrite);

@@ -17,19 +17,25 @@ namespace Wl
 
         void Create(const RHITextureViewDescription& description, VkImageView imageView);
         void Create(const RHITextureViewDescription& description);
+        void Create()
+        {
+            Create(m_description, m_handle);
+        }
 
         void Destroy();
 
     public:
-        VulkanTextureView()
-            : m_handle(VK_NULL_HANDLE)
+        VulkanTextureView() = default;
+        VulkanTextureView(const RHITextureViewDescription& description, VkImageView imageView = VK_NULL_HANDLE)
+            : m_handle(imageView)
         {
+            m_description = description;
         }
 
         ~VulkanTextureView() = default;
 
     private:
-        VkImageView m_handle;
+        VkImageView m_handle = VK_NULL_HANDLE;
     };
 
 }// namespace Wl

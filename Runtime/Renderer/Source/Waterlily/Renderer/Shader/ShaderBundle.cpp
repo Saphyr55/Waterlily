@@ -40,6 +40,11 @@ namespace Wl
         return m_graphicsShaders[passName];
     }
 
+    ShaderComputePass& ShaderBundle::GetShaderComputePass(StringID passName)
+    {
+        return m_computeShaders[passName];
+    }
+
     void ShaderBundle::RegisterComputePass(StringID passName, StringID computeName)
     {
         ShaderComputePass shader = {};

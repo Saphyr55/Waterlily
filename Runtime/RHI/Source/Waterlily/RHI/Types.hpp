@@ -51,8 +51,8 @@ namespace Wl
 
     enum class RHIFilter
     {
-        NEAREST,
-        LINEAR
+        Nearest,
+        Linear
     };
 
     enum class RHISamplerAddressMode
@@ -145,12 +145,13 @@ namespace Wl
     enum class RHITextureUsageFlags : uint8_t
     {
         None = 0,
-        ColorAttachment = 1 << 0,
-        DepthStencilAttachment = 1 << 1,
-        Sampler = 1 << 2,
-        Storage = 1 << 3,
-        TransferSrc = 1 << 4,
-        TransferDst = 1 << 5
+        InputAttachment = 1 << 0,
+        ColorAttachment = 1 << 1,
+        DepthStencilAttachment = 1 << 2,
+        Sampler = 1 << 3,
+        Storage = 1 << 4,
+        TransferSrc = 1 << 5,
+        TransferDst = 1 << 6
     };
     WL_ENUM_FLAGS(RHITextureUsageFlags)
 

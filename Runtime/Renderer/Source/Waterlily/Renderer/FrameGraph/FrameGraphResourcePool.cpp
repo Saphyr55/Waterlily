@@ -72,7 +72,7 @@ namespace Wl
     {
         FrameGraphPhysicalTexture physicalTexture;
 
-        physicalTexture.Texture = m_device->CreateTexturre(RHITextureDescription {
+        physicalTexture.Texture = m_device->CreateTexture(RHITextureDescription {
                 .Format = key.Format,
                 .Usage = key.Usage,
                 .SharingMode = RHISharingMode::Private,

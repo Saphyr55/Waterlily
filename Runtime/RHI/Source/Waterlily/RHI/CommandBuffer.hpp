@@ -9,6 +9,7 @@
 #include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/RHI/Types.hpp"
+#include <cstdint>
 
 namespace Wl
 {
@@ -68,6 +69,17 @@ namespace Wl
     {
         RHIBuffer* Source;
         RHITexture* Destination;
+    };
+    
+    struct RHIBlitTextureCommand : RHICommand
+    {
+        RHITexture* Source;
+        RHITexture* Destination;
+        RHITextureLayout SourceLayout = RHITextureLayout::TransferSrc;
+        RHITextureLayout DestinationLayout = RHITextureLayout::TransferDst;
+        uint32_t Width = 2;
+        uint32_t Height = 2;
+        RHIFilter Filter = RHIFilter::Nearest;
     };
 
     struct RHIShaderConstants
@@ -236,6 +248,8 @@ namespace Wl
         virtual void Draw(const RHIDrawIndexedIndirectCommand& command) = 0;
 
         virtual void Dispatch(const RHIDispatchCommand& command) = 0;
+
+        virtual void BlitTexture(const RHIBlitTextureCommand& command) = 0;
 
         /**
          * @brief Destructor.

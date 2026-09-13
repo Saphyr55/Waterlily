@@ -62,6 +62,8 @@ namespace Wl
         
         virtual void Dispatch(const RHIDispatchCommand& command) override; 
         
+        virtual void BlitTexture(const RHIBlitTextureCommand& command) override;
+
         inline VkCommandBuffer& GetHandle()
         {
             return m_handle;

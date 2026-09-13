@@ -46,7 +46,7 @@ namespace Wl
         FrameGraphPhysicalTexturePool(const SharedPtr<FrameContext>& frameContext)
             : m_device(frameContext->GetDevice())
             , m_frameContext(frameContext)
-            , m_allocator(MemoryStack::GetGlobalAllocator(), 64 * WL_KB)
+            , m_allocator(MemoryStack::GetCurrentAllocator(), 16 * WL_KB)
         {
         }
 
@@ -58,19 +58,19 @@ namespace Wl
         void InternalGarbageCollect(uint64_t maxFrameLifetime);
 
     private:
+        struct PendingRelease
+        {
+            FrameGraphPhysicalTextureKey Key;
+            PooledPhysicalTextureHandle Handle;
+        };
+
         SharedPtr<RHIDevice> m_device;
         SharedPtr<FrameContext> m_frameContext;
 
         LinearAllocator m_allocator;
         HashMap<FrameGraphPhysicalTextureKey, Array<PooledPhysicalTextureHandle>, FrameGraphPhysicalTextureKeyHash> m_freeList;
 
-        struct PendingRelease
-        {
-            FrameGraphPhysicalTextureKey Key;
-            PooledPhysicalTextureHandle Handle;
-        };
         Array<PendingRelease> m_pendingReleases;
-
         Array<PooledPhysicalTexture> m_resources;
 
         uint64_t m_frameCount = 0;

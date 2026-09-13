@@ -817,6 +817,42 @@ namespace Wl
         VulkanAPI::vkCmdDispatch(m_handle, command.GroupCountX, command.GroupCountY, command.GroupCountZ);
     }
 
+    void VulkanCommandBuffer::BlitTexture(const RHIBlitTextureCommand& command)
+    {
+        VulkanTexture* src = static_cast<VulkanTexture*>(command.Source);
+        VulkanTexture* dst = static_cast<VulkanTexture*>(command.Destination);
+
+        VkImageBlit blitRegion = {};
+
+        blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        blitRegion.srcSubresource.mipLevel = 0;
+        blitRegion.srcSubresource.baseArrayLayer = 0;
+        blitRegion.srcSubresource.layerCount = 1;
+        blitRegion.srcOffsets[0] = {0, 0, 0};
+        blitRegion.srcOffsets[1].x = static_cast<int32_t>(command.Width);
+        blitRegion.srcOffsets[1].y = static_cast<int32_t>(command.Height);
+        blitRegion.srcOffsets[1].z = 1;
+
+        blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        blitRegion.dstSubresource.mipLevel = 0;
+        blitRegion.dstSubresource.baseArrayLayer = 0;
+        blitRegion.dstSubresource.layerCount = 1;
+        blitRegion.dstOffsets[0] = {0, 0, 0};
+        blitRegion.dstOffsets[1].x = static_cast<int32_t>(command.Width);
+        blitRegion.dstOffsets[1].y = static_cast<int32_t>(command.Height);
+        blitRegion.dstOffsets[1].z = 1;
+
+        VulkanAPI::vkCmdBlitImage(
+                m_handle,
+                src->GetHandle(),
+                VulkanTextureLayoutGet(command.SourceLayout),
+                dst->GetHandle(),
+                VulkanTextureLayoutGet(command.DestinationLayout),
+                1,
+                &blitRegion,
+                VulkanFilterGet(command.Filter));
+    }
+
     RHICommandBuffer* VulkanCommandAllocator::OpenCommandBuffer(uint32_t index)
     {
         return m_upperCommandBuffers[index];

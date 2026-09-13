@@ -30,6 +30,7 @@ namespace Wl
         void RegisterComputePass(StringID passName, StringID computeName);
 
         ShaderGraphicsPass& GetShaderGraphicsPass(StringID passName);
+        ShaderComputePass& GetShaderComputePass(StringID passName);
 
         void LoadAssets();
         void ReloadAssets();

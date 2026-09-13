@@ -49,7 +49,7 @@ namespace Wl
 
         description.Usage = description.Usage | RHITextureUsageFlags::TransferDst | RHITextureUsageFlags::TransferSrc;
         description.MemoryUsage = RHIMemoryUsage::Device;
-        RHITexture* texture = m_device->CreateTexturre(description);
+        RHITexture* texture = m_device->CreateTexture(description);
 
         m_textureEntries.Append(TextureEntry(staging, texture, context.Size));
 

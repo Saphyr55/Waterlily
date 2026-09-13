@@ -1,14 +1,11 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/Handler.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/String/String.hpp"
-#include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/RHI/Types.hpp"
-
 
 #include <cstddef>
 
@@ -71,7 +68,7 @@ namespace Wl
         bool IsTransient = false;
         bool IsAllocated = false;
     };
-    
+
     struct FrameGraphPhysicalTextureKey
     {
         RHIFormat Format;
@@ -83,19 +80,20 @@ namespace Wl
 
         bool operator==(const FrameGraphPhysicalTextureKey& other) const noexcept
         {
-            return Format == other.Format && Width == other.Width && Height == other.Height;
+            return Format == other.Format && Usage == other.Usage && Width == other.Width && Height == other.Height;
         }
     };
 
     class FrameGraphPhysicalTextureKeyHash
     {
     public:
-        inline size_t operator()(const FrameGraphPhysicalTextureKey& key) const noexcept
+        inline uint32_t operator()(const FrameGraphPhysicalTextureKey& key) const noexcept
         {
-            RHIFormat format = key.Format;
-            size_t h = Hash<uint32_t>()(uint32_t(format));
-            h ^= Hash<uint32_t>()(key.Width);
-            h ^= Hash<uint32_t>()(key.Height);
+            uint32_t h = Hash<uint32_t>()(uint32_t(key.Format));
+            h = HashCombine(h, key.Width);
+            h = HashCombine(h, key.Width);
+            h = HashCombine(h, key.Height);
+            h = HashCombine(h, uint32_t(key.Usage));
             return h;
         }
     };

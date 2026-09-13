@@ -7,8 +7,8 @@ namespace Wl
 
     struct RHISamplerDescription
     {
-        RHIFilter MagFilter = RHIFilter::LINEAR;
-        RHIFilter MinFilter = RHIFilter::LINEAR;
+        RHIFilter MagFilter = RHIFilter::Linear;
+        RHIFilter MinFilter = RHIFilter::Linear;
         RHISamplerAddressMode AddressModeU = RHISamplerAddressMode::Repeat;
         RHISamplerAddressMode AddressModeV = RHISamplerAddressMode::Repeat;
         RHISamplerAddressMode AddressModeW = RHISamplerAddressMode::Repeat;

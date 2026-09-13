@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 
 #include <vk_mem_alloc.h>

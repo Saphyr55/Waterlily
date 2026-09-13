@@ -27,7 +27,7 @@ namespace Wl
         , m_frameContext(frameContext)
         , m_texturePool(frameContext)
     {
-        for (const RHISwapchainBuffer& buffer : m_frameContext->GetSwapchain()->GetBuffers())
+        for (const RHISwapchainBuffer& buffer: m_frameContext->GetSwapchain()->GetBuffers())
         {
             isFirstFrame[&buffer] = true;
         }
@@ -88,11 +88,8 @@ namespace Wl
     {
         m_outputs.Add(handle);
         FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-        resource.IsTransient = false;
-        resource.CurrentLayout = RHITextureLayout::Undefined;
-        resource.PersistantResource = FrameGraphPhysicalTexture {
-                m_frameContext->GetSwapchain()->GetCurrentBuffer().Texture,
-                m_frameContext->GetSwapchain()->GetCurrentBuffer().View};
+        // When a texture is an output, we are going to transfer it to the swapchain, and do a blit.
+        resource.Usage |= RHITextureUsageFlags::TransferSrc;
     }
 
     FrameGraphPass& FrameGraph::AddPass(const StringID& name)
@@ -118,6 +115,7 @@ namespace Wl
         m_buffers.Clear();
         m_outputs.Clear();
         m_sortedPasses.Clear();
+        m_outputs.Clear();
 
         m_passRenderingInfos.Clear();
 
@@ -161,19 +159,19 @@ namespace Wl
     void FrameGraph::Execute(RHICommandBuffer* commandBuffer)
     {
         const RHISwapchainBuffer& buffer = m_frameContext->GetSwapchain()->GetCurrentBuffer();
-        RHITextureLayoutTransition transition = {};
 
-        transition.OldLayout = isFirstFrame[&buffer] ? RHITextureLayout::Undefined : RHITextureLayout::Present;
-        transition.NewLayout = RHITextureLayout::ColorAttachment;
-        transition.Texture = buffer.Texture;
+        RHITextureLayoutTransition swapchainTransition = {};
+        swapchainTransition.OldLayout = isFirstFrame[&buffer] ? RHITextureLayout::Undefined : RHITextureLayout::Present;
+        swapchainTransition.NewLayout = RHITextureLayout::ColorAttachment;
+        swapchainTransition.Texture = buffer.Texture;
 
-        commandBuffer->TransitionTextureLayout(transition);
+        commandBuffer->TransitionTextureLayout(swapchainTransition);
 
-        for (size_t passIndex: m_sortedPasses)
+        for (size_t orderedPassIndex: m_sortedPasses)
         {
-            FrameGraphPass& pass = m_passes[passIndex];
+            FrameGraphPass& pass = m_passes[orderedPassIndex];
 
-            AllocatePhysicalPassResources(passIndex);
+            AllocatePhysicalPassResources(pass);
 
             for (FrameGraphTextureBarrier& barrier: pass.m_barriers)
             {
@@ -206,14 +204,49 @@ namespace Wl
                 commandBuffer->EndRendering();
             }
 
-            DeallocatePhysicalPassResources(passIndex);
+            DeallocatePhysicalPassResources(pass);
         }
 
-        transition.OldLayout = RHITextureLayout::ColorAttachment;
-        transition.NewLayout = RHITextureLayout::Present;
-        transition.Texture = buffer.Texture;
+        if (!m_outputs.IsEmpty())
+        {
+            swapchainTransition = {};
+            swapchainTransition.OldLayout = RHITextureLayout::ColorAttachment;
+            swapchainTransition.NewLayout = RHITextureLayout::TransferDst;
+            swapchainTransition.Texture = buffer.Texture;
+            commandBuffer->TransitionTextureLayout(swapchainTransition);
+        }
 
-        commandBuffer->TransitionTextureLayout(transition);
+        for (FrameGraphTextureHandle output: m_outputs)
+        {
+            FrameGraphTextureResource& resource = m_textures[output.GetIndex()];
+            FrameGraphPhysicalTexture& texture = ResolvePhysicalTexture(output);
+            RHITextureLayout oldLayout = resource.CurrentLayout;
+
+            RHITextureLayoutTransition transition = {};
+            transition.Texture = texture.Texture;
+            transition.OldLayout = resource.CurrentLayout;
+            transition.NewLayout = RHITextureLayout::TransferSrc;
+            commandBuffer->TransitionTextureLayout(transition);
+
+            RHIBlitTextureCommand blitCommand = {};
+            blitCommand.Source = texture.Texture;
+            blitCommand.Destination = buffer.Texture;
+            blitCommand.Width = m_frameContext->GetWidth();
+            blitCommand.Height = m_frameContext->GetHeight();
+            commandBuffer->BlitTexture(blitCommand);
+
+            transition = {};
+            transition.Texture = texture.Texture;
+            transition.OldLayout = RHITextureLayout::TransferSrc;
+            transition.NewLayout = oldLayout;
+            commandBuffer->TransitionTextureLayout(transition);
+        }
+
+        swapchainTransition = {};
+        swapchainTransition.OldLayout = m_outputs.IsEmpty() ? RHITextureLayout::ColorAttachment : RHITextureLayout::TransferDst;
+        swapchainTransition.NewLayout = RHITextureLayout::Present;
+        swapchainTransition.Texture = buffer.Texture;
+        commandBuffer->TransitionTextureLayout(swapchainTransition);
     }
 
     void FrameGraph::Resize()
@@ -441,16 +474,7 @@ namespace Wl
 
             RHIRenderingAttachmentInfo attachment = {};
 
-            if (IsOutputResource(handle))
-            {
-                resource.Info.Width = m_frameContext->GetSwapchain()->GetWidth();
-                resource.Info.Height = m_frameContext->GetSwapchain()->GetHeight();
-                attachment.TextureView = m_frameContext->GetSwapchain()->GetCurrentBuffer().View;
-            }
-            else
-            {
-                attachment.TextureView = ResolvePhysicalTexture(handle).View;
-            }
+            attachment.TextureView = ResolvePhysicalTexture(handle).View;
 
             auto [loadOp, storeOp] = ResolveStoreLoadOp(pass, handle);
 
@@ -539,7 +563,6 @@ namespace Wl
                     pass.m_barriers.Append(barrier);
                     resource.CurrentLayout = layoutNeeded;
                 }
-
             };
 
             for (size_t i = 0; i < pass.m_textureReads.GetSize(); i++)
@@ -555,7 +578,7 @@ namespace Wl
                 RHITextureLayout layoutNeeded = pass.m_textureWriteStates[handle];
                 AddBarrier(handle, layoutNeeded);
             }
-            
+
             if (pass.m_depthStencil)
             {
                 FrameGraphTextureHandle handle = *pass.m_depthStencil;
@@ -563,32 +586,26 @@ namespace Wl
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
                 RHITextureLayout oldLayout = resource.CurrentLayout;
                 AddBarrier(handle, layoutNeeded);
-                // FIXME: This is a hack to fix the issue of depth stencil attachment being used as undefined layout. 
+                // FIXME: This is a hack to fix the issue of depth stencil attachment being used as undefined layout.
                 resource.CurrentLayout = oldLayout;
             }
         }
     }
 
-    void FrameGraph::AllocatePhysicalPassResources(size_t passIndex)
+    void FrameGraph::AllocatePhysicalPassResources(FrameGraphPass& pass)
     {
         auto allocate = [&](Array<FrameGraphTextureHandle>& textures)
         {
             for (FrameGraphTextureHandle handle: textures)
             {
-                if (IsOutputResource(handle))
-                {
-                    continue;
-                }
-
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-                if (resource.Lifetime.FirstUse == passIndex)
+                if (resource.Lifetime.FirstUse == pass.GetOrder())
                 {
                     AllocatePhysicalResource(resource);
                 }
             }
         };
 
-        FrameGraphPass& pass = m_passes[passIndex];
         allocate(pass.m_textureReads);
         allocate(pass.m_textureWrites);
 
@@ -617,26 +634,21 @@ namespace Wl
         resource.PooledResource = pooledResource;
     }
 
-    void FrameGraph::DeallocatePhysicalPassResources(size_t passIndex)
+    void FrameGraph::DeallocatePhysicalPassResources(FrameGraphPass& pass)
     {
         auto deallocate = [&](Array<FrameGraphTextureHandle>& textures)
         {
             for (FrameGraphTextureHandle handle: textures)
             {
-                if (IsOutputResource(handle))
-                {
-                    continue;
-                }
-
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-                if (resource.Lifetime.LastUse == passIndex)
+                // FIXME: Temporarily solution, we don't deallocate output resources, because they are used by the swapchain.
+                if (!IsOutputResource(handle) && resource.Lifetime.LastUse == pass.GetOrder())
                 {
                     DeallocatePhysicalResource(resource);
                 }
             }
         };
 
-        FrameGraphPass& pass = m_passes[passIndex];
         deallocate(pass.m_textureReads);
         deallocate(pass.m_textureWrites);
 

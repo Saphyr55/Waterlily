@@ -64,7 +64,7 @@ namespace Wl
         virtual RHICommandAllocator* CreateCommandAllocatorr(const RHICommandAllocatorDescription& description) = 0;
         virtual void DestroyCommandAllocator(RHICommandAllocator* commandAllocator) = 0;
 
-        virtual RHITexture* CreateTexturre(const RHITextureDescription& description) = 0;
+        virtual RHITexture* CreateTexture(const RHITextureDescription& description) = 0;
         virtual void DestroyTexture(RHITexture* texture) = 0;
 
         virtual RHIBuffer* CreateBuffer(const RHIBufferDescription& description) = 0;

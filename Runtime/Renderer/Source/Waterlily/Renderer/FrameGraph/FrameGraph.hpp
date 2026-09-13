@@ -129,8 +129,8 @@ namespace Wl
         
         RHIBeginRenderingInfo BuildRenderingInfo(FrameGraphPass& pass);
 
-        void AllocatePhysicalPassResources(size_t passIndex);
-        void DeallocatePhysicalPassResources(size_t passIndex);
+        void AllocatePhysicalPassResources(FrameGraphPass& pass);
+        void DeallocatePhysicalPassResources(FrameGraphPass& pass);
 
         void AllocatePhysicalResource(FrameGraphTextureResource& resource);
         void DeallocatePhysicalResource(FrameGraphTextureResource& resource);
@@ -164,8 +164,6 @@ namespace Wl
         Array<FrameGraphPass> m_passes;
         Array<size_t> m_sortedPasses;
 
-        Array<RHISemaphore*> m_semaphores;
-        
         FrameGraphPhysicalTexturePool m_texturePool;
         HashMap<const RHISwapchainBuffer*, bool> isFirstFrame;
     };

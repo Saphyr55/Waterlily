@@ -24,7 +24,7 @@ namespace Wl
 
     WL_RENDERER_API FrameGraphPass& LightingPassCreate(PassContext& passContext,
                                                        FramePacket& packet,
-                                                       GraphicsPipelineState& pipeline,
+                                                       ComputePipelineState& pipeline,
                                                        LightingPassParameters& params);
 
 }// namespace Wl

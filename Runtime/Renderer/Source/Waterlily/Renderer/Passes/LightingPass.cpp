@@ -1,5 +1,5 @@
 #include "Waterlily/Renderer/Passes/LightingPass.hpp"
-#include "Waterlily/RHI/GraphicsPipeline.hpp"
+#include "Waterlily/RHI/CommandBuffer.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPassBuilder.hpp"
 
@@ -8,7 +8,7 @@ namespace Wl
 
     FrameGraphPass& LightingPassCreate(PassContext& passContext,
                                        FramePacket& packet,
-                                       GraphicsPipelineState& pipelineState,
+                                       ComputePipelineState& pipelineState,
                                        LightingPassParameters& parameters)
     {
         FrameGraphPass& lightingPass = passContext.FrameGraph->AddPass(LightingPassName);
@@ -16,8 +16,8 @@ namespace Wl
 
         lightingPassDelegate.SetOnSetup([=, &parameters](FrameGraphPassSetupContext& context, FrameGraphPassBuilder& builder)
         {
-            builder.SetStage(FrameGraphPassStage::Graphics);
-            builder.Write(parameters.Color);
+            builder.SetStage(FrameGraphPassStage::Compute);
+            builder.WriteStorage(parameters.Color);
             builder.Read(parameters.Position);
             builder.Read(parameters.Normal);
             builder.Read(parameters.Albedo);
@@ -68,7 +68,6 @@ namespace Wl
                 FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(parameters.Normal);
                 FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(parameters.Albedo);
                 FrameGraphPhysicalTexture& metallicRoughnessResource = context.FrameGraph->ResolvePhysicalTexture(parameters.MetallicRoughness);
-
                 RHISampler* pointSampler = passContext.TextureRegistry->GetDefaultSampler();
 
                 RHIWriteTextureSamplerResource writePosition(0, positionResource.View, pointSampler);
@@ -81,25 +80,25 @@ namespace Wl
                 gBufferTexturesSRG->SetTextureSampler(writeAlbedo);
                 gBufferTexturesSRG->SetTextureSampler(writMetallicRoughness);
 
+                FrameGraphPhysicalTexture& colorTexture = context.FrameGraph->ResolvePhysicalTexture(parameters.Color);
+                RHIWriteTextureResource writeColor(4, colorTexture.View);
+                gBufferTexturesSRG->SetTexture(writeColor);
+
                 gBufferTexturesSRG->Update();
             }
 
-            RHIGraphicsPipeline* pipeline = passContext.PipelineManager->GetGraphicsPipeline(LightingPassName);
+            RHIPipeline* pipeline = passContext.PipelineManager->GetComputePipeline(LightingPassName);
 
             commandBuffer->BindPipeline(pipeline);
-
-            commandBuffer->SetViewport(pipelineState.Viewport);
-            commandBuffer->SetScissor(pipelineState.Scissor);
 
             commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
             commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, 1);
 
-            RHIDrawCommand drawCommand = {};
-            drawCommand.FirstInstance = 0;
-            drawCommand.FirstVertex = 0;
-            drawCommand.InstanceCount = 1;
-            drawCommand.VertexCount = 3;
-            commandBuffer->Draw(drawCommand);
+            RHIDispatchCommand dispatchCommand = {};
+            dispatchCommand.GroupCountX = context.FrameContext->GetWidth();
+            dispatchCommand.GroupCountY = context.FrameContext->GetHeight();
+            dispatchCommand.GroupCountZ = 1;
+            commandBuffer->Dispatch(dispatchCommand);
         });
 
         return lightingPass;

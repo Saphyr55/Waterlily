@@ -108,7 +108,10 @@ namespace Wl
 
             frame.Uploader.Shutdown();
 
-            m_device->DestroySRGPool(frame.SRGPool);
+            if (frame.SRGPool)
+            {
+                m_device->DestroySRGPool(frame.SRGPool);
+            }
         }
 
         m_device->DestroySwapchain(m_swapchain);
