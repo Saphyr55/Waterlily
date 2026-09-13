@@ -9,7 +9,6 @@ namespace Wl
         key.Usage = resource.Usage;
         key.Width = resource.Info.Width;
         key.Height = resource.Info.Height;
-
         return key;
     }
 
@@ -27,7 +26,6 @@ namespace Wl
         resource.IsTransient = false;
         resource.PersistantResource.Texture = texture;
         resource.PersistantResource.View = view;
-
         return resource;
     }
 
@@ -39,7 +37,6 @@ namespace Wl
         resource.PhysicalBuffer.Handle = buffer;
         resource.Usage = buffer->GetUsage();
         resource.IsTransient = false;
-
         return resource;
     }
 

@@ -95,8 +95,8 @@ namespace Wl
             commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, 1);
 
             RHIDispatchCommand dispatchCommand = {};
-            dispatchCommand.GroupCountX = context.FrameContext->GetWidth();
-            dispatchCommand.GroupCountY = context.FrameContext->GetHeight();
+            dispatchCommand.GroupCountX = Math::Ceil(context.FrameContext->GetWidth() / 16.0f);
+            dispatchCommand.GroupCountY = Math::Ceil(context.FrameContext->GetHeight() / 16.0f);
             dispatchCommand.GroupCountZ = 1;
             commandBuffer->Dispatch(dispatchCommand);
         });

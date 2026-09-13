@@ -536,7 +536,6 @@ namespace Wl
         FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
         if (resource.IsTransient)
         {
-            WL_CHECK_MSG(resource.IsAllocated, "Transient resource is not allocated.");
             return m_texturePool.GetResource(resource.PooledResource).PhysicalTexture;
         }
 
@@ -641,8 +640,7 @@ namespace Wl
             for (FrameGraphTextureHandle handle: textures)
             {
                 FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
-                // FIXME: Temporarily solution, we don't deallocate output resources, because they are used by the swapchain.
-                if (!IsOutputResource(handle) && resource.Lifetime.LastUse == pass.GetOrder())
+                if (resource.Lifetime.LastUse == pass.GetOrder())
                 {
                     DeallocatePhysicalResource(resource);
                 }

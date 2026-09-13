@@ -80,7 +80,10 @@ namespace Wl
 
         bool operator==(const FrameGraphPhysicalTextureKey& other) const noexcept
         {
-            return Format == other.Format && Usage == other.Usage && Width == other.Width && Height == other.Height;
+            return Format == other.Format
+                && Usage == other.Usage 
+                && Width == other.Width 
+                && Height == other.Height;
         }
     };
 
