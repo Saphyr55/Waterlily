@@ -17,6 +17,8 @@ namespace Wl
     struct TransformComponent
     {
         Vector3f Position;
+        Vector3f Scale;
+        Vector3f Rotation;
     };
 
     struct HierarchyComponent

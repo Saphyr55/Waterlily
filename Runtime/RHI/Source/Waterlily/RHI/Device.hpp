@@ -2,6 +2,7 @@
 
 #include "BindlessShaderResources.hpp"
 #include "Waterlily/Core/Function/Function.hpp"
+#include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/BufferPool.hpp"

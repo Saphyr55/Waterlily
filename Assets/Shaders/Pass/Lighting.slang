@@ -15,21 +15,23 @@ struct GBufferTextures
     Sampler2D metallicRoughnessTexture;
 }
 
-[[vk::binding(0, 0)]]
+[vk::binding(0, 0)]
 ConstantBuffer<View> view;
 
-[[vk::binding(0, 1)]]
-GBufferTextures gBufferTextures;
+[vk::binding(1, 0)]
+ConstantBuffer<DirectionalLight> directionalLight;
+[vk::binding(2, 0)]
+ConstantBuffer<PointLight[kMaxPointLight]> pointLights;
+[vk::binding(3, 0)]
+ConstantBuffer<uint> pointLightCount;
 
-[[vk::binding(4, 1)]]
+[vk::binding(0, 1)]
+GBufferTextures gBufferTextures;
+[vk::binding(4, 1)]
 RWTexture2D outputColor;
 
-[[vk::binding(1, 0)]]
-ConstantBuffer<DirectionalLight> directionalLight;
-[[vk::binding(2, 0)]]
-ConstantBuffer<PointLight[kMaxPointLight]> pointLights;
-[[vk::binding(3, 0)]]
-ConstantBuffer<uint> pointLightCount;
+[vk::binding(0, 2)]
+Texture2D<float16_t> shadowMap;
 
 [shader("compute")]
 [numthreads(16, 16, 1)]
@@ -42,6 +44,7 @@ void Main(uint3 dispatchThreadID: SV_DispatchThreadID)
     float4 albedo = gBufferTextures.albedoTexture[pixel];
     float3 metallicRoughness = gBufferTextures.metallicRoughnessTexture[pixel].rgb;
 
+    float depth = shadowMap[pixel];
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
 
@@ -74,6 +77,8 @@ void Main(uint3 dispatchThreadID: SV_DispatchThreadID)
 
     float3 color = Lo;
     color = color / (color + float3(1.0, 1.0, 1.0));
+
+    color = color + float3(depth, depth, depth) * 0.00000001f;
 
     outputColor[pixel] = float4(color, albedo.a);
 }

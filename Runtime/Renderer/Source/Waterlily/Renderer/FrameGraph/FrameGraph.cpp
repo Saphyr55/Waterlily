@@ -95,9 +95,9 @@ namespace Wl
     FrameGraphPass& FrameGraph::AddPass(const StringID& name)
     {
         WL_CHECK_MSG(!m_passNames.Contains(name), "A pass named %s already exists in FrameGraph.", name.GetText().data());
-        m_passes.Emplace(name);
+        FrameGraphPass& pass = m_passes.Emplace(name);
         m_passNames.Put(name, m_passes.GetSize() - 1);
-        return m_passes.Back();
+        return pass;
     }
 
     FrameGraphPass& FrameGraph::GetPass(const StringID& name)
@@ -481,8 +481,8 @@ namespace Wl
             attachment.TextureLayout = RHITextureLayout::ColorAttachment;
             attachment.LoadOp = loadOp;
             attachment.StoreOp = storeOp;
-            // TODO:
-            // depthAttachment.ClearValue = resource.Description.ClearValue;
+            // TODO: Use the clear value from the resource description.
+            attachment.ClearValue = Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
 
             info.ColorAttachments.Append(attachment);
 
@@ -503,8 +503,8 @@ namespace Wl
 
             depthAttachment.LoadOp = loadOp;
             depthAttachment.StoreOp = storeOp;
-            // TODO:
-            // depthAttachment.ClearValue = resource.Description.ClearValue;
+            // TODO: Use the clear value from the resource description.
+            depthAttachment.ClearValue = Vector4f(1.0f, 0.0f, 0.0f, 0.0f);
 
             info.DepthAttachment = depthAttachment;
 

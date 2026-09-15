@@ -83,7 +83,7 @@ namespace Wl
         
         inline const RHIGraphicsPipelineRenderingInfo GetPassRenderingInfo(FrameGraphPass& pass) const
         {
-            WL_CHECK_MSG(m_passRenderingInfos.Contains(pass.GetIndex()), "Pass rendering info not found for pass %s", pass.GetName().GetText().GetData());
+            WL_CHECK(m_passRenderingInfos.Contains(pass.GetIndex()));
             return m_passRenderingInfos[pass.GetIndex()];
         }
 

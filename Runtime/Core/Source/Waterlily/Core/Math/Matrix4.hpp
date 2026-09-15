@@ -54,11 +54,11 @@ namespace Wl
 
         static constexpr Matrix4 Rotate(const Mat& mat, const Real auto& theta, const Vector3<R>& vec);
 
-        static constexpr Matrix4 RotateX(const float& theta);
+        static constexpr Matrix4 RotateX(const Real auto& theta);
 
-        static constexpr Matrix4 RotateY(const float& theta);
+        static constexpr Matrix4 RotateY(const Real auto& theta);
 
-        static constexpr Matrix4 RotateZ(const float& theta);
+        static constexpr Matrix4 RotateZ(const Real auto& theta);
 
         static constexpr Matrix4 Perspective(const Real auto& view,
                                              const Real auto& aspect,
@@ -142,48 +142,51 @@ namespace Wl
     }
 
     template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::RotateX(const float& theta)
+    constexpr Matrix4<R> Matrix4<R>::RotateX(const Real auto& theta)
     {
-        return Mat(Vector4<R>(1, 0, 0, 0),
-                   Vector4<R>(0, Math::Cos(theta), Math::Sin(theta), 0),
-                   Vector4<R>(0, -Math::Sin(theta), Math::Cos(theta), 0),
-                   Vector4<R>(0, 0, 0, 1));
+        return Mat(Vector4<R>(1.0, 0.0, 0.0, 0.0),
+                   Vector4<R>(0.0, Math::Cos(theta), Math::Sin(theta), 0.0),
+                   Vector4<R>(0.0, -Math::Sin(theta), Math::Cos(theta), 0.0),
+                   Vector4<R>(0.0, 0.0, 0.0, 1.0));
     }
 
     template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::RotateY(const float& theta)
+    constexpr Matrix4<R> Matrix4<R>::RotateY(const Real auto& theta)
     {
-        return Mat(Vector4<R>(Math::Cos(theta), 0, -Math::Sin(theta), 0),
-                   Vector4<R>(0, 1, 0, 0),
-                   Vector4<R>(Math::Sin(theta), 0, Math::Cos(theta), 0),
-                   Vector4<R>(0, 0, 0, 1));
+        return Mat(Vector4<R>(Math::Cos(theta), 0.0, -Math::Sin(theta), 0.0),
+                   Vector4<R>(0.0, 1.0, 0.0, 0.0),
+                   Vector4<R>(Math::Sin(theta), 0.0, Math::Cos(theta), 0.0),
+                   Vector4<R>(0.0, 0.0, 0.0, 1.0));
     }
 
     template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::RotateZ(const float& theta)
+    constexpr Matrix4<R> Matrix4<R>::RotateZ(const Real auto& theta)
     {
-        return Matrix4<R>(Vector4<R>(Math::Cos(theta), Math::Sin(theta), 0, 0),
-                          Vector4<R>(-Math::Sin(theta), Math::Cos(theta), 0, 0),
-                          Vector4<R>(0, 0, 1, 0),
-                          Vector4<R>(0, 0, 0, 1));
+        return Matrix4<R>(Vector4<R>(Math::Cos(theta), Math::Sin(theta),  0.0, 0.0),
+                          Vector4<R>(-Math::Sin(theta), Math::Cos(theta), 0.0, 0.0),
+                          Vector4<R>(0.0, 0.0, 1.0, 0.0),
+                          Vector4<R>(0.0, 0.0, 0.0, 1.0));
     }
 
     template<Real R>
     constexpr Matrix4<R> Matrix4<R>::Perspective(const Real auto& view,
                                                  const Real auto& aspect,
-                                                 const Real auto& near_,
-                                                 const Real auto& far_)
+                                                 const Real auto& near,
+                                                 const Real auto& far)
     {
+        R tanHalfFovy = Math::Tan(view / static_cast<R>(2.0));
+
         Mat result(0.0);
-
-        const R tanHalfFovy = Math::Tan(view / static_cast<R>(2.0));
-
+        
         result[0][0] = R(1.0) / R(tanHalfFovy * aspect);
         result[1][1] = R(1.0) / tanHalfFovy;
-        result[2][2] = R(-far_ - near_) / R(far_ - near_);
-        result[3][2] = -R(2.0 * near_ * far_) / R(far_ - near_);
+        
+        result[2][2] = -R(far) / R(far - near);
+        result[3][2] = -R(near * far) / R(far - near);
+        
         result[2][3] = -R(1.0);
-        return result;
+        
+        return result;  
     }
 
     template<Real R>
@@ -191,17 +194,20 @@ namespace Wl
                                                   const Real auto& right,
                                                   const Real auto& bottom,
                                                   const Real auto& top,
-                                                  const Real auto& pnear,
-                                                  const Real auto& pfar)
+                                                  const Real auto& near,
+                                                  const Real auto& far)
     {
-        WL_CHECK(pfar - pnear != 0);
         Mat result(1.0);
+
         result[0][0] = R(2.0) / R(right - left);
         result[1][1] = R(2.0) / R(top - bottom);
-        result[2][2] = -R(2.0) / R(pfar - pnear);
+        
         result[3][0] = -R(right + left) / R(right - left);
         result[3][1] = -R(top + bottom) / R(top - bottom);
-        result[3][2] = -R(pfar + pnear) / R(pfar - pnear);
+
+        result[2][2] = -R(1.0) / R(far - near);
+        result[3][2] = -R(near) / R(far - near);
+
         return result;
     }
 
@@ -260,7 +266,11 @@ namespace Wl
                                   R m24,
                                   R m34,
                                   R m44)
-        : Matrix4(Vec(m11, m12, m13, m14), Vec(m21, m22, m23, m24), Vec(m31, m32, m33, m34), Vec(m41, m42, m43, m44))
+        : Matrix4(
+                  Vec(m11, m12, m13, m14),
+                  Vec(m21, m22, m23, m24),
+                  Vec(m31, m32, m33, m34),
+                  Vec(m41, m42, m43, m44))
     {
     }
 

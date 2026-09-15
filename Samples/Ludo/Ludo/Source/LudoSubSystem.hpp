@@ -17,11 +17,16 @@ namespace Wl
     static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/GBuffer.slang");
     static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/Forward.slang");
     static const StringID LightingShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/Lighting.slang");
+    static const StringID ShadowMapShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/CSM.slang");
 
     static const StringID SponzaModelAssetURI = WL_SID("Assets/Models/Sponza.wlca");
 
     inline const StringID GBufferVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.vert.wlca");
     inline const StringID GBufferFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/GBuffer.frag.wlca");
+
+    inline const StringID ShadowMapVertexShaderAssetURI = WL_SID("Assets/Shaders/SPV/ShadowMap.vert.wlca");
+    inline const StringID ShadowMapFragmentShaderAssetURI = WL_SID("Assets/Shaders/SPV/ShadowMap.frag.wlca");
+
     inline const StringID LightingComputeShaderAssetURI = WL_SID("Assets/Shaders/SPV/Lighting.comp.wlca");
 
     inline const StringID LudoName = WL_SID("LudoSystem");
@@ -47,17 +52,32 @@ namespace Wl
 
             StringRef envPath = "../../../Assets/Shaders/";
 
-            bool success = ShaderCompiler::CompileSlang({envPath, GBufferShaderAssetURI.GetText(),
+            bool success = ShaderCompiler::CompileSlang({envPath,
+                                                         GBufferShaderAssetURI.GetText(),
                                                          GBufferVertexShaderAssetURI.GetText(),
                                                          "VSMain",
                                                          Shader::Stage::Vertex});
 
-            success = success && ShaderCompiler::CompileSlang({envPath, GBufferShaderAssetURI.GetText(),
+            success = success && ShaderCompiler::CompileSlang({envPath,
+                                                               GBufferShaderAssetURI.GetText(),
                                                                GBufferFragmentShaderAssetURI.GetText(),
                                                                "FSMain",
                                                                Shader::Stage::Fragment});
 
-            success = success && ShaderCompiler::CompileSlang({envPath, LightingShaderAssetURI.GetText(),
+            success = success && ShaderCompiler::CompileSlang({envPath,
+                                                               ShadowMapShaderAssetURI.GetText(),
+                                                               ShadowMapVertexShaderAssetURI.GetText(),
+                                                               "VSMain",
+                                                               Shader::Stage::Vertex});
+
+            success = success && ShaderCompiler::CompileSlang({envPath,
+                                                               ShadowMapShaderAssetURI.GetText(),
+                                                               ShadowMapFragmentShaderAssetURI.GetText(),
+                                                               "FSMain",
+                                                               Shader::Stage::Fragment});
+
+            success = success && ShaderCompiler::CompileSlang({envPath,
+                                                               LightingShaderAssetURI.GetText(),
                                                                LightingComputeShaderAssetURI.GetText(),
                                                                "Main",
                                                                Shader::Stage::Compute});

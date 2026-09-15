@@ -145,7 +145,7 @@ namespace Wl
                 return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             case RHIAttachmentLoadOp::None:
             default:
-                return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                return VK_ATTACHMENT_LOAD_OP_NONE;
         }
     }
 
@@ -159,7 +159,7 @@ namespace Wl
                 return VK_ATTACHMENT_STORE_OP_DONT_CARE;
             case RHIAttachmentStoreOp::None:
             default:
-                return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                return VK_ATTACHMENT_STORE_OP_NONE;
         }
     }
 
@@ -170,8 +170,10 @@ namespace Wl
             case VK_ATTACHMENT_STORE_OP_STORE:
                 return RHIAttachmentStoreOp::Store;
             case VK_ATTACHMENT_STORE_OP_DONT_CARE:
-            default:
                 return RHIAttachmentStoreOp::DontCare;
+            case VK_ATTACHMENT_STORE_OP_NONE:
+            default:
+                return RHIAttachmentStoreOp::None;
         }
     }
 
@@ -184,8 +186,10 @@ namespace Wl
             case VK_ATTACHMENT_LOAD_OP_CLEAR:
                 return RHIAttachmentLoadOp::Clear;
             case VK_ATTACHMENT_LOAD_OP_DONT_CARE:
-            default:
                 return RHIAttachmentLoadOp::DontCare;
+            case VK_ATTACHMENT_LOAD_OP_NONE:
+            default:
+                return RHIAttachmentLoadOp::None;
         }
     }
 

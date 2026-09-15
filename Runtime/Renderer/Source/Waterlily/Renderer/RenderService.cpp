@@ -52,20 +52,29 @@ namespace Wl
         m_device->Destroy();
     }
 
-    RHIPipeline* RenderService::GetOrCreatePipeline(FrameGraphPass& pass, GraphicsPipelineState& state)
+    RHIPipeline* RenderService::GetOrCreatePipeline(const StringID& passName, GraphicsPipelineState& state, bool withMaterials)
     {
-        state.SRGLayouts[m_config.SRGIndexTextures] = m_textureRegistry->GetSRGLayout();
-        state.SRGLayouts[m_config.SRGIndexMaterials] = m_materialRegistry->GetSRGLayout();
+        FrameGraphPass& pass = m_frameGraph->GetPass(passName);
+        if (withMaterials)
+        {
+            state.SRGLayouts[m_config.SRGIndexTextures] = m_textureRegistry->GetSRGLayout();
+            state.SRGLayouts[m_config.SRGIndexMaterials] = m_materialRegistry->GetSRGLayout();
+        }
         state.RenderingInfo = m_frameGraph->GetPassRenderingInfo(pass);
 
         return m_pipelineManager->GetOrCreateGraphicsPipeline(pass.GetName(), state);
     }
 
-    RHIPipeline* RenderService::GetOrCreatePipeline(FrameGraphPass& pass, ComputePipelineState& state)
+    RHIPipeline* RenderService::GetOrCreatePipeline(const StringID& passName, ComputePipelineState& state, bool withMaterials)
     {
-        state.SRGLayouts[m_config.SRGIndexTextures] = m_textureRegistry->GetSRGLayout();
-        state.SRGLayouts[m_config.SRGIndexMaterials] = m_materialRegistry->GetSRGLayout();
+        FrameGraphPass& pass = m_frameGraph->GetPass(passName);
 
+        if (withMaterials)
+        {
+            state.SRGLayouts[m_config.SRGIndexTextures] = m_textureRegistry->GetSRGLayout();
+            state.SRGLayouts[m_config.SRGIndexMaterials] = m_materialRegistry->GetSRGLayout();
+        }
+        
         return m_pipelineManager->GetOrCreateComputePipeline(pass.GetName(), state);
     }
 

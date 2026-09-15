@@ -22,6 +22,7 @@ namespace Wl
             builder.Read(parameters.Normal);
             builder.Read(parameters.Albedo);
             builder.Read(parameters.MetallicRoughness);
+            builder.ReadStorage(parameters.ShadowMap);
             builder.ReadStorage(parameters.Indirect);
             builder.SetDepthStencil(parameters.DepthStencil);
         });
@@ -85,6 +86,15 @@ namespace Wl
                 gBufferTexturesSRG->SetTexture(writeColor);
 
                 gBufferTexturesSRG->Update();
+            }
+
+            RHIShaderResourceGroupLayout* shawdowMapSRGLayout = pipelineState.SRGLayouts[2];
+            RHIShaderResourceGroup* shadowMapSRG = frame.SRGPool->AllocateSRG(shawdowMapSRGLayout);
+            {
+                FrameGraphPhysicalTexture& shadowMapTexture = context.FrameGraph->ResolvePhysicalTexture(parameters.ShadowMap);
+                RHIWriteTextureResource writeShadowMap(0, shadowMapTexture.View);
+                shadowMapSRG->SetTexture(writeShadowMap);
+                shadowMapSRG->Update();
             }
 
             RHIPipeline* pipeline = passContext.PipelineManager->GetComputePipeline(LightingPassName);

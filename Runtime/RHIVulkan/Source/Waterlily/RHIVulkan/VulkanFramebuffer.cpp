@@ -1,13 +1,9 @@
 #include "Waterlily/RHIVulkan/VulkanFramebuffer.hpp"
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/Memory/Cast.hpp"
 #include "Waterlily/RHI/Framebuffer.hpp"
-#include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHIVulkan/VulkanLoader.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderPass.hpp"
-#include "Waterlily/RHIVulkan/VulkanTexture.hpp"
 #include "Waterlily/RHIVulkan/VulkanTextureView.hpp"
 
 namespace Wl

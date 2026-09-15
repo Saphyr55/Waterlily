@@ -46,7 +46,11 @@ namespace Wl
             return !(*this == other);
         }
 
+        static constexpr Vector3 Zero();
         static constexpr Vector3 Forward();
+        static constexpr Vector3 Up();
+        static constexpr Vector3 Right();
+
         static constexpr float LengthSquared(const Vector3<R>& vec);
         static constexpr float Length(const Vector3<R>& vec);
         static constexpr Vector3 Normalize(const Vector3<R>& vec);
@@ -78,6 +82,24 @@ namespace Wl
     constexpr Vector3<R>::Vector3(R r)
         : Vector3(r, r, r)
     {
+    }
+
+    template<Real R>
+    constexpr Vector3<R> Vector3<R>::Zero()
+    {
+        return Vector3<R>(R(0.0), R(0.0), R(0.0));
+    }
+
+    template<Real R>
+    constexpr Vector3<R> Vector3<R>::Up()
+    {
+        return Vector3<R>(R(0.0), R(1.0), R(0.0));
+    }
+
+    template<Real R>
+    constexpr Vector3<R> Vector3<R>::Right()
+    {
+        return Vector3<R>(R(1.0), R(0.0), R(0.0));
     }
 
     template<Real R>

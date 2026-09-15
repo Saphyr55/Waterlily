@@ -663,9 +663,8 @@ namespace Wl
 
             if (depthStencil)
             {
-                // TODO:
-                vkAttachmentInfo.clearValue.depthStencil.depth = 1.0f;
-                vkAttachmentInfo.clearValue.depthStencil.stencil = 0u;
+                vkAttachmentInfo.clearValue.depthStencil.depth = attachmentInfo.ClearValue.x;
+                vkAttachmentInfo.clearValue.depthStencil.stencil = static_cast<uint32_t>(attachmentInfo.ClearValue.y);
             }
             else
             {
