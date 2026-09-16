@@ -3,8 +3,9 @@
 #include "Waterlily/RHIVulkan/VulkanBuffer.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanSampler.hpp"
-#include "Waterlily/RHIVulkan/VulkanTextureView.hpp"
 #include "Waterlily/RHIVulkan/VulkanTexture.hpp"
+#include "Waterlily/RHIVulkan/VulkanTextureView.hpp"
+
 
 namespace Wl
 {
@@ -13,7 +14,7 @@ namespace Wl
     {
         VulkanBuffer* vulkanBuffer = static_cast<VulkanBuffer*>(resource.Buffer);
         WL_CHECK(vulkanBuffer);
-        
+
         bool isStorageBuffer = (vulkanBuffer->GetUsage() & RHIBufferUsageFlags::Storage) == RHIBufferUsageFlags::Storage;
 
         PendingBufferWrite pendingWrite = {};
@@ -37,7 +38,7 @@ namespace Wl
         VulkanTextureView* vulkanTextureView = static_cast<VulkanTextureView*>(resource.TextureView);
         VulkanSampler* vulkanSampler = static_cast<VulkanSampler*>(resource.Sampler);
         WL_CHECK(vulkanTextureView && vulkanSampler);
-        
+
         VulkanTexture* vulkanTexture = static_cast<VulkanTexture*>(vulkanTextureView->GetDescription().Texture);
         WL_CHECK(vulkanTexture);
 
@@ -50,7 +51,7 @@ namespace Wl
         pendingWrite.Binding = resource.Binding;
         pendingWrite.View = vulkanTextureView->GetHandle();
         pendingWrite.Sampler = vulkanSampler->GetHandle();
-        pendingWrite.Layout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+        pendingWrite.Layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         pendingWrite.Type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
         m_pendingImageWrites.Append(pendingWrite);
@@ -76,7 +77,7 @@ namespace Wl
         pendingWrite.Sampler = VK_NULL_HANDLE;
         pendingWrite.Layout = VK_IMAGE_LAYOUT_GENERAL;
         pendingWrite.Type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-
+ 
         m_pendingImageWrites.Append(pendingWrite);
     }
 
@@ -102,7 +103,7 @@ namespace Wl
         for (uint32_t i = 0; i < bufferCount; i++)
         {
             PendingBufferWrite& pending = m_pendingBufferWrites[i];
-            
+
             bufferInfos.Append(VkDescriptorBufferInfo {
                     .buffer = pending.Buffer,
                     .offset = pending.Offset,
@@ -144,7 +145,7 @@ namespace Wl
         VulkanContext& context = VulkanContextGet();
 
         VulkanAPI::vkUpdateDescriptorSets(context.Device,
-                                          static_cast<uint32_t>(writes.GetSize()), 
+                                          static_cast<uint32_t>(writes.GetSize()),
                                           writes.GetData(),
                                           0,
                                           nullptr);

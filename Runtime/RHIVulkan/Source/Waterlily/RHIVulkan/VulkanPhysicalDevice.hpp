@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/String/StringRef.hpp"
+#include "Waterlily/Core/String/String.hpp"
 #include "Waterlily/RHIVulkan/VulkanRenderSurface.hpp"
 
 #include <vulkan/vulkan_core.h>
@@ -18,6 +18,8 @@ namespace Wl
         VkPhysicalDeviceFeatures Features = {};
         VkPhysicalDeviceFeatures2 Features2 = {};
         
+        VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR ComputeShaderDerivativesFeatures = {};
+
         VkPhysicalDeviceVulkan11Features VulkanFeatures11 = {};
         VkPhysicalDeviceVulkan12Features VulkanFeatures12 = {};
         VkPhysicalDeviceVulkan13Features VulkanFeatures13 = {};

@@ -206,7 +206,12 @@ namespace Wl
                 .Shader = computeShader};
         description.SRGLayouts = srgLayouts;
 
-        return m_device->CreateComputePipeline(description);
+        RHIComputePipeline* pipeline = m_device->CreateComputePipeline(description);
+
+        // TODO: clear the byte code after created the pipeline.
+        // state.ComputeShader->ClearByteCode();
+
+        return pipeline;
     }
 
     void PipelineManager::ReflectSRGLayouts(

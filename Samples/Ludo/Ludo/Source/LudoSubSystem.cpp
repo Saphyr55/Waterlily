@@ -246,9 +246,9 @@ namespace Wl
         frame.UniformAllocator.UpdateData(packet.DirectionalLightAllocation, directionalLightComponent);
 
         RenderView directionalLightView = {};
-        directionalLightView.Eye = -directionalLightComponent.Direction;
-        directionalLightView.View = Matrix4f::LookAt( directionalLightView.Eye * 20.0f, Vector3f::Zero(), Vector3f::Up());
-        directionalLightView.Proj = Matrix4f::Orthographic(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 100.0f) * correction;
+        directionalLightView.Eye = -directionalLightComponent.Direction * 30.0f;
+        directionalLightView.View = Matrix4f::LookAt(directionalLightView.Eye, Vector3f::Zero(), Vector3f::Up());
+        directionalLightView.Proj = Matrix4f::Orthographic(-15.0f, 15.0f, -15.0f, 15.0f, 0.1f, 350.0f) * correction;
         directionalLightView.ViewProj = directionalLightView.Proj * directionalLightView.View;
         RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
         frame.UniformAllocator.UpdateData(directionalLightViewAllocation, directionalLightView);
@@ -305,10 +305,10 @@ namespace Wl
 
         FrameGraphTextureInfo shadowMapTextureInfo = {};
         shadowMapTextureInfo.Name = "ShadowMap";
-        shadowMapTextureInfo.Format = RHIFormat::D24S8;
+        shadowMapTextureInfo.Format = RHIFormat::D24;
         shadowMapTextureInfo.SizeClass = SizeClass::Absolute;
-        shadowMapTextureInfo.Height = 1024;
-        shadowMapTextureInfo.Width = 1024;
+        shadowMapTextureInfo.Height = 2048;
+        shadowMapTextureInfo.Width = 2048;
         FrameGraphTextureHandle shadowMap = frameGraph->CreateTexture(shadowMapTextureInfo);
 
         ShadowMapPassParameters shadowMapPassParamaters = {};
@@ -347,6 +347,7 @@ namespace Wl
         lightingParams.ShadowMap = shadowMap;
         lightingParams.Indirect = indirect;
         lightingParams.DepthStencil = depthStencil;
+        lightingParams.DirectionalLightSpaceAlloc = &directionalLightViewAllocation;
 
         ShaderComputePass& shaderLightingPass = shaderBundle->GetShaderComputePass(LightingPassName);
 

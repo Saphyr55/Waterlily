@@ -43,8 +43,8 @@ namespace PBR
                                    float3 viewDirection, 
                                    float3 worldPosition)
     {
-        float3 lightDirection = light.getDirection(worldPosition);
-        float3 radiance = light.getRadiance(worldPosition);
+        float3 lightDirection = light.GetDirection(worldPosition);
+        float3 radiance = light.GetRadiance(worldPosition);
         float3 halfway = normalize(viewDirection + lightDirection);
 
         float NdotL = max(dot(normal, lightDirection), 0.0);

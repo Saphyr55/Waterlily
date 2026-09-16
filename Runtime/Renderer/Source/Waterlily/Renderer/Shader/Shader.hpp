@@ -50,6 +50,11 @@ namespace Wl
             return m_stage == Stage::Compute;
         }
 
+        void ClearByteCode()
+        {
+            m_spirv.GetByteCode().Clear();
+        }
+
     public:
         Shader()
             : Asset(AssetType_Shader)

@@ -16,6 +16,11 @@ namespace Wl
             return m_byteCode;
         }
 
+        inline Array<uint8_t>& GetByteCode()
+        {
+            return m_byteCode;
+        }
+        
         inline RHIShaderStage GetStage() const
         {
             return m_stage;

@@ -127,6 +127,11 @@ namespace Wl
 
         VulkanAPI::vkGetPhysicalDeviceMemoryProperties(m_context.PhysicalDevice, &m_info.MemoryProperties);
 
+        // VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR& computeShaderDerivativesFeatures = m_info.ComputeShaderDerivativesFeatures;
+        // computeShaderDerivativesFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR;
+        // computeShaderDerivativesFeatures.computeDerivativeGroupQuads = VK_TRUE;
+        // computeShaderDerivativesFeatures.pNext = nullptr;
+
         VkPhysicalDeviceVulkan11Features& supportedFeatures11 = m_info.VulkanFeatures11;
         supportedFeatures11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
         supportedFeatures11.pNext = nullptr;
@@ -147,7 +152,9 @@ namespace Wl
         features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         features2.pNext = &supportedFeatures14;
 
-        VulkanAPI::vkGetPhysicalDeviceFeatures2(m_context.PhysicalDevice, &features2);
+        VulkanAPI::vkGetPhysicalDeviceFeatures2(
+                m_context.PhysicalDevice,
+                &features2);
 
         if (!supportedFeatures12.runtimeDescriptorArray)
         {

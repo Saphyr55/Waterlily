@@ -55,7 +55,7 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     float3 bitangent = cross(normal, tangent) * input.Tangent.w;
 
-    VSOutput output;
+    VSOutput output = {};
 
     output.Position = mul(view.viewProj, worldPosition);
     output.WorldPosition = worldPosition.xyz;
@@ -71,7 +71,7 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
 [shader("fragment")]
 FSOutput FSMain(VSOutput input)
 {
-    FSOutput output;
+    FSOutput output = {};
 
     RenderInstance instance = renderInstanceBuffer.Load(input.InstanceIndex);
     Material material = materialRegistry.Load(instance.materialIndex);
