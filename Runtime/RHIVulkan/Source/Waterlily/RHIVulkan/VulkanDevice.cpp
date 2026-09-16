@@ -297,14 +297,14 @@ namespace Wl
         vulkanGraphicsPipeline->Destroy();
         Wl::Delete(m_allocator, vulkanGraphicsPipeline);
     }
-    
+
     RHIComputePipeline* VulkanDevice::CreateComputePipeline(const RHIComputePipelineDescription& description)
     {
         VulkanComputePipeline* vulkanPipeline = Wl::New(m_allocator, VulkanComputePipeline());
         vulkanPipeline->Create(description);
         return vulkanPipeline;
     }
-    
+
     void VulkanDevice::DestroyComputePipeline(RHIComputePipeline* pipeline)
     {
         VulkanComputePipeline* vulkanPipeline = static_cast<VulkanComputePipeline*>(pipeline);
@@ -408,7 +408,9 @@ namespace Wl
     VulkanDevice::VulkanDevice(Allocator* allocator)
         : m_context(VulkanContextGet())
         , m_allocator(allocator)
+        , m_correction(Matrix4f::Identity())
     {
+        m_correction[1][1] *= -1;
     }
 
 }// namespace Wl

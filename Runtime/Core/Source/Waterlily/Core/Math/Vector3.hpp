@@ -91,15 +91,15 @@ namespace Wl
     }
 
     template<Real R>
-    constexpr Vector3<R> Vector3<R>::Up()
-    {
-        return Vector3<R>(R(0.0), R(1.0), R(0.0));
-    }
-
-    template<Real R>
     constexpr Vector3<R> Vector3<R>::Right()
     {
         return Vector3<R>(R(1.0), R(0.0), R(0.0));
+    }
+
+    template<Real R>
+    constexpr Vector3<R> Vector3<R>::Up()
+    {
+        return Vector3<R>(R(0.0), R(1.0), R(0.0));
     }
 
     template<Real R>
@@ -123,7 +123,7 @@ namespace Wl
     template<Real R>
     constexpr Vector3<R> Vector3<R>::Normalize(const Vector3& vec)
     {
-        auto l = Length(vec);
+        float l = Length(vec);
         return Vector3(vec.x / l, vec.y / l, vec.z / l);
     }
 

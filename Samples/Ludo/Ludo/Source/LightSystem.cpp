@@ -31,8 +31,8 @@ namespace Wl
 
         Entity directionalLightEntity = registry.Create();
         registry.AddComponent(directionalLightEntity, DirectionalLight {
-                .Direction = Vector3f(0.1f, 0.1f, 0.1f),
-                .Color = Vector3f(1.0f, 0.90f, 0.75f),
+                .Direction = Vector3f(0.1f, -1.0f, 0.1f),
+                .Color = Vector3f(1.0f, 0.90f, 0.75f),  
         });
     }
 

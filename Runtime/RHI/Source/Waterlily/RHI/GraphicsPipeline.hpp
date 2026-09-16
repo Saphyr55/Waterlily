@@ -39,7 +39,7 @@ namespace Wl
 
     struct RHIGraphicsPipelineDescription
     {
-        RHIFrontFace FrontFace = RHIFrontFace::CounterClockwise;
+        RHIFrontFace FrontFace = RHIFrontFace::Clockwise;
         RHICullModeFlags CullMode = RHICullModeFlags::None;
         RHIPipelineShaderStageCreateInfo VertexShaderInfo = {};
         RHIPipelineShaderStageCreateInfo FragmentShaderInfo = {};

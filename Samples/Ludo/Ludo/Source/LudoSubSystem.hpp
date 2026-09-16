@@ -6,13 +6,12 @@
 #include "Waterlily/Engine/EngineSubSystem.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
+#include "Waterlily/Renderer/RenderService.hpp"
 #include "Waterlily/Renderer/Shader/ShaderCompiler.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 
 namespace Wl
 {
-    class RenderService;
-
     // TODO: Those paths must be in function of the project folder. In the future, we should have a builtin engine path (ex. "builtin://Assets/.../GBuffer.slang").
     static const StringID GBufferShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/GBuffer.slang");
     static const StringID ForwardShaderAssetURI = WL_SID("../../../Assets/Shaders/Pass/Forward.slang");
@@ -42,7 +41,7 @@ namespace Wl
 
         static inline Camera CreateCamera()
         {
-            return Camera::Create(Vector3f(-6.5f, 0.75f, 0.5f), Vector3f(0.0f, 1.0f, 0.0f), 10.0f);
+            return Camera::Create(Vector3f(-6.0f, 1.0f, -0.1f), Vector3f(-15.0f, 1.0f, 0.0f), 6.0f);
         }
 
         // Todo: This should be done in dev mode not in runtime mode.
@@ -85,7 +84,8 @@ namespace Wl
             return success;
         }
 
-        LudoSubSystem(const SharedPtr<RenderService>& renderService, const SharedPtr<AssetManager>& assetManager)
+        LudoSubSystem(const SharedPtr<RenderService>& renderService,
+                      const SharedPtr<AssetManager>& assetManager)
             : m_renderService(renderService)
             , m_assetManager(assetManager)
         {

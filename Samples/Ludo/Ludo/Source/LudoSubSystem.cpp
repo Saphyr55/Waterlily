@@ -5,7 +5,6 @@
 #include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
-#include "Waterlily/Core/Memory/MemoryTrace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
@@ -149,11 +148,11 @@ namespace Wl
 
     void LudoSubSystem::OnTick(double deltaTime)
     {
-        auto x = MemoryTrace::GlobalGetMemoryUsage();
-
         SharedPtr<FrameContext> frameContext = m_renderService->GetFrameContext();
         SharedPtr<FrameGraph> frameGraph = m_renderService->GetFrameGraph();
         SharedPtr<ShaderBundle> shaderBundle = m_renderService->GetShaderBundle();
+
+        const Matrix4f& correction = m_renderService->GetDevice()->GetMatrixCorrection();
 
         float aspectRatio = frameContext->GetAspectRatio();
 
@@ -166,12 +165,12 @@ namespace Wl
 
         if (Input::KeyIsDown(VirtualKey::Z))
         {
-            direction += m_camera.Front;
+            direction += m_camera.Forward;
         }
 
         if (Input::KeyIsDown(VirtualKey::S))
         {
-            direction -= m_camera.Front;
+            direction -= m_camera.Forward;
         }
 
         if (Input::KeyIsDown(VirtualKey::Q))
@@ -212,7 +211,7 @@ namespace Wl
 
         FramePacket packet;
 
-        Matrix4f proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
+        Matrix4f proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f) * correction;
         RenderView view = RenderView::CreateFromCamera(m_camera, proj);
 
         packet.VertexBuffers = m_sponzaMesh->GetVertexBuffers();
@@ -246,12 +245,12 @@ namespace Wl
         packet.DirectionalLightAllocation = frame.UniformAllocator.Allocate<DirectionalLight>();
         frame.UniformAllocator.UpdateData(packet.DirectionalLightAllocation, directionalLightComponent);
 
-        RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
         RenderView directionalLightView = {};
-        directionalLightView.View = Matrix4f::LookAt(-directionalLightComponent.Direction * 10.0f, Vector3f::Zero(), Vector3f::Up());
-        directionalLightView.Proj = Matrix4f::Orthographic(-25.0f, 25.0f, -25.0f, 25.0f, 0.1f, 1000.0f);
+        directionalLightView.Eye = -directionalLightComponent.Direction;
+        directionalLightView.View = Matrix4f::LookAt( directionalLightView.Eye * 20.0f, Vector3f::Zero(), Vector3f::Up());
+        directionalLightView.Proj = Matrix4f::Orthographic(-20.0f, 20.0f, -20.0f, 20.0f, 0.1f, 100.0f) * correction;
         directionalLightView.ViewProj = directionalLightView.Proj * directionalLightView.View;
-
+        RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
         frame.UniformAllocator.UpdateData(directionalLightViewAllocation, directionalLightView);
 
         packet.CountersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
@@ -306,17 +305,16 @@ namespace Wl
 
         FrameGraphTextureInfo shadowMapTextureInfo = {};
         shadowMapTextureInfo.Name = "ShadowMap";
-        shadowMapTextureInfo.Format = RHIFormat::R16_FLOAT;
+        shadowMapTextureInfo.Format = RHIFormat::D24S8;
         shadowMapTextureInfo.SizeClass = SizeClass::Absolute;
         shadowMapTextureInfo.Height = 1024;
         shadowMapTextureInfo.Width = 1024;
-        shadowMapTextureInfo.SizeClass = SizeClass::Swapchain;
         FrameGraphTextureHandle shadowMap = frameGraph->CreateTexture(shadowMapTextureInfo);
 
         ShadowMapPassParameters shadowMapPassParamaters = {};
         shadowMapPassParamaters.ShadowMap = shadowMap;
         shadowMapPassParamaters.Indirect = indirect;
-        shadowMapPassParamaters.DirectionalLightViewAllocation = &packet.ViewAllocation;
+        shadowMapPassParamaters.DirectionalLightViewAllocation = &directionalLightViewAllocation;
 
         ShaderGraphicsPass& shaderShadowMapPass = shaderBundle->GetShaderGraphicsPass(ShadowMapPassName);
         shaderShadowMapPass.PipelineState.CullMode = RHICullModeFlags::Back;

@@ -12,19 +12,17 @@ StructuredBuffer<RenderInstance> renderInstanceBuffer;
 
 
 [shader("vertex")]
-float4 VSMain(float3 inputPosition, uint instanceIndex: SV_StartInstanceLocation)
+float4 VSMain(float3 vPosition, uint instanceIndex: SV_StartInstanceLocation) : SV_Position
 {
     RenderInstance instance = renderInstanceBuffer[instanceIndex];
 
     float4x4 mvp = mul(directionLightView.viewProj, instance.model);
-    float4 position = mul(mvp, float4(inputPosition, 1.0f));
-
+    float4 position = mul(mvp, float4(vPosition, 1.0f));
+    
     return position;
 }
 
 [shader("fragment")]
-float FSMain(float4 position)
+void FSMain(float4 position : SV_Position)
 {
-    // return position.z;
-    return Colors.Red.r;
 }

@@ -9,7 +9,7 @@
 
 namespace Wl
 {
-
+    
     FrameGraphPass& ShadowMapPassCreate(PassContext& passContext,
                                         FramePacket& packet,
                                         GraphicsPipelineState& pipelineState,
@@ -21,7 +21,7 @@ namespace Wl
         shadowMapPassDelegate.SetOnSetup([&](FrameGraphPassSetupContext& context, FrameGraphPassBuilder& builder)
         {
             builder.SetStage(FrameGraphPassStage::Graphics);
-            builder.Write(paramaters.ShadowMap);
+            builder.SetDepthStencil(paramaters.ShadowMap);
         });
 
         shadowMapPassDelegate.SetOnExecute([&](FrameGraphPassExecutionContext& context)
