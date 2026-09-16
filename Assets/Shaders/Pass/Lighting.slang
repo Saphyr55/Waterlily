@@ -41,22 +41,45 @@ Sampler2D<float> shadowMap;
 ConstantBuffer<View> directionalLightView;
 
 
-float DirectionalLightComputeShadow(DirectionalLight light, float3 position, float3 normal)
+float DirectionalLightComputeShadow(DirectionalLight light, float3 position, float3 normal, uint2 size, float2 offset)
 {
     float4 lightSpacePos = mul(directionalLightView.viewProj, float4(position, 1.0f));
     float4 shadowCoord = lightSpacePos / lightSpacePos.w;
     shadowCoord.xy = shadowCoord.xy * 0.5f + 0.5f;
-    
-    uint width, height;
-    shadowMap.GetDimensions(width, height);
-    uint2 texel = uint2(shadowCoord.xy * float2(width, height));
 
+    uint2 texel = uint2((shadowCoord.xy + offset) * float2(size.x, size.y));
+    
     float currentDepth = shadowCoord.z;
     float bias = max(0.025f * (1.0f - dot(light.GetDirection(position), normal)), 0.005f);
     float closestDepth = shadowMap[texel];
-    float shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
 
-    return shadow;
+    return currentDepth - bias > closestDepth ? 1.0f : 0.0f;;
+}
+
+float DirectionalLightComputeShadowPCF(DirectionalLight light, float3 position, float3 normal)
+{
+    uint2 size;
+    shadowMap.GetDimensions(size.x, size.y);
+
+    float scale = 1.5;
+    float dx = scale * 1.0 / float(size.x);
+    float dy = scale * 1.0 / float(size.y);
+
+    float shadowFactor = 0.0;
+    int samplerCount = 0;
+    int range = 1;
+
+    for (int x = -range; x <= range; x++)
+    {
+        for (int y = -range; y <= range; y++)
+        {
+            float2 offset = float2(dx * x, dy * y);
+            shadowFactor += DirectionalLightComputeShadow(light, position, normal, size, offset);
+            samplerCount++;
+        }
+    }
+
+    return shadowFactor / samplerCount;
 }
 
 [shader("compute")]
@@ -80,7 +103,7 @@ void Main(uint3 dispatchThreadID: SV_DispatchThreadID)
         normal = -normal;
     }
 
-    float shadow = DirectionalLightComputeShadow(directionalLight, position, normal);
+    float shadow = DirectionalLightComputeShadowPCF(directionalLight, position, normal);
 
     float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, albedo.rgb, metallic);
@@ -101,3 +124,4 @@ void Main(uint3 dispatchThreadID: SV_DispatchThreadID)
 
     outputColor[pixel] = float4(color, albedo.a);
 }
+

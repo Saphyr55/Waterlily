@@ -248,7 +248,7 @@ namespace Wl
         RenderView directionalLightView = {};
         directionalLightView.Eye = -directionalLightComponent.Direction * 30.0f;
         directionalLightView.View = Matrix4f::LookAt(directionalLightView.Eye, Vector3f::Zero(), Vector3f::Up());
-        directionalLightView.Proj = Matrix4f::Orthographic(-15.0f, 15.0f, -15.0f, 15.0f, 0.1f, 350.0f) * correction;
+        directionalLightView.Proj = Matrix4f::Orthographic(-15.0f, 15.0f, -15.0f, 15.0f, 0.1f, 100.0f) * correction;
         directionalLightView.ViewProj = directionalLightView.Proj * directionalLightView.View;
         RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
         frame.UniformAllocator.UpdateData(directionalLightViewAllocation, directionalLightView);
