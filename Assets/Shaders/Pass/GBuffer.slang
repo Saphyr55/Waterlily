@@ -4,41 +4,41 @@ import PBR.Material;
 
 struct VSInput
 {
-    float3 Position : POSITION0;
-    float3 Normal : NORMAL0;
-    float2 UV : TEXCOORD0;
-    float4 Tangent : TANGENT0;
+    float3 Position;
+    float3 Normal;
+    float2 UV;
+    float4 Tangent;
 }
 
 struct VSOutput
 {
     float4 Position : SV_Position;
-    float3 WorldPosition : POSITION0;
-    float3 Normal : NORMAL0;
-    float2 UV : TEXCOORD0;
-    float3 Tangent : TANGENT0;
-    float3 Bitangent : TEXCOORD1;
+    float3 WorldPosition;
+    float3 Normal;
+    float2 UV;
+    float3 Tangent;
+    float3 Bitangent;
     nointerpolation uint InstanceIndex : SV_InstanceID;
 }
 
 struct FSOutput
 {
-    float4 Position : SV_Target0;
-    float4 Normal : SV_Target1;
-    float4 Albedo : SV_Target2;
-    float4 MetallicRoughness : SV_Target3;
+    float4 Position;
+    float4 Normal;
+    float4 Albedo;
+    float4 MetallicRoughness;
 }
 
-[[vk::binding(0, 0)]]
+[vk::binding(0, 0)]
 ConstantBuffer<View> view;
 
-[[vk::binding(0, 1)]]
+[vk::binding(0, 1)]
 StructuredBuffer<RenderInstance> renderInstanceBuffer;
 
-[[vk::binding(0, 2)]]
+[vk::binding(0, 2)]
 Sampler2D[] samplers2D;
 
-[[vk::binding(0, 3)]]
+[vk::binding(0, 3)]
 StructuredBuffer<Material> materialRegistry;
 
 [shader("vertex")]
@@ -55,7 +55,7 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     float3 bitangent = cross(normal, tangent) * input.Tangent.w;
 
-    VSOutput output;
+    VSOutput output = {};
 
     output.Position = mul(view.viewProj, worldPosition);
     output.WorldPosition = worldPosition.xyz;
@@ -71,7 +71,7 @@ VSOutput VSMain(VSInput input, uint instanceIndex: SV_StartInstanceLocation)
 [shader("fragment")]
 FSOutput FSMain(VSOutput input)
 {
-    FSOutput output;
+    FSOutput output = {};
 
     RenderInstance instance = renderInstanceBuffer.Load(input.InstanceIndex);
     Material material = materialRegistry.Load(instance.materialIndex);

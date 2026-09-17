@@ -15,21 +15,72 @@ struct GBufferTextures
     Sampler2D metallicRoughnessTexture;
 }
 
-[[vk::binding(0, 0)]]
+struct ShadowMappingInfo
+{
+    float4x4 lightSpace;
+}
+
+[vk::binding(0, 0)]
 ConstantBuffer<View> view;
 
-[[vk::binding(0, 1)]]
-GBufferTextures gBufferTextures;
+[vk::binding(1, 0)]
+ConstantBuffer<DirectionalLight> directionalLight;
+[vk::binding(2, 0)]
+ConstantBuffer<PointLight[kMaxPointLight]> pointLights;
+[vk::binding(3, 0)]
+ConstantBuffer<uint> pointLightCount;
 
-[[vk::binding(4, 1)]]
+[vk::binding(0, 1)]
+GBufferTextures gBufferTextures;
+[vk::binding(4, 1)]
 RWTexture2D outputColor;
 
-[[vk::binding(1, 0)]]
-ConstantBuffer<DirectionalLight> directionalLight;
-[[vk::binding(2, 0)]]
-ConstantBuffer<PointLight[kMaxPointLight]> pointLights;
-[[vk::binding(3, 0)]]
-ConstantBuffer<uint> pointLightCount;
+[vk::binding(0, 2)]
+Sampler2D<float> shadowMap;
+[vk::binding(1, 2)]
+ConstantBuffer<View> directionalLightView;
+
+
+float DirectionalLightComputeShadow(DirectionalLight light, float3 position, float3 normal, uint2 size, float2 offset)
+{
+    float4 lightSpacePos = mul(directionalLightView.viewProj, float4(position, 1.0f));
+    float4 shadowCoord = lightSpacePos / lightSpacePos.w;
+    shadowCoord.xy = shadowCoord.xy * 0.5f + 0.5f;
+
+    uint2 texel = uint2((shadowCoord.xy + offset) * float2(size.x, size.y));
+    
+    float currentDepth = shadowCoord.z;
+    float bias = max(0.025f * (1.0f - dot(light.GetDirection(position), normal)), 0.005f);
+    float closestDepth = shadowMap[texel];
+
+    return currentDepth - bias > closestDepth ? 1.0f : 0.0f;;
+}
+
+float DirectionalLightComputeShadowPCF(DirectionalLight light, float3 position, float3 normal)
+{
+    uint2 size;
+    shadowMap.GetDimensions(size.x, size.y);
+
+    float scale = 1.5;
+    float dx = scale * 1.0 / float(size.x);
+    float dy = scale * 1.0 / float(size.y);
+
+    float shadowFactor = 0.0;
+    int samplerCount = 0;
+    int range = 1;
+
+    for (int x = -range; x <= range; x++)
+    {
+        for (int y = -range; y <= range; y++)
+        {
+            float2 offset = float2(dx * x, dy * y);
+            shadowFactor += DirectionalLightComputeShadow(light, position, normal, size, offset);
+            samplerCount++;
+        }
+    }
+
+    return shadowFactor / samplerCount;
+}
 
 [shader("compute")]
 [numthreads(16, 16, 1)]
@@ -52,7 +103,9 @@ void Main(uint3 dispatchThreadID: SV_DispatchThreadID)
         normal = -normal;
     }
 
-    float3 F0 = float3(0.04, 0.04, 0.04);
+    float shadow = DirectionalLightComputeShadowPCF(directionalLight, position, normal);
+
+    float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, albedo.rgb, metallic);
 
     MaterialBRDF materialBRDF;
@@ -61,19 +114,16 @@ void Main(uint3 dispatchThreadID: SV_DispatchThreadID)
     materialBRDF.roughness = roughness;
     materialBRDF.F0 = F0;
 
-    float3 Lo = float3(0.0f, 0.0f, 0.0f);
+    float3 Lo = albedo.rgb * 0.05f;
 
-    DirectionalLight dl = directionalLight;
-    dl.color = float3(0.0f, 0.0f, 0.0f);// Turn off directional light.
-    Lo += PBR.CookTorranceBRDF(dl, materialBRDF, normal, viewDirection, position);
-
+    Lo += PBR.CookTorranceBRDF(directionalLight, materialBRDF, normal, viewDirection, position) * (1.0f - shadow);
     for (uint i = 0; i < pointLightCount; i++)
     {
         Lo += PBR.CookTorranceBRDF(pointLights[i], materialBRDF, normal, viewDirection, position);
     }
 
-    float3 color = Lo;
-    color = color / (color + float3(1.0, 1.0, 1.0));
+    float3 color = Lo / (Lo + float3(1.0f, 1.0f, 1.0f));
 
     outputColor[pixel] = float4(color, albedo.a);
 }
+

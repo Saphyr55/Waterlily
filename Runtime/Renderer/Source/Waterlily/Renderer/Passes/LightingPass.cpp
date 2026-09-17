@@ -22,6 +22,7 @@ namespace Wl
             builder.Read(parameters.Normal);
             builder.Read(parameters.Albedo);
             builder.Read(parameters.MetallicRoughness);
+            builder.Read(parameters.ShadowMap);
             builder.ReadStorage(parameters.Indirect);
             builder.SetDepthStencil(parameters.DepthStencil);
         });
@@ -31,7 +32,10 @@ namespace Wl
             RHICommandBuffer* commandBuffer = context.CommandBuffer;
             Frame& frame = context.FrameContext->GetCurrentFrame();
 
-            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[0];
+            RHISampler* pointSampler = passContext.TextureRegistry->GetDefaultSampler();
+
+            constexpr uint32_t globalSRGIndex = 0;
+            RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[globalSRGIndex];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
             {
                 RHIWriteBufferResource writeView(0,
@@ -61,14 +65,14 @@ namespace Wl
                 globalSRG->Update();
             }
 
-            RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipelineState.SRGLayouts[1];
+            constexpr uint32_t gBuffersSRGIndex = 1;
+            RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipelineState.SRGLayouts[gBuffersSRGIndex];
             RHIShaderResourceGroup* gBufferTexturesSRG = frame.SRGPool->AllocateSRG(gBufferTexturesSRGLayout);
             {
                 FrameGraphPhysicalTexture& positionResource = context.FrameGraph->ResolvePhysicalTexture(parameters.Position);
                 FrameGraphPhysicalTexture& normalResource = context.FrameGraph->ResolvePhysicalTexture(parameters.Normal);
                 FrameGraphPhysicalTexture& albedoResource = context.FrameGraph->ResolvePhysicalTexture(parameters.Albedo);
                 FrameGraphPhysicalTexture& metallicRoughnessResource = context.FrameGraph->ResolvePhysicalTexture(parameters.MetallicRoughness);
-                RHISampler* pointSampler = passContext.TextureRegistry->GetDefaultSampler();
 
                 RHIWriteTextureSamplerResource writePosition(0, positionResource.View, pointSampler);
                 RHIWriteTextureSamplerResource writeNormal(1, normalResource.View, pointSampler);
@@ -87,12 +91,31 @@ namespace Wl
                 gBufferTexturesSRG->Update();
             }
 
+            constexpr uint32_t shadowMapSRGIndex = 2;
+            RHIShaderResourceGroupLayout* shadowMapSRGLayout = pipelineState.SRGLayouts[shadowMapSRGIndex];
+            RHIShaderResourceGroup* shadowMapSRG = frame.SRGPool->AllocateSRG(shadowMapSRGLayout);
+            {
+                FrameGraphPhysicalTexture& shadowMapTexture = context.FrameGraph->ResolvePhysicalTexture(parameters.ShadowMap);
+                RHIWriteTextureSamplerResource writeShadowMap(0, shadowMapTexture.View, pointSampler);
+                shadowMapSRG->SetTextureSampler(writeShadowMap);
+
+                RHIWriteBufferResource writeLigthSpace = RHIWriteBufferResource(1,
+                                                     parameters.DirectionalLightSpaceAlloc->Buffer,
+                                                     parameters.DirectionalLightSpaceAlloc->Offset,
+                                                     parameters.DirectionalLightSpaceAlloc->Size);
+
+                shadowMapSRG->SetBuffer(writeLigthSpace);
+
+                shadowMapSRG->Update();
+            }
+
             RHIPipeline* pipeline = passContext.PipelineManager->GetComputePipeline(LightingPassName);
 
             commandBuffer->BindPipeline(pipeline);
 
-            commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
-            commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, 1);
+            commandBuffer->BindSRG(pipeline, {globalSRG}, globalSRGIndex);
+            commandBuffer->BindSRG(pipeline, {gBufferTexturesSRG}, gBuffersSRGIndex);
+            commandBuffer->BindSRG(pipeline, {shadowMapSRG}, shadowMapSRGIndex);
 
             RHIDispatchCommand dispatchCommand = {};
             dispatchCommand.GroupCountX = Math::Ceil(context.FrameContext->GetWidth() / 16.0f);

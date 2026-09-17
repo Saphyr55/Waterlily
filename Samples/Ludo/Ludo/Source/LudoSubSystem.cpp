@@ -1,5 +1,5 @@
-#include "LightSystem.hpp"
 #include "LudoSubSystem.hpp"
+#include "LightSystem.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Matrix4.hpp"
@@ -8,9 +8,11 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
-#include "Waterlily/Core/Memory/MemoryTrace.hpp"
 #include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/Entity/Entity.hpp"
+#include "Waterlily/RHI/Buffer.hpp"
+#include "Waterlily/RHI/Device.hpp"
+#include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphPass.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraphResource.hpp"
@@ -20,6 +22,7 @@
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Passes/GBufferPass.hpp"
 #include "Waterlily/Renderer/Passes/LightingPass.hpp"
+#include "Waterlily/Renderer/Passes/ShadowMapPass.hpp"
 #include "Waterlily/Renderer/Proxies/RenderInstance.hpp"
 #include "Waterlily/Renderer/Proxies/RenderView.hpp"
 #include "Waterlily/Renderer/RenderAllocator.hpp"
@@ -27,9 +30,6 @@
 #include "Waterlily/Renderer/Shader/PipelineManager.hpp"
 #include "Waterlily/Renderer/Shader/ShaderBundle.hpp"
 #include "Waterlily/Renderer/Texture/TextureRegistry.hpp"
-#include "Waterlily/RHI/Buffer.hpp"
-#include "Waterlily/RHI/Device.hpp"
-#include "Waterlily/RHI/Types.hpp"
 #include "Waterlily/Scene/Camera.hpp"
 #include "Waterlily/Scene/PointLight.hpp"
 #include "Waterlily/Scene/SceneComponent.hpp"
@@ -53,6 +53,7 @@ namespace Wl
         WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
 
         shaderBundle->RegisterGraphicsPass(GBufferPassName, GBufferVertexShaderAssetURI, GBufferFragmentShaderAssetURI);
+        shaderBundle->RegisterGraphicsPass(ShadowMapPassName, ShadowMapVertexShaderAssetURI, ShadowMapFragmentShaderAssetURI);
         shaderBundle->RegisterComputePass(LightingPassName, LightingComputeShaderAssetURI);
         shaderBundle->LoadAssets();
 
@@ -147,11 +148,11 @@ namespace Wl
 
     void LudoSubSystem::OnTick(double deltaTime)
     {
-        auto x = MemoryTrace::GlobalGetMemoryUsage();
-
         SharedPtr<FrameContext> frameContext = m_renderService->GetFrameContext();
         SharedPtr<FrameGraph> frameGraph = m_renderService->GetFrameGraph();
         SharedPtr<ShaderBundle> shaderBundle = m_renderService->GetShaderBundle();
+
+        const Matrix4f& correction = m_renderService->GetDevice()->GetMatrixCorrection();
 
         float aspectRatio = frameContext->GetAspectRatio();
 
@@ -164,12 +165,12 @@ namespace Wl
 
         if (Input::KeyIsDown(VirtualKey::Z))
         {
-            direction += m_camera.Front;
+            direction += m_camera.Forward;
         }
 
         if (Input::KeyIsDown(VirtualKey::S))
         {
-            direction -= m_camera.Front;
+            direction -= m_camera.Forward;
         }
 
         if (Input::KeyIsDown(VirtualKey::Q))
@@ -210,7 +211,7 @@ namespace Wl
 
         FramePacket packet;
 
-        Matrix4f proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f);
+        Matrix4f proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f) * correction;
         RenderView view = RenderView::CreateFromCamera(m_camera, proj);
 
         packet.VertexBuffers = m_sponzaMesh->GetVertexBuffers();
@@ -229,11 +230,10 @@ namespace Wl
         }
 
         // Light allocation
-        auto lightView = m_entityRegistry.View<TransformComponent, LightComponent>();
-        packet.PointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(lightView.GetSize());
-
+        auto lightEntityView = m_entityRegistry.View<TransformComponent, LightComponent>();
+        packet.PointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(lightEntityView.GetSize());
         size_t i = 0;
-        for (const auto [entity, transform, light]: lightView)
+        for (const auto [entity, transform, light]: lightEntityView)
         {
             packet.PointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, light.Color);
         }
@@ -245,8 +245,16 @@ namespace Wl
         packet.DirectionalLightAllocation = frame.UniformAllocator.Allocate<DirectionalLight>();
         frame.UniformAllocator.UpdateData(packet.DirectionalLightAllocation, directionalLightComponent);
 
+        RenderView directionalLightView = {};
+        directionalLightView.Eye = -directionalLightComponent.Direction * 50.0f;
+        directionalLightView.View = Matrix4f::LookAt(directionalLightView.Eye, Vector3f::Zero(), Vector3f::Up());
+        directionalLightView.Proj = Matrix4f::Orthographic(-30.0f, 30.0f, -30.0f, 30.0f, 0.1f, 300.0f) * correction;
+        directionalLightView.ViewProj = directionalLightView.Proj * directionalLightView.View;
+        RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
+        frame.UniformAllocator.UpdateData(directionalLightViewAllocation, directionalLightView);
+
         packet.CountersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
-        packet.CountersAllocation.Update<uint32_t>(lightView.GetSize());
+        packet.CountersAllocation.Update<uint32_t>(lightEntityView.GetSize());
 
         Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
         Rect2D scissor(0.0f, 0.0f, width, height);
@@ -290,10 +298,31 @@ namespace Wl
         FrameGraphTextureHandle metallicRoughness = frameGraph->CreateTexture(metallicRoughnessTextureInfo);
 
         FrameGraphTextureInfo depthStencilTextureInfo = {};
-        depthStencilTextureInfo.Name = "DepthScentil";
+        depthStencilTextureInfo.Name = "DepthStencil";
         depthStencilTextureInfo.Format = RHIFormat::D24S8;
         depthStencilTextureInfo.SizeClass = SizeClass::Swapchain;
         FrameGraphTextureHandle depthStencil = frameGraph->CreateTexture(depthStencilTextureInfo);
+
+        FrameGraphTextureInfo shadowMapTextureInfo = {};
+        shadowMapTextureInfo.Name = "ShadowMap";
+        shadowMapTextureInfo.Format = RHIFormat::D24;
+        shadowMapTextureInfo.SizeClass = SizeClass::Absolute;
+        shadowMapTextureInfo.Height = 2048;
+        shadowMapTextureInfo.Width = 2048;
+        shadowMapTextureInfo.MipLevels = 4;
+        FrameGraphTextureHandle shadowMap = frameGraph->CreateTexture(shadowMapTextureInfo);
+
+        ShadowMapPassParameters shadowMapPassParamaters = {};
+        shadowMapPassParamaters.ShadowMap = shadowMap;
+        shadowMapPassParamaters.Indirect = indirect;
+        shadowMapPassParamaters.DirectionalLightViewAllocation = &directionalLightViewAllocation;
+
+        ShaderGraphicsPass& shaderShadowMapPass = shaderBundle->GetShaderGraphicsPass(ShadowMapPassName);
+        shaderShadowMapPass.PipelineState.CullMode = RHICullModeFlags::Front;
+        shaderShadowMapPass.PipelineState.Viewport = Viewport(0.0f, 0.0f, shadowMapTextureInfo.Width, shadowMapTextureInfo.Height, 0.0f, 1.0f);
+        shaderShadowMapPass.PipelineState.Scissor = Rect2D(0.0f, 0.0f, shadowMapTextureInfo.Width, shadowMapTextureInfo.Height);
+
+        ShadowMapPassCreate(passContext, packet, shaderShadowMapPass.PipelineState, shadowMapPassParamaters);
 
         GBufferPassParameters gBufferParams = {};
         gBufferParams.Position = position;
@@ -308,7 +337,7 @@ namespace Wl
         shaderGBufferPass.PipelineState.Viewport = viewport;
         shaderGBufferPass.PipelineState.Scissor = scissor;
 
-        FrameGraphPass& gBufferPass = GBufferPassCreate(passContext, packet, shaderGBufferPass.PipelineState, gBufferParams);
+        GBufferPassCreate(passContext, packet, shaderGBufferPass.PipelineState, gBufferParams);
 
         LightingPassParameters lightingParams = {};
         lightingParams.Color = color;
@@ -316,18 +345,22 @@ namespace Wl
         lightingParams.Normal = normal;
         lightingParams.Position = position;
         lightingParams.MetallicRoughness = metallicRoughness;
+        lightingParams.ShadowMap = shadowMap;
         lightingParams.Indirect = indirect;
         lightingParams.DepthStencil = depthStencil;
+        lightingParams.DirectionalLightSpaceAlloc = &directionalLightViewAllocation;
 
         ShaderComputePass& shaderLightingPass = shaderBundle->GetShaderComputePass(LightingPassName);
 
-        FrameGraphPass& lightingPass = LightingPassCreate(passContext, packet, shaderLightingPass.PipelineState, lightingParams);
+        LightingPassCreate(passContext, packet, shaderLightingPass.PipelineState, lightingParams);
 
         frameGraph->AddOutput(color);
         frameGraph->Compile();
 
-        m_renderService->GetOrCreatePipeline(gBufferPass, shaderGBufferPass.PipelineState);
-        m_renderService->GetOrCreatePipeline(lightingPass, shaderLightingPass.PipelineState);
+        m_renderService->GetOrCreatePipeline(GBufferPassName, shaderGBufferPass.PipelineState, true);
+        m_renderService->GetOrCreatePipeline(ShadowMapPassName, shaderShadowMapPass.PipelineState);
+        m_renderService->GetOrCreatePipeline(LightingPassName, shaderLightingPass.PipelineState);
+
         m_renderService->GetPipelineManager()->CreateFrameSRGPool(frameContext->GetFrames());
 
         frameGraph->Execute(frame.CommandBuffer);

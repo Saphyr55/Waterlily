@@ -6,41 +6,41 @@ using Light;
 
 struct VSInput
 {
-    float3 Position : POSITION0;
-    float3 Normal : NORMAL0;
-    float2 UV : TEXCOORD0;
-    float4 Tangent : TANGENT0;
+    float3 Position;
+    float3 Normal;
+    float2 UV;
+    float4 Tangent;
 }
 
 struct VSOutput
 {
     float4 Position : SV_Position;
-    float3 WorldPosition : POSITION0;
-    float3 Normal : NORMAL0;
-    float2 UV : TEXCOORD0;
-    float3 Tangent : TANGENT0;
-    float3 Bitangent : TEXCOORD1;
-    nointerpolation uint InstanceIndex;
+    float3 WorldPosition;
+    float3 Normal;
+    float2 UV;
+    float3 Tangent;
+    float3 Bitangent;
+    nointerpolation uint InstanceIndex : SV_InstanceID;
 }
 
 struct FSOutput
 {
-    float4 FragColor : SV_TARGET;
+    float4 Color;
 }
 
-[[vk::binding(0, 0)]]
+[vk::binding(0, 0)]
 ConstantBuffer<View> view;
 
-[[vk::binding(1, 0)]]
+[vk::binding(1, 0)]
 ConstantBuffer<PointLight[kMaxPointLight]> pointLights;
 
-[[vk::binding(0, 1)]]
+[vk::binding(0, 1)]
 StructuredBuffer<RenderInstance> renderInstanceBuffer;
 
-[[vk::binding(0, 2)]]
+[vk::binding(0, 2)]
 Sampler2D[] sampler2DRegistry;
 
-[[vk::binding(0, 3)]]
+[vk::binding(0, 3)]
 StructuredBuffer<Material> materialRegistry;
 
 [shader("vertex")]
@@ -116,8 +116,7 @@ FSOutput FSMain(VSOutput input)
     float epsilon = 1.0e-5f;
     result *= Light.InverseSquareLightAttenuation(lightDistance, 1.0f, epsilon);
 
-    output.FragColor.rgb = result;
-    output.FragColor.a = diffuseColor.a;
+    output.Color = float4(result, diffuseColor.a);
 
     return output;
 }

@@ -79,7 +79,7 @@ namespace Wl
         RHITextureLayout DestinationLayout = RHITextureLayout::TransferDst;
         uint32_t Width = 2;
         uint32_t Height = 2;
-        RHIFilter Filter = RHIFilter::Nearest;
+        RHIFilter Filter = RHIFilter::Linear;
     };
 
     struct RHIShaderConstants

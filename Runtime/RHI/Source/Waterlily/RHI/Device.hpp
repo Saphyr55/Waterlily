@@ -2,6 +2,8 @@
 
 #include "BindlessShaderResources.hpp"
 #include "Waterlily/Core/Function/Function.hpp"
+#include "Waterlily/Core/Math/Math.hpp"
+#include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/BufferPool.hpp"
@@ -36,6 +38,8 @@ namespace Wl
     public:
         virtual size_t GetCountBufferAllocation() = 0;
         virtual size_t GetCountTextureAllocation() = 0;
+
+        virtual const Matrix4f& GetMatrixCorrection() const = 0;
 
         virtual void Init(void* nativeWindow) = 0;
         virtual void Destroy() = 0;

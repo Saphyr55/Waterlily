@@ -10,7 +10,7 @@ namespace Wl
     {
         ArrayView<RHIBuffer*> VertexBuffers;
         RHIBuffer* IndexBuffers;
-        
+
         RenderAllocation ViewAllocation;
 
         RenderAllocation InstanceAllocation;
@@ -18,7 +18,7 @@ namespace Wl
         RenderAllocation PointLightsAllocation;
         RenderAllocation DirectionalLightAllocation;
         RenderAllocation CountersAllocation;
-        
+
         uint32_t DrawCount = 0;
     };
 

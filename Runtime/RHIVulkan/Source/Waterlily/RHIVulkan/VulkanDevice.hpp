@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/BufferPool.hpp"
@@ -30,6 +31,11 @@ namespace Wl
         virtual size_t GetCountTextureAllocation() override
         {
             return m_countTextureAllocation;
+        }
+        
+        virtual const Matrix4f& GetMatrixCorrection() const override 
+        {
+            return m_correction;
         }
 
         virtual void Init(void* nativeWindow) override;
@@ -102,6 +108,7 @@ namespace Wl
         }
 
     private:
+        Matrix4f m_correction;
         RHIDeviceProperties m_properties;
         Allocator* m_allocator;
         VulkanContext& m_context;

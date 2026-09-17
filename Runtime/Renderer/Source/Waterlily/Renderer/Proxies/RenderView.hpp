@@ -7,14 +7,19 @@
 namespace Wl
 {
 
-    class WL_RENDERER_API RenderView
+    struct WL_RENDERER_API RenderView
     {
     public:
         Matrix4f View = Matrix4f::Identity();
         Matrix4f Proj = Matrix4f::Identity();
         Matrix4f ViewProj = Matrix4f::Identity();
-        Vector3f Eye = Vector3f(0.0f);
+        Vector3f Eye = Vector3f::Zero();
 
+    public:
+        constexpr RenderView() = default;
+        ~RenderView() = default;
+
+    public:
         static RenderView CreateFromCamera(const Camera& camera, const Matrix4f& proj);
     };
 

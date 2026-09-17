@@ -70,8 +70,8 @@ namespace Wl
 
         void Resize(float width, float height);
 
-        RHIPipeline* GetOrCreatePipeline(FrameGraphPass& pass, GraphicsPipelineState& state);
-        RHIPipeline* GetOrCreatePipeline(FrameGraphPass& pass, ComputePipelineState& state);
+        RHIPipeline* GetOrCreatePipeline(const StringID& passName, GraphicsPipelineState& state, bool withMaterials = false);
+        RHIPipeline* GetOrCreatePipeline(const StringID& passName, ComputePipelineState& state, bool withMaterials = false);
 
     public:
         inline SharedPtr<RHIDevice> GetDevice() const

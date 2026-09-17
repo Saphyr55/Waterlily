@@ -54,8 +54,10 @@ namespace Wl
         {
             Destroy(pooledResource);
         }
+        m_pendingReleases.Clear();
         m_freeList.Clear();
         m_resources.Clear();
+        m_allocator.Reset();
     }
 
     void FrameGraphPhysicalTexturePool::InternalGarbageCollect(uint64_t maxFrameLifetime)

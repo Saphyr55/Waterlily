@@ -12,9 +12,9 @@ namespace Light
 
     public interface ILight
     {
-        public float3 getRadiance(float3 worldPosition);
+        public float3 GetRadiance(float3 worldPosition);
 
-        public float3 getDirection(float3 worldPosition);
+        public float3 GetDirection(float3 worldPosition);
     }
 
     public struct PointLight : ILight
@@ -22,7 +22,7 @@ namespace Light
         public float3 position;
         public float3 color;
 
-        public float3 getRadiance(float3 worldPosition)
+        public float3 GetRadiance(float3 worldPosition)
         {
             float3 lightDirection = this.position - worldPosition;
             float distance = length(lightDirection);
@@ -32,7 +32,7 @@ namespace Light
             return attenuation * this.color;
         }
 
-        public float3 getDirection(float3 worldPosition)
+        public float3 GetDirection(float3 worldPosition)
         {
             return normalize(this.position - worldPosition);
         }
@@ -43,14 +43,15 @@ namespace Light
         public float3 direction;
         public float3 color;
 
-        public float3 getRadiance(float3 worldPosition)
+        public float3 GetRadiance(float3 worldPosition)
         {
             return color;
         }
 
-        public float3 getDirection(float3 worldPosition)
+        public float3 GetDirection(float3 worldPosition)
         {
-            return normalize(this.direction);
+            // FIXME:
+            return normalize(-this.direction);
         }
     }
 

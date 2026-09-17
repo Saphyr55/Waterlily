@@ -11,7 +11,6 @@
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
-#include "Waterlily/RHI/Semaphore.hpp"
 #include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
@@ -83,7 +82,7 @@ namespace Wl
         
         inline const RHIGraphicsPipelineRenderingInfo GetPassRenderingInfo(FrameGraphPass& pass) const
         {
-            WL_CHECK_MSG(m_passRenderingInfos.Contains(pass.GetIndex()), "Pass rendering info not found for pass %s", pass.GetName().GetText().GetData());
+            WL_CHECK(m_passRenderingInfos.Contains(pass.GetIndex()));
             return m_passRenderingInfos[pass.GetIndex()];
         }
 

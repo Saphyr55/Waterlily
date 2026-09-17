@@ -12,12 +12,11 @@ namespace Wl
     public:
         Vector3f Rotation;
         Vector3f Position;
-        Vector3f Front;
-        Vector3f Right = Vector3f(-1.0f, 0.0f, 0.0f);
+        Vector3f Forward;
         Vector3f Up;
-        Vector3f WorldUp = Vector3f(0.0f, 1.0f, 0.0f);
-
-        Matrix4f View = Matrix4f(1.0f);
+        Vector3f WorldUp = Vector3f::Up();
+        Vector3f Right = Vector3f::Right();
+        Matrix4f View = Matrix4f::Identity();
 
         float MovementSpeed = 0.0f;
         float MouseSensitivity = 0.15f;
@@ -34,22 +33,18 @@ namespace Wl
 
     public:
         Camera() = default;
-        Camera(const Vector3f& position, const Vector3f& worldUp = Vector3f(0.0f, 1.0f, 0.0f))
-            : Position(position)
-            , WorldUp(worldUp)
-            , Rotation(0.0f, 0.0f, 0.0f)
-        {
-            UpdateVectors();
-        }
         ~Camera() = default;
 
-        static Camera Create(const Vector3f& position, const Vector3f& target, float movementSpeed, const Vector3f& worldUp = Vector3f(0.0f, 1.0f, 0.0f))
+        static Camera Create(
+                const Vector3f& position,
+                const Vector3f& target,
+                float movementSpeed)
         {
-            Camera camera(position, worldUp);
+            Camera camera = {};
+            camera.Position = position;
             camera.MovementSpeed = movementSpeed;
             camera.LookAt(target);
             camera.UpdateView();
-            camera.UpdateVectors();
             return camera;
         }
     };

@@ -2,6 +2,7 @@
 
 #include "Waterlily/Core/Containers/Handler.hpp"
 #include "Waterlily/Core/String/String.hpp"
+#include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/RHI/Buffer.hpp"
 #include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHI/TextureView.hpp"
@@ -23,7 +24,7 @@ namespace Wl
 
     struct FrameGraphTextureInfo
     {
-        String Name;
+        StringRef Name;
         RHIFormat Format;
         SizeClass SizeClass = SizeClass::Swapchain;
         uint32_t Width = 1'024;
@@ -41,7 +42,7 @@ namespace Wl
 
     struct FrameGraphBufferInfo
     {
-        String Name;
+        StringRef Name;
         size_t Size;
         size_t Offset = 0;
     };

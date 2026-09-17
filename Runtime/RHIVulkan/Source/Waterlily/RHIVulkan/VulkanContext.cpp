@@ -155,9 +155,12 @@ namespace Wl
         WL_CHECK(context.Surface->GetHandle());
 
         VulkanPhysicalDeviceRequirements requirements = {};
-        requirements.RequiredExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                           VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-                                           VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
+        requirements.RequiredExtensions = {
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+                //   VK_KHR_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME
+        };
         requirements.PreferredDeviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 
         VulkanPhysicalDeviceSelector selector(requirements);
