@@ -1,0 +1,149 @@
+#include "Waterlily/Assets/Asset.hpp"
+#include "Waterlily/Assets/AssetRegistry.hpp"
+#include "Waterlily/Assets/AssetSource.hpp"
+#include "Waterlily/Assets/ConditionnedAsset.hpp"
+#include "Waterlily/Assets/VFSAssetSource.hpp"
+#include "Waterlily/Core/IO/File.hpp"
+#include "Waterlily/Core/IO/FileSystem.hpp"
+#include "Waterlily/Core/IO/ScopedFileSystem.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
+#include "Waterlily/Core/Memory/SharedPtr.hpp"
+#include "Waterlily/Core/String/String.hpp"
+#include "Waterlily/Core/String/StringID.hpp"
+#include "Waterlily/Core/String/StringRef.hpp"
+#include "Waterlily/Launcher/Launcher.hpp"
+#include "Waterlily/Renderer/Model/Model.hpp"
+#include "Waterlily/Renderer/Texture/TextureAsset.hpp"
+#include "WlTools/ACP/AssetImporter.hpp"
+#include "WlTools/ACP/AssetProcessor.hpp"
+#include "WlTools/ACP/AssetStorage.hpp"
+#include "WlTools/ACP/GlTF/GlTFImporter.hpp"
+#include "WlTools/ACP/Mesh/MeshProcessor.hpp"
+#include "WlTools/ACP/Texture/TextureAssetImporter.hpp"
+
+#include <cstdlib>
+#include <filesystem>
+
+static constexpr StringRef WorkingDirectory = "";
+static const StringRef VFSDirectory = "Assets/";
+static const String VFSOutputAssetDirectory = VFSDirectory + "Models/Sponza/";
+
+static constexpr StringRef OriginalAssetFilepath = "../../../../Assets/Models/Sponza/glTF/Sponza.gltf";
+
+static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Asset> asset)
+{
+    FileResult result = fileSystem.OpenWrite(output, FileMode::Create);
+
+    if (result.HasValue())
+    {
+        WLCA::SerializeAsset(result.GetValue(), asset.GetResource());
+        return true;
+    }
+
+    return false;
+}
+
+static int32_t StartConsole()
+{
+    WL_LOG_INFO("ACP", "Build started");
+
+    ScopedFileSystem fileSystem(FileSystem::GetPlatform(), "../../../");
+
+    std::filesystem::path outputAssetDir = WorkingDirectory.data();
+    outputAssetDir /= VFSOutputAssetDirectory.GetData();
+
+    std::string outputAssetDirText = outputAssetDir.generic_string();
+
+    if (!fileSystem.CreateDirectory(outputAssetDirText.data()))
+    {
+        WL_LOG_ERROR("ACP", "Failed to create the directory \"%s\"", VFSOutputAssetDirectory.GetData());
+        return EXIT_FAILURE;
+    }
+
+    std::filesystem::path assetRegistryFilepath = WorkingDirectory.data();
+    assetRegistryFilepath /= VFSDirectory.data();
+    assetRegistryFilepath /= WLAR_FILENAME.data();
+
+    std::string assetRegistryFilepathText = assetRegistryFilepath.generic_string();
+
+    FileResult assetRegistryFileResult = fileSystem.Open(assetRegistryFilepathText.data(), FileAccess::ReadWrite, FileMode::OpenOrCreate);
+    if (!assetRegistryFileResult.HasValue())
+    {
+        WL_LOG_ERROR("ACP", "Failed to open \"%s\"", assetRegistryFilepathText.data());
+        return EXIT_FAILURE;
+    }
+
+    SharedPtr<File> assetRegistryFile = assetRegistryFileResult.GetValue();
+
+    SharedPtr<AssetRegistry> registry = AssetRegistry::LoadFromFile(assetRegistryFile);
+
+    assetRegistryFile->Close();
+
+    if (!registry)
+    {
+        WL_LOG_ERROR("ACP", "Failed to load \"%s\"", assetRegistryFilepathText.data());
+        return EXIT_FAILURE;
+    }
+
+    Array<SharedPtr<AssetProcessor>> staticMeshProcessors(2);
+    staticMeshProcessors.Append(MakeShared<StaticMeshGenerateNormalsProcessor>());
+    staticMeshProcessors.Append(MakeShared<StaticMeshGenerateTangentsProcessor>());
+
+    AssetImporterRegistry importers;
+    importers.RegisterImporter(AssetType_Texture2D, MakeShared<TextureAssetImporter>());
+    importers.RegisterImporter(AssetType_Model, MakeShared<GlTFImporter>(importers));
+
+    const StringID& assetType = AssetType_Model;
+    StringRef assetFilepath = OriginalAssetFilepath;
+    SharedPtr<AssetImporter> importer = importers.GetImporter(assetType);
+    SharedPtr<AssetSource> source = MakeShared<VFSAssetSource>(FileSystem::GetPlatform());
+
+    WL_LOG_INFO("ACP", "Importing, URI: \"%s\", Type: \"%s\"", assetFilepath.data(), AssetType_Model.GetText().data());
+
+    AssetStorage storage;
+
+    ImportContext mainImportContext(source, registry, storage, assetType.GetText(), assetFilepath, VFSOutputAssetDirectory);
+    if (SharedPtr<Asset> mainAsset = importer->ImportAsset(mainImportContext))
+    {
+        WL_LOG_INFO("ACP", "Importing succeeded");
+
+        for (auto [handle, asset]: storage)
+        {
+            if (asset->AssetType == AssetType_StaticMesh)
+            {
+                for (SharedPtr<AssetProcessor>& processor: staticMeshProcessors)
+                {
+                    processor->Process(asset);
+                }
+            }
+        }
+
+        for (auto [handle, asset]: storage)
+        {
+            AssetMetadata& metadata = registry->GetMetadata(handle);
+            std::filesystem::path assetOutputPath = WorkingDirectory.data();
+            assetOutputPath /= metadata.GetURI().GetText().data();
+            std::string assetOutputPathText = assetOutputPath.generic_string();
+            PersistAsset(fileSystem, assetOutputPathText.data(), asset);
+        }
+
+        assetRegistryFileResult = fileSystem.Open(assetRegistryFilepathText.data(), FileAccess::ReadWrite, FileMode::CreateNew);
+
+        AssetRegistry::PersistFile(registry, assetRegistryFileResult.GetValue());
+
+        assetRegistryFileResult.GetValue()->Close();
+    }
+    else
+    {
+        WL_LOG_ERROR("ACP", "Importing failed");
+    }
+
+    WL_LOG_INFO("ACP", "Build finish");
+
+    return EXIT_SUCCESS;
+}
+
+int main(int argc, const char* argv[])
+{
+    return Wl::MainConsole(argc, argv, &StartConsole);
+}

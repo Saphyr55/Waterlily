@@ -20,7 +20,12 @@ namespace Wl
             return GetModule(name);
         }
 
-        String filepathLib(name.data());
+        // TODO: The filepath should in the manifest file.
+        // For now, we presume something like this; ../Waterlily.Core/Waterlily.Core.dll
+        String filepathLib("../");
+        filepathLib += name.data(); 
+        filepathLib += "/";
+        filepathLib += name.data();
         filepathLib += DynamicLibraryLoader::Extension();
 
         SharedPtr<DynamicLibrary> library = nullptr;
@@ -34,7 +39,7 @@ namespace Wl
             return nullptr;
         }
 
-        if (!m_pendingModules.Contains(name))
+        if (!IsPendingModule(name))
         {
             WL_LOG_ERROR("ModuleRegistry", "Module \"%s\" is not registered and cannot be loaded.", name.data());
             return nullptr;

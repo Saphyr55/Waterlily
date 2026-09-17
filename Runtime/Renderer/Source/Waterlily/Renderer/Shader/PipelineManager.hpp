@@ -108,11 +108,9 @@ namespace Wl
         }
 
     public:
-        PipelineManager(SharedPtr<RHIDevice> device,
-                        FileSystem& fileSystem)
+        PipelineManager(SharedPtr<RHIDevice> device)
             : m_device(device)
             , m_srgLayoutCache(device)
-            , m_fileSystem(fileSystem)
         {
         }
 
@@ -130,7 +128,6 @@ namespace Wl
     private:
         SharedPtr<RHIDevice> m_device;
         RHIShaderResourceGroupLayoutCache m_srgLayoutCache;
-        FileSystem& m_fileSystem;
         HashMap<StringID, RHIGraphicsPipeline*> m_cache;
         HashMap<StringID, RHIComputePipeline*> m_computePipelineCache;
         bool m_isResetSRGPool = true;

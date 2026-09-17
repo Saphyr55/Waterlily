@@ -1,17 +1,26 @@
-local ACP = {}
+-- Asset Conditioning Pipeline --
 
-ACP.Name = "ACP"
-ACP.Kind = "binary"
+local ACP = BuildTool.DefaultTargetTemplate()
+
+ACP.Name = "WlTools.ACP"
+ACP.Kind = "shared"
 ACP.Group = "Tools"
-ACP.Deps = {
-    "Waterlily.Core",
-    "Waterlily.Engine",
-    "Waterlily.Launcher",
-    "ACP.Core"
+
+ACP.XMakePackages = {
+    "tinygltf"
 }
 
-ACP.Sources = {
-    "Source/ACP/Main.cpp"
+add_requires(unpack(ACP.XMakePackages))
+
+ACP.Deps = {
+    "Waterlily.Core",
+    "Waterlily.Renderer",
+    "Waterlily.Assets",
+    "stb"
+}
+
+ACP.Defines = {
+    "WL_TOOLS_ACP_EXPORTS"
 }
 
 BuildTool.RegisterTargets(ACP)

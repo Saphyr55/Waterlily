@@ -59,7 +59,7 @@ namespace Wl
         Append,
     };
 
-    using FileResult = Result<SharedPtr<File>, FileError>;
+    using  FileResult = Result<SharedPtr<File>, FileError>;
 
     class WL_CORE_API FileSystem
     {

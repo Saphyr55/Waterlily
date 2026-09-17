@@ -1,5 +1,6 @@
 #include "LudoSubSystem.hpp"
 #include "LightSystem.hpp"
+#include "LudoAssets.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Math/Matrix4.hpp"
@@ -35,7 +36,7 @@
 #include "Waterlily/Scene/SceneComponent.hpp"
 
 
-namespace Wl
+namespace Ludo
 {
 
     void LudoSubSystem::OnStartup()
@@ -48,9 +49,6 @@ namespace Wl
 
         SharedPtr<TextureRegistry> textureRegistry = m_renderService->GetTextureRegistry();
         SharedPtr<MaterialRegistry> materialRegistry = m_renderService->GetMaterialRegistry();
-
-        // TODO: This should be not done in application mode, but only in dev mode.
-        WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
 
         shaderBundle->RegisterGraphicsPass(GBufferPassName, GBufferVertexShaderAssetURI, GBufferFragmentShaderAssetURI);
         shaderBundle->RegisterGraphicsPass(ShadowMapPassName, ShadowMapVertexShaderAssetURI, ShadowMapFragmentShaderAssetURI);
@@ -106,19 +104,6 @@ namespace Wl
 
         Input::OnKeyRelease.Connect([=, this](VirtualKey key) mutable
         {
-            if (key == VirtualKey::F2)
-            {
-                device->WaitIdle();
-                if (CompileShaders())
-                {
-                    shaderBundle->ReloadAssets();
-                }
-                else
-                {
-                    WL_LOG_ERROR("Ludo", "Failed to compile shaders.");
-                }
-            }
-
             if (key == VirtualKey::F3)
             {
                 m_camera.LogDebug();

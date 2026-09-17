@@ -4,6 +4,7 @@
 #include "Waterlily/Assets/AssetManager.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/WLCAFile.hpp"
+#include "Waterlily/Core/IO/ScopedFileSystem.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
@@ -11,7 +12,8 @@
 #include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/Renderer/RenderService.hpp"
 
-namespace Wl
+
+namespace Ludo
 {
 
     WL_REGISTER_MODULE(LudoModule, "Ludo");
@@ -23,42 +25,42 @@ namespace Wl
         Engine& engine = Engine::GetInstance();
 
         WindowProperties windowProperties("Demo Window", 1080, 720, 100, 100);
-        SharedPtr<Window> window = Window::Create(windowProperties);
+        m_window = Window::Create(windowProperties);
 
-        FileSystem& assetsFileSystem = FileSystem::GetPlatform();
-        SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadDefault(assetsFileSystem);
+        // TODD: Find a better way to do this.
+        m_assetFileSystem = MakeShared<ScopedFileSystem>(FileSystem::GetPlatform(), "../../../");
+        SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadDefault( *m_assetFileSystem);
+        SharedPtr<AssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>( *m_assetFileSystem);
+        m_assetManager = MakeShared<AssetManager>(assetRegistry, assetLoader);
 
-        SharedPtr<AssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>(assetsFileSystem);
-        SharedPtr<AssetManager> assetManager = MakeShared<AssetManager>(assetRegistry, assetLoader);
+        RenderServiceConfig renderServiceConfig(m_window, m_assetManager);
+        m_renderService = MakeShared<RenderService>(renderServiceConfig);
 
-        RenderServiceConfig renderServiceConfig(window, assetManager, assetsFileSystem);
-        SharedPtr<RenderService> renderService = MakeShared<RenderService>(renderServiceConfig);
+        SharedPtr<LudoSubSystem> subSystem = MakeShared<LudoSubSystem>(m_renderService, m_assetManager);
 
-        SharedPtr<LudoSubSystem> subSystem = MakeShared<LudoSubSystem>(renderService, assetManager);
+        engine.RegisterService(RenderServiceName, m_renderService);
+        engine.RegisterSubSystem(LudoSubSystemName, subSystem);
 
-        engine.RegisterService(RenderServiceName, renderService);
-        engine.RegisterSubSystem(LudoName, subSystem);
-
-        window->GetEventHandler().OnMinimized.Connect([]()
+        m_window->GetEventHandler().OnMinimized.Connect([]()
         {
             Engine::GetInstance().Pause();
         });
 
-        window->GetEventHandler().OnExposed.Connect([]()
+        m_window->GetEventHandler().OnExposed.Connect([]()
         {
             Engine::GetInstance().Unpause();
         });
 
-        window->GetEventHandler().OnClose.Connect([]()
+        m_window->GetEventHandler().OnClose.Connect([]()
         {
             WL_LOG_INFO("Ludo", "Window closed.");
             Engine::GetInstance().RequestStop();
         });
 
-        window->GetEventHandler().OnResized.Connect([renderService](uint32_t width, uint32_t height) mutable
+        m_window->GetEventHandler().OnResized.Connect([this](uint32_t width, uint32_t height) mutable
         {
             WL_LOG_INFO("Ludo", "Window resized to %dx%d", width, height);
-            renderService->Resize(width, height);
+            m_renderService->Resize(width, height);
         });
     }
 
@@ -66,10 +68,10 @@ namespace Wl
     {
         Engine& engine = Engine::GetInstance();
 
-        engine.UnRegisterSubSystem(LudoName);
+        engine.UnregisterSubSystem(LudoSubSystemName);
         engine.UnregisterService(RenderServiceName);
 
         WL_LOG_INFO("Ludo", "Ludo Module stopped.");
     }
 
-}// namespace Wl
+}// namespace Ludo

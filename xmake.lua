@@ -3,8 +3,6 @@ set_version("0.0.1-dev")
 
 set_languages("c++20")
 
-set_targetdir("Build/Bin/$(plat)_$(arch)_$(mode)")
-
 add_rules("mode.debug", "mode.release")
 
 -- add_rules("plugin.vsxmake.autoupdate")
@@ -48,10 +46,12 @@ BuildTool.IncludeTargets("Runtime/Engine")
 -- Sample sources --
 BuildTool.IncludeTargets("Samples/Ludo/App")
 BuildTool.IncludeTargets("Samples/Ludo/Ludo")
+BuildTool.IncludeTargets("Samples/Ludo/LudoDev")
 
 -- Tools sources --
 BuildTool.IncludeTargets("Tools/ACP")
-BuildTool.IncludeTargets("Tools/ACPCore")
+BuildTool.IncludeTargets("Tools/ACP-CLI")
+BuildTool.IncludeTargets("Tools/ShaderCompiler")
 
--- Setup Targets --
-BuildTool.SetupTargets();
+-- Setup --
+BuildTool.SetupTargets()

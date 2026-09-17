@@ -3,7 +3,6 @@ local RendererModule = BuildTool.DefaultTargetTemplate()
 
 local XMakePackages = {
     "spirv-reflect",
-    "slang"
 }
 
 add_requires(unpack(XMakePackages))

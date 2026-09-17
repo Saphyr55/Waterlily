@@ -50,7 +50,7 @@ namespace Wl
 
         void RegisterSubSystem(StringID name, const SharedPtr<EngineSubSystem>& updater);
 
-        void UnRegisterSubSystem(StringID name);
+        void UnregisterSubSystem(StringID name);
 
         void RegisterService(StringID name, const SharedPtr<EngineService>& updater);
 

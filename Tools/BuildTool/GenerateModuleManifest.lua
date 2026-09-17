@@ -4,29 +4,53 @@ import("core.base.json")
 
 function main()
 
-    local Modules = option.get("Modules")
-    local TargetDir = option.get("TargetDir")
+    local targets = option.get("Targets")
+    local targetName = option.get("TargetName")
+    local modules = option.get("Modules")
+    local targetDeps = option.get("TargetDeps")
+    local targetDir = option.get("TargetDir")
 
-    if not Modules then
+    if not modules then
         print("Modules is nil.")
         return
     end
 
-    if not TargetDir then
+    if not targetDir then
         print("TargetDir is nil.")
         return
     end
 
     local manifest = {}
+    local visited = {}
 
-    for i, module in pairs(Modules) do
-        table.insert(manifest, {
-            Name = module.Name,
-            Deps = module.Deps or {}
-        })
+    local function resolve(name)
+        if visited[name] then
+            return
+        end
+
+        visited[name] = true
+
+        local target = targets[name]
+
+        for _, depName in ipairs(target.Deps or {}) do
+            resolve(depName)
+        end
+
+        local module = modules[target.Name]
+
+        if module then
+            table.insert(manifest, {
+                Deps = module.Deps or {},
+                Name = module.Name,
+            })
+        end
     end
 
-    local filepath = path.join(TargetDir, "ModuleManifest.json")
-    
+    for _, depName in ipairs(targetDeps or {}) do
+        resolve(depName)
+    end
+
+    local filepath = path.join(targetDir, "ModuleManifest.json")
+
     json.savefile(filepath, manifest)
 end
