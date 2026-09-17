@@ -11,6 +11,9 @@ LudoAppTarget.Deps = {
     "Waterlily.Engine"
 }
 
+-- TODO: Check if we are in dev mode.
+table.insert(LudoAppTarget.Deps, "Ludo.Dev")
+
 LudoAppTarget.Sources = {
     "Source/Main.cpp"
 }

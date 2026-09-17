@@ -34,7 +34,7 @@ namespace Wl
             return nullptr;
         }
 
-        if (!m_pendingModules.Contains(name))
+        if (!IsPendingModule(name))
         {
             WL_LOG_ERROR("ModuleRegistry", "Module \"%s\" is not registered and cannot be loaded.", name.data());
             return nullptr;

@@ -33,7 +33,7 @@ xmake
 Before running a sample, we have to compile the assets. This will turn an asset to a conditioned asset readable by the engine.
 
 ```bash
-xmake run ACP
+xmake run WlTools.ACP.CLI
 ```
 
 ## Runing a sample

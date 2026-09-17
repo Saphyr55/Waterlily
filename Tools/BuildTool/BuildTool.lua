@@ -1,8 +1,8 @@
 BuildTool = {}
 
 BuildTool.Targets = {}
-BuildTool.PathState = ""
 BuildTool.Modules = {}
+BuildTool.PathState = ""
 
 local function ApplyDefaultTarget(target)
     return {
@@ -94,7 +94,7 @@ function BuildTool.RegisterModules(...)
     for k, v in ipairs({
         ...
     }) do
-        BuildTool.Modules[v.Name] = CreateModuleFromTarget(v)
+        BuildTool.Modules[v.Name] = {}
     end
 end
 
@@ -160,8 +160,17 @@ function BuildTool.SetupTarget(t)
     t.Callback()
 end
 
+function BuildTool.SetupModules()
+    for _, target in pairs(BuildTool.Targets) do
+       if BuildTool.Modules[target.Name] then
+            BuildTool.Modules[target.Name] = CreateModuleFromTarget(target)
+        end
+    end
+end
+
 function BuildTool.SetupTargets()
     for _, preTarget in pairs(BuildTool.Targets) do
+ 
         target(preTarget.Name)
 
         set_values("BuildTool.Modules", string.serialize(BuildTool.Modules))
@@ -171,7 +180,7 @@ function BuildTool.SetupTargets()
 end
 
 function BuildTool.GenerateModuleManifest()
-    before_build(function(target)
+    before_build(function (target)
         import("core.base.task")
 
         local modules = target:values("BuildTool.Modules")

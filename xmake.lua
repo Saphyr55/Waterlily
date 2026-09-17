@@ -48,10 +48,13 @@ BuildTool.IncludeTargets("Runtime/Engine")
 -- Sample sources --
 BuildTool.IncludeTargets("Samples/Ludo/App")
 BuildTool.IncludeTargets("Samples/Ludo/Ludo")
+BuildTool.IncludeTargets("Samples/Ludo/LudoDev")
 
 -- Tools sources --
 BuildTool.IncludeTargets("Tools/ACP")
-BuildTool.IncludeTargets("Tools/ACPCore")
+BuildTool.IncludeTargets("Tools/ACP-CLI")
+BuildTool.IncludeTargets("Tools/ShaderCompiler")
 
--- Setup Targets --
-BuildTool.SetupTargets();
+-- Setup --
+BuildTool.SetupModules()
+BuildTool.SetupTargets()

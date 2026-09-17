@@ -79,7 +79,7 @@ namespace Wl
         m_EngineSubSystems[name] = updater;
     }
 
-    void Engine::UnRegisterSubSystem(StringID name)
+    void Engine::UnregisterSubSystem(StringID name)
     {
         m_EngineSubSystems.Remove(name);
     }

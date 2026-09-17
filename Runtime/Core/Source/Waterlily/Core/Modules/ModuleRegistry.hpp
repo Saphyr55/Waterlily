@@ -2,7 +2,6 @@
 
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Function/Function.hpp"
-#include "Waterlily/Core/Memory/Allocator.hpp"
 #include "Waterlily/Core/Memory/Memory.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/Module.hpp"
@@ -61,6 +60,11 @@ namespace Wl
 
         void RegisterModule(StringRef name, const ModuleInitializerFunc& initializer);
         void UnregisterModule(StringRef name);
+
+        bool IsPendingModule(StringRef name)
+        {
+            return m_pendingModules.Contains(name);
+        }
 
     private:
         HashMap<StringRef, LoadedModule> m_loadedModules;

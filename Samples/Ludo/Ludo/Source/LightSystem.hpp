@@ -3,7 +3,9 @@
 #include "Waterlily/Core/Math/Vector3.hpp"
 #include "Waterlily/Entity/EntityRegistry.hpp"
 
-namespace Wl
+using namespace Wl;
+
+namespace Ludo
 {
 
     struct LightComponent

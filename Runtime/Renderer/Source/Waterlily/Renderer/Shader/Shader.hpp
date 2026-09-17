@@ -84,7 +84,7 @@ namespace Wl
         Stage m_stage;
 	};
 
-    RHIShaderStage ShaderStageToRHI(Shader::Stage stage);
+    WL_RENDERER_API RHIShaderStage ShaderStageToRHI(Shader::Stage stage);
 
     WL_RENDERER_API void operator<<(OutputStream& stream, const Shader& asset);
     WL_RENDERER_API void operator>>(InputStream& stream, Shader& asset);

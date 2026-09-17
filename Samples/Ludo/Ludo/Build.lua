@@ -7,7 +7,6 @@ LudoModule.Deps = {
     "Waterlily.Core",
     "Waterlily.Engine",
     "Waterlily.RHI",
-    "Waterlily.RHI.Vulkan",
     "Waterlily.Messaging",
     "Waterlily.Scene",
     "Waterlily.Renderer",

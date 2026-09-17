@@ -4,7 +4,7 @@
 #include "Waterlily/Scene/PointLight.hpp"
 #include "Waterlily/Scene/SceneComponent.hpp"
 
-namespace Wl
+namespace Ludo
 {
 
     void RegisterLights(EntityRegistry& registry)
