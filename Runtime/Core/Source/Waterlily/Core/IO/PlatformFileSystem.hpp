@@ -8,7 +8,7 @@ namespace Wl
     class WL_CORE_API PlatformFileSystem : public FileSystem
     {
     public:
-        static StringRef get_current_directory();
+        static StringRef GetCurrentDirectiory();
 
         virtual bool FileExists(StringRef filepath) const override;
 

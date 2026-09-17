@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Waterlily/Core/CoreExports.hpp"
 #include <functional>
 #include <type_traits>
 #include <utility>

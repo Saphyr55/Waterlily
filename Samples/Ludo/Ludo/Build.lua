@@ -14,6 +14,9 @@ LudoModule.Deps = {
     "Waterlily.Assets"
 }
 
+-- TODO: Check if we enabled vulkan.
+table.insert(LudoModule.Deps, "Waterlily.RHI.Vulkan")
+
 LudoModule.Defines = {
     "WL_LUDO_EXPORTS"
 }

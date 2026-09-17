@@ -2,6 +2,7 @@
 
 #include "LudoExports.hpp"
 #include "Waterlily/Assets/AssetManager.hpp"
+#include "Waterlily/Core/IO/FileSystem.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/Module.hpp"
 #include "Waterlily/Core/Platform/Window.hpp"
@@ -35,6 +36,7 @@ namespace Ludo
         }
 
     private:
+        SharedPtr<FileSystem> m_assetFileSystem;
         SharedPtr<AssetManager> m_assetManager;
         SharedPtr<RenderService> m_renderService;
         SharedPtr<Window> m_window;

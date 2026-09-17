@@ -20,7 +20,12 @@ namespace Wl
             return GetModule(name);
         }
 
-        String filepathLib(name.data());
+        // TODO: The filepath should in the manifest file.
+        // For now, we presume something like this; ../Waterlily.Core/Waterlily.Core.dll
+        String filepathLib("../");
+        filepathLib += name.data(); 
+        filepathLib += "/";
+        filepathLib += name.data();
         filepathLib += DynamicLibraryLoader::Extension();
 
         SharedPtr<DynamicLibrary> library = nullptr;

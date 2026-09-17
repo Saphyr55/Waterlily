@@ -1,7 +1,6 @@
 #include "RenderService.hpp"
 #include "Shader/PipelineManager.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
-#include "Waterlily/RHI/ComputePipeline.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/DeviceFactory.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
@@ -28,7 +27,7 @@ namespace Wl
 
         m_textureRegistry = MakeShared<TextureRegistry>(m_device, *m_config.Assets, m_config.SRGBindingTextures);
         m_materialRegistry = MakeShared<MaterialRegistry>(m_device, m_config.SRGBindingMaterials);
-        m_pipelineManager = MakeShared<PipelineManager>(m_device, m_config.AssetFileSystem);
+        m_pipelineManager = MakeShared<PipelineManager>(m_device);
         m_shaderBundle = MakeShared<ShaderBundle>(m_device, m_config.Assets->GetRegistry(), m_config.Assets, m_pipelineManager);
         m_frameGraph = MakeShared<FrameGraph>(m_frameContext);
     }

@@ -23,7 +23,7 @@ To generate a Visual Studio solution :
 xmake project -k vsxmake -a x64
 ```
 
-Or:
+Or to build the entire project:
 
 ```bash
 xmake

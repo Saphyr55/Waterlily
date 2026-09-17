@@ -20,7 +20,7 @@ namespace Wl
         return s_platformFileSystem;
     }
 
-    StringRef PlatformFileSystem::get_current_directory()
+    StringRef PlatformFileSystem::GetCurrentDirectiory()
     {
         return PlatformGetCurrentDirectory();
     }

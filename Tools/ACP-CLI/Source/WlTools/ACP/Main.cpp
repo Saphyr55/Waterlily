@@ -1,9 +1,3 @@
-#include "WlTools/ACP/AssetImporter.hpp"
-#include "WlTools/ACP/AssetProcessor.hpp"
-#include "WlTools/ACP/AssetStorage.hpp"
-#include "WlTools/ACP/GlTF/GlTFImporter.hpp"
-#include "WlTools/ACP/Mesh/MeshProcessor.hpp"
-#include "WlTools/ACP/Texture/TextureAssetImporter.hpp"
 #include "Waterlily/Assets/Asset.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/AssetSource.hpp"
@@ -11,6 +5,7 @@
 #include "Waterlily/Assets/VFSAssetSource.hpp"
 #include "Waterlily/Core/IO/File.hpp"
 #include "Waterlily/Core/IO/FileSystem.hpp"
+#include "Waterlily/Core/IO/ScopedFileSystem.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/String.hpp"
@@ -19,14 +14,21 @@
 #include "Waterlily/Launcher/Launcher.hpp"
 #include "Waterlily/Renderer/Model/Model.hpp"
 #include "Waterlily/Renderer/Texture/TextureAsset.hpp"
+#include "WlTools/ACP/AssetImporter.hpp"
+#include "WlTools/ACP/AssetProcessor.hpp"
+#include "WlTools/ACP/AssetStorage.hpp"
+#include "WlTools/ACP/GlTF/GlTFImporter.hpp"
+#include "WlTools/ACP/Mesh/MeshProcessor.hpp"
+#include "WlTools/ACP/Texture/TextureAssetImporter.hpp"
 
 #include <cstdlib>
 #include <filesystem>
 
 static constexpr StringRef WorkingDirectory = "";
-static const StringRef VFSAssetsDirectory = "Assets/";
-static const String VFSOutputAssetDirectory = VFSAssetsDirectory + "Models/Sponza/";
-static constexpr StringRef OriginalAssetFilepath = "../../../Assets/Models/Sponza/glTF/Sponza.gltf";
+static const StringRef VFSDirectory = "Assets/";
+static const String VFSOutputAssetDirectory = VFSDirectory + "Models/Sponza/";
+
+static constexpr StringRef OriginalAssetFilepath = "../../../../Assets/Models/Sponza/glTF/Sponza.gltf";
 
 static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Asset> asset)
 {
@@ -45,7 +47,7 @@ static int32_t StartConsole()
 {
     WL_LOG_INFO("ACP", "Build started");
 
-    FileSystem& fileSystem = FileSystem::GetPlatform();
+    ScopedFileSystem fileSystem(FileSystem::GetPlatform(), "../../../");
 
     std::filesystem::path outputAssetDir = WorkingDirectory.data();
     outputAssetDir /= VFSOutputAssetDirectory.GetData();
@@ -58,29 +60,28 @@ static int32_t StartConsole()
         return EXIT_FAILURE;
     }
 
-    std::filesystem::path larFilepath = WorkingDirectory.data();
-    larFilepath /= VFSAssetsDirectory.data();
-    larFilepath /= WLAR_FILENAME.data();
+    std::filesystem::path assetRegistryFilepath = WorkingDirectory.data();
+    assetRegistryFilepath /= VFSDirectory.data();
+    assetRegistryFilepath /= WLAR_FILENAME.data();
 
-    std::string larFilepathText = larFilepath.generic_string();
+    std::string assetRegistryFilepathText = assetRegistryFilepath.generic_string();
 
-    FileResult larFileResult = fileSystem.Open(larFilepathText.data(), FileAccess::ReadWrite, FileMode::OpenOrCreate);
-    if (!larFileResult.HasValue())
+    FileResult assetRegistryFileResult = fileSystem.Open(assetRegistryFilepathText.data(), FileAccess::ReadWrite, FileMode::OpenOrCreate);
+    if (!assetRegistryFileResult.HasValue())
     {
-        WL_LOG_ERROR("ACP", "Failed to open \"%s\"", larFilepathText.data());
+        WL_LOG_ERROR("ACP", "Failed to open \"%s\"", assetRegistryFilepathText.data());
         return EXIT_FAILURE;
     }
 
-    SharedPtr<File> larFile = larFileResult.GetValue();
+    SharedPtr<File> assetRegistryFile = assetRegistryFileResult.GetValue();
 
-    SharedPtr<AssetRegistry> registry =
-            larFile->GetSize() == 0 ? AssetRegistry::CreateFromFile(larFile) : AssetRegistry::LoadFromFile(larFile);
+    SharedPtr<AssetRegistry> registry = AssetRegistry::LoadFromFile(assetRegistryFile);
 
-    larFile->Close();
+    assetRegistryFile->Close();
 
     if (!registry)
     {
-        WL_LOG_ERROR("ACP", "Failed to load \"%s\"", larFilepathText.data());
+        WL_LOG_ERROR("ACP", "Failed to load \"%s\"", assetRegistryFilepathText.data());
         return EXIT_FAILURE;
     }
 
@@ -126,11 +127,11 @@ static int32_t StartConsole()
             PersistAsset(fileSystem, assetOutputPathText.data(), asset);
         }
 
-        larFileResult = fileSystem.Open(larFilepathText.data(), FileAccess::ReadWrite, FileMode::CreateNew);
+        assetRegistryFileResult = fileSystem.Open(assetRegistryFilepathText.data(), FileAccess::ReadWrite, FileMode::CreateNew);
 
-        AssetRegistry::PersistFile(registry, larFileResult.GetValue());
+        AssetRegistry::PersistFile(registry, assetRegistryFileResult.GetValue());
 
-        larFileResult.GetValue()->Close();
+        assetRegistryFileResult.GetValue()->Close();
     }
     else
     {

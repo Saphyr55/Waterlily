@@ -38,7 +38,6 @@ namespace Wl
         SharedPtr<Window> RenderWindow;
 
         SharedPtr<AssetManager> Assets;
-        FileSystem& AssetFileSystem;
 
         RHIGraphicsAPI GraphicsAPI = DefaultGraphicsAPI;
 
@@ -53,10 +52,9 @@ namespace Wl
         size_t StorageBufferSize = 16 * WL_MB;
         size_t UniformBufferSize = 16 * WL_MB;
 
-        RenderServiceConfig(const SharedPtr<Window>& window, const SharedPtr<AssetManager>& assetManager, FileSystem& assetFileSystem)
+        RenderServiceConfig(const SharedPtr<Window>& window, const SharedPtr<AssetManager>& assetManager)
             : RenderWindow(window)
             , Assets(assetManager)
-            , AssetFileSystem(assetFileSystem)
         {
         }
     };

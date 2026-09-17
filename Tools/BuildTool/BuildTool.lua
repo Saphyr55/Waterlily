@@ -26,9 +26,9 @@ end
 local function CreateModuleFromTarget(target)
     local moduleDeps = {}
 
-    for i, name in ipairs(target.Deps or {}) do
+    for _, name in ipairs(target.Deps or {}) do
         if BuildTool.Modules[name] then
-            moduleDeps[name] = target.Deps[i]
+            table.insert(moduleDeps, name)
         end
     end
 
@@ -160,36 +160,48 @@ function BuildTool.SetupTarget(t)
     t.Callback()
 end
 
-function BuildTool.SetupModules()
-    for _, target in pairs(BuildTool.Targets) do
-       if BuildTool.Modules[target.Name] then
-            BuildTool.Modules[target.Name] = CreateModuleFromTarget(target)
-        end
-    end
-end
-
-function BuildTool.SetupTargets()
-    for _, preTarget in pairs(BuildTool.Targets) do
- 
-        target(preTarget.Name)
-
-        set_values("BuildTool.Modules", string.serialize(BuildTool.Modules))
-
-        BuildTool.SetupTarget(preTarget)
-    end
-end
-
 function BuildTool.GenerateModuleManifest()
     before_build(function (target)
+        if target:kind() ~= "binary" then
+            return
+        end
+
         import("core.base.task")
 
         local modules = target:values("BuildTool.Modules")
+        local targetsDeps = target:values("BuildTool.TargetDeps")
+        local targets = target:values("BuildTool.Targets")
 
         local opts = {
+            Targets = string.deserialize(targets),
             Modules = string.deserialize(modules),
+            TargetDeps = string.deserialize(targetsDeps),
+            TargetName = target:name(),
             TargetDir = target:targetdir()
         }
 
         task.run("generate-module-manifest", opts)
     end)
+end
+
+function BuildTool.SetupTargets()
+    for name, target in pairs(BuildTool.Targets) do
+       if BuildTool.Modules[name] then
+            BuildTool.Modules[name] = CreateModuleFromTarget(target)
+        end
+    end
+
+    for name, preTarget in pairs(BuildTool.Targets) do
+        target(name)
+        do
+            set_targetdir("Build/Bin/$(plat)_$(arch)_$(mode)/" .. name)
+
+            set_values("BuildTool.Targets", string.serialize(BuildTool.Targets))
+            set_values("BuildTool.Modules", string.serialize(BuildTool.Modules))
+            set_values("BuildTool.TargetDeps", string.serialize(preTarget.Deps))
+
+            BuildTool.SetupTarget(preTarget)
+            BuildTool.GenerateModuleManifest()
+        end
+    end
 end

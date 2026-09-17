@@ -88,7 +88,12 @@ namespace Wl
     }
 
     SharedPtr<AssetRegistry> AssetRegistry::LoadFromFile(SharedPtr<File> file)
-    {
+    {   
+        if (file->GetSize() == 0)
+        {
+            return CreateFromFile(file);
+        }
+
         SharedPtr<AssetRegistry> assetRegistry = MakeShared<AssetRegistry>();
 
         file->Seek(0);

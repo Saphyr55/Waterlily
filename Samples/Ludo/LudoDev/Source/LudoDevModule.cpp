@@ -18,37 +18,39 @@ namespace Ludo
 
     bool LudoDevModule::CompileShaders()
     {
+        String root = "../../../";
+        
         bool success = m_shaderCompiler->Compile({
                                GBufferShaderAssetURI.GetText(),
-                               GBufferVertexShaderAssetURI.GetText(),
+                               root + String(GBufferVertexShaderAssetURI.GetText()),
                                "VSMain",
                                Shader::Stage::Vertex,
                        }) == ShaderCompileResult::Success;
 
         success = success && m_shaderCompiler->Compile({
                                      GBufferShaderAssetURI.GetText(),
-                                     GBufferFragmentShaderAssetURI.GetText(),
+                                     root + String(GBufferFragmentShaderAssetURI.GetText()),
                                      "FSMain",
                                      Shader::Stage::Fragment,
                              }) == ShaderCompileResult::Success;
 
         success = success && m_shaderCompiler->Compile({
                                      ShadowMapShaderAssetURI.GetText(),
-                                     ShadowMapVertexShaderAssetURI.GetText(),
+                                     root + String(ShadowMapVertexShaderAssetURI.GetText()),
                                      "VSMain",
                                      Shader::Stage::Vertex,
                              }) == ShaderCompileResult::Success;
 
         success = success && m_shaderCompiler->Compile({
                                      ShadowMapShaderAssetURI.GetText(),
-                                     ShadowMapFragmentShaderAssetURI.GetText(),
+                                     root + String(ShadowMapFragmentShaderAssetURI.GetText()),
                                      "FSMain",
                                      Shader::Stage::Fragment,
                              }) == ShaderCompileResult::Success;
 
         success = success && m_shaderCompiler->Compile({
                                      LightingShaderAssetURI.GetText(),
-                                     LightingComputeShaderAssetURI.GetText(),
+                                     root + String(LightingComputeShaderAssetURI.GetText()),
                                      "Main",
                                      Shader::Stage::Compute,
                              }) == ShaderCompileResult::Success;
@@ -65,7 +67,7 @@ namespace Ludo
         LudoModule* ludoModule = moduleRegistry.GetModule<LudoModule>("Ludo");
         SharedPtr<RenderService> renderService = ludoModule->GetRenderService();
 
-        m_shaderCompiler = IShaderCompiler::Create("../../../Assets/Shaders");
+        m_shaderCompiler = IShaderCompiler::Create("../../../../Assets/Shaders");
 
         WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
         
