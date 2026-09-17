@@ -246,9 +246,9 @@ namespace Wl
         frame.UniformAllocator.UpdateData(packet.DirectionalLightAllocation, directionalLightComponent);
 
         RenderView directionalLightView = {};
-        directionalLightView.Eye = -directionalLightComponent.Direction * 30.0f;
+        directionalLightView.Eye = -directionalLightComponent.Direction * 50.0f;
         directionalLightView.View = Matrix4f::LookAt(directionalLightView.Eye, Vector3f::Zero(), Vector3f::Up());
-        directionalLightView.Proj = Matrix4f::Orthographic(-15.0f, 15.0f, -15.0f, 15.0f, 0.1f, 100.0f) * correction;
+        directionalLightView.Proj = Matrix4f::Orthographic(-30.0f, 30.0f, -30.0f, 30.0f, 0.1f, 300.0f) * correction;
         directionalLightView.ViewProj = directionalLightView.Proj * directionalLightView.View;
         RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
         frame.UniformAllocator.UpdateData(directionalLightViewAllocation, directionalLightView);
@@ -309,6 +309,7 @@ namespace Wl
         shadowMapTextureInfo.SizeClass = SizeClass::Absolute;
         shadowMapTextureInfo.Height = 2048;
         shadowMapTextureInfo.Width = 2048;
+        shadowMapTextureInfo.MipLevels = 4;
         FrameGraphTextureHandle shadowMap = frameGraph->CreateTexture(shadowMapTextureInfo);
 
         ShadowMapPassParameters shadowMapPassParamaters = {};
@@ -317,7 +318,7 @@ namespace Wl
         shadowMapPassParamaters.DirectionalLightViewAllocation = &directionalLightViewAllocation;
 
         ShaderGraphicsPass& shaderShadowMapPass = shaderBundle->GetShaderGraphicsPass(ShadowMapPassName);
-        shaderShadowMapPass.PipelineState.CullMode = RHICullModeFlags::Back;
+        shaderShadowMapPass.PipelineState.CullMode = RHICullModeFlags::Front;
         shaderShadowMapPass.PipelineState.Viewport = Viewport(0.0f, 0.0f, shadowMapTextureInfo.Width, shadowMapTextureInfo.Height, 0.0f, 1.0f);
         shaderShadowMapPass.PipelineState.Scissor = Rect2D(0.0f, 0.0f, shadowMapTextureInfo.Width, shadowMapTextureInfo.Height);
 

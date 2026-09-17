@@ -45,41 +45,42 @@ namespace Wl
         }
 
         // Todo: This should be done in dev mode not in runtime mode.
-        static inline bool CompileShaders()
+        inline bool CompileShaders()
         {
-            FileSystem& fileSystem = FileSystem::GetPlatform();
+            bool success = m_shaderCompiler->Compile({
+                                   GBufferShaderAssetURI.GetText(),
+                                   GBufferVertexShaderAssetURI.GetText(),
+                                   "VSMain",
+                                   Shader::Stage::Vertex,
+                           }) == ShaderCompileResult::Success;
 
-            StringRef envPath = "../../../Assets/Shaders/";
+            success = success && m_shaderCompiler->Compile({
+                                         GBufferShaderAssetURI.GetText(),
+                                         GBufferFragmentShaderAssetURI.GetText(),
+                                         "FSMain",
+                                         Shader::Stage::Fragment,
+                                 }) == ShaderCompileResult::Success;
 
-            bool success = ShaderCompiler::CompileSlang({envPath,
-                                                         GBufferShaderAssetURI.GetText(),
-                                                         GBufferVertexShaderAssetURI.GetText(),
-                                                         "VSMain",
-                                                         Shader::Stage::Vertex});
+            success = success && m_shaderCompiler->Compile({
+                                         ShadowMapShaderAssetURI.GetText(),
+                                         ShadowMapVertexShaderAssetURI.GetText(),
+                                         "VSMain",
+                                         Shader::Stage::Vertex,
+                                 }) == ShaderCompileResult::Success;
 
-            success = success && ShaderCompiler::CompileSlang({envPath,
-                                                               GBufferShaderAssetURI.GetText(),
-                                                               GBufferFragmentShaderAssetURI.GetText(),
-                                                               "FSMain",
-                                                               Shader::Stage::Fragment});
+            success = success && m_shaderCompiler->Compile({
+                                         ShadowMapShaderAssetURI.GetText(),
+                                         ShadowMapFragmentShaderAssetURI.GetText(),
+                                         "FSMain",
+                                         Shader::Stage::Fragment,
+                                 }) == ShaderCompileResult::Success;
 
-            success = success && ShaderCompiler::CompileSlang({envPath,
-                                                               ShadowMapShaderAssetURI.GetText(),
-                                                               ShadowMapVertexShaderAssetURI.GetText(),
-                                                               "VSMain",
-                                                               Shader::Stage::Vertex});
-
-            success = success && ShaderCompiler::CompileSlang({envPath,
-                                                               ShadowMapShaderAssetURI.GetText(),
-                                                               ShadowMapFragmentShaderAssetURI.GetText(),
-                                                               "FSMain",
-                                                               Shader::Stage::Fragment});
-
-            success = success && ShaderCompiler::CompileSlang({envPath,
-                                                               LightingShaderAssetURI.GetText(),
-                                                               LightingComputeShaderAssetURI.GetText(),
-                                                               "Main",
-                                                               Shader::Stage::Compute});
+            success = success && m_shaderCompiler->Compile({
+                                         LightingShaderAssetURI.GetText(),
+                                         LightingComputeShaderAssetURI.GetText(),
+                                         "Main",
+                                         Shader::Stage::Compute,
+                                 }) == ShaderCompileResult::Success;
 
             return success;
         }
@@ -88,11 +89,15 @@ namespace Wl
                       const SharedPtr<AssetManager>& assetManager)
             : m_renderService(renderService)
             , m_assetManager(assetManager)
+            // TODO: This should be done in dev mode not in runtime mode.
+            , m_shaderCompiler(IShaderCompiler::Create("../../../Assets/Shaders/"))
         {
         }
         virtual ~LudoSubSystem() = default;
 
     private:
+        SharedPtr<IShaderCompiler> m_shaderCompiler;
+
         SharedPtr<RenderService> m_renderService;
         SharedPtr<AssetManager> m_assetManager;
 

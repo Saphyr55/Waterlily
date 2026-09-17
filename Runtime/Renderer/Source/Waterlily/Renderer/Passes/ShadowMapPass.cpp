@@ -54,10 +54,16 @@ namespace Wl
 
             commandBuffer->BindSRG(pipeline, {globalSRG}, 0);
 
+            FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(paramaters.Indirect);
+            
+            // We skip drawing if there are nothing to draw.
+            if (packet.DrawCount == 0)
+            {
+                return;
+            }
+
             commandBuffer->BindVertexBuffers(packet.VertexBuffers);
             commandBuffer->BindIndexBuffer(packet.IndexBuffers);
-
-            FrameGraphBufferResource& indirectResource = context.FrameGraph->GetBuffer(paramaters.Indirect);
 
             RHIDrawIndexedIndirectCommand drawIndexedIndirectCommand;
             drawIndexedIndirectCommand.Buffer = indirectResource.PhysicalBuffer.Handle;

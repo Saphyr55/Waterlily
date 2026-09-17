@@ -11,7 +11,6 @@
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/RHIForwards.hpp"
-#include "Waterlily/RHI/Semaphore.hpp"
 #include "Waterlily/RHI/Texture.hpp"
 #include "Waterlily/RHI/TextureView.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"

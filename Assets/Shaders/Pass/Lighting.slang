@@ -114,7 +114,9 @@ void Main(uint3 dispatchThreadID: SV_DispatchThreadID)
     materialBRDF.roughness = roughness;
     materialBRDF.F0 = F0;
 
-    float3 Lo = PBR.CookTorranceBRDF(directionalLight, materialBRDF, normal, viewDirection, position) * (1.0f - shadow);
+    float3 Lo = albedo.rgb * 0.05f;
+
+    Lo += PBR.CookTorranceBRDF(directionalLight, materialBRDF, normal, viewDirection, position) * (1.0f - shadow);
     for (uint i = 0; i < pointLightCount; i++)
     {
         Lo += PBR.CookTorranceBRDF(pointLights[i], materialBRDF, normal, viewDirection, position);
