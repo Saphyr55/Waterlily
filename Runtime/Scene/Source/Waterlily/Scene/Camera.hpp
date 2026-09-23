@@ -18,7 +18,7 @@ namespace Wl
         Vector3f Right = Vector3f::Right();
         Matrix4f View = Matrix4f::Identity();
 
-        float MovementSpeed = 0.0f;
+        float MovementSpeed = 1.0f;
         float MouseSensitivity = 0.15f;
 
     public:
@@ -38,7 +38,7 @@ namespace Wl
         static Camera Create(
                 const Vector3f& position,
                 const Vector3f& target,
-                float movementSpeed)
+                float movementSpeed = 1.0f)
         {
             Camera camera = {};
             camera.Position = position;

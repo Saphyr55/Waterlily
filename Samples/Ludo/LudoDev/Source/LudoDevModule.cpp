@@ -2,12 +2,14 @@
 #include "LudoDevShader.hpp"
 
 #include "LudoAssets.hpp"
+#include "LudoDevSubSystem.hpp"
 #include "LudoModule.hpp"
 
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
 #include "Waterlily/Core/Platform/Input.hpp"
+#include "Waterlily/Engine/Engine.hpp"
 #include "Waterlily/Renderer/RenderService.hpp"
 
 
@@ -18,8 +20,8 @@ namespace Ludo
 
     bool LudoDevModule::CompileShaders()
     {
-        String root = "../../../";
-        
+        String root = "../../";
+
         bool success = m_shaderCompiler->Compile({
                                GBufferShaderAssetURI.GetText(),
                                root + String(GBufferVertexShaderAssetURI.GetText()),
@@ -67,10 +69,10 @@ namespace Ludo
         LudoModule* ludoModule = moduleRegistry.GetModule<LudoModule>("Ludo");
         SharedPtr<RenderService> renderService = ludoModule->GetRenderService();
 
-        m_shaderCompiler = IShaderCompiler::Create("../../../../Assets/Shaders");
+        m_shaderCompiler = IShaderCompiler::Create("../../../Assets/Shaders");
 
-        WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
-        
+        Engine::GetInstance().RegisterSubSystem(LudoDevSubSystemName, MakeShared<LudoDevSubSystem>(renderService));
+
         Input::OnKeyRelease.Connect([=, this](VirtualKey key) mutable
         {
             if (key == VirtualKey::F2)
@@ -78,7 +80,7 @@ namespace Ludo
                 bool isCompileShaderSuccessed = CompileShaders();
 
                 if (isCompileShaderSuccessed)
-                {   
+                {
                     renderService->GetDevice()->WaitIdle();
                     renderService->GetShaderBundle()->ReloadAssets();
                 }
@@ -88,10 +90,14 @@ namespace Ludo
                 }
             }
         });
+        
+        WL_CHECK_MSG(CompileShaders(), "Failed to compile shaders.");
     }
 
     void LudoDevModule::OnShutdown()
     {
+        Engine::GetInstance().UnregisterSubSystem(LudoDevSubSystemName);
+
         WL_LOG_INFO("LudoDev", "Ludo.Dev Module stopped.");
     }
 

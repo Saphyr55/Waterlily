@@ -28,7 +28,7 @@ namespace Ludo
         m_window = Window::Create(windowProperties);
 
         // TODD: Find a better way to do this.
-        m_assetFileSystem = MakeShared<ScopedFileSystem>(FileSystem::GetPlatform(), "../../../");
+        m_assetFileSystem = MakeShared<ScopedFileSystem>(FileSystem::GetPlatform(), "../../");
         SharedPtr<AssetRegistry> assetRegistry = AssetRegistry::LoadDefault( *m_assetFileSystem);
         SharedPtr<AssetLoader> assetLoader = MakeShared<ConditionnedAssetLoader>( *m_assetFileSystem);
         m_assetManager = MakeShared<AssetManager>(assetRegistry, assetLoader);

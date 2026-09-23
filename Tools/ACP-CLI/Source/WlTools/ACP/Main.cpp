@@ -25,10 +25,10 @@
 #include <filesystem>
 
 static constexpr StringRef WorkingDirectory = "";
-static const StringRef VFSDirectory = "Assets/";
+static const StringRef VFSDirectory = "../../Assets/";
 static const String VFSOutputAssetDirectory = VFSDirectory + "Models/Sponza/";
 
-static constexpr StringRef OriginalAssetFilepath = "../../../../Assets/Models/Sponza/glTF/Sponza.gltf";
+static constexpr StringRef OriginalAssetFilepath = "../../../Assets/Models/Sponza/glTF/Sponza.gltf";
 
 static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Asset> asset)
 {
@@ -47,7 +47,7 @@ static int32_t StartConsole()
 {
     WL_LOG_INFO("ACP", "Build started");
 
-    ScopedFileSystem fileSystem(FileSystem::GetPlatform(), "../../../");
+    ScopedFileSystem fileSystem(FileSystem::GetPlatform(), "../../");
 
     std::filesystem::path outputAssetDir = WorkingDirectory.data();
     outputAssetDir /= VFSOutputAssetDirectory.GetData();

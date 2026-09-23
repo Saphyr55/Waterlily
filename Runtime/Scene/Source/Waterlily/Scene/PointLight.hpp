@@ -9,6 +9,7 @@ namespace Wl
     {
         alignas(16) Vector3f Position;
         alignas(16) Vector3f Color;
+        alignas(16) float Intensity;
     };
 
     struct DirectionalLight

@@ -15,12 +15,15 @@ namespace Light
         public float3 GetRadiance(float3 worldPosition);
 
         public float3 GetDirection(float3 worldPosition);
+
+        public float GetIntensity();
     }
 
     public struct PointLight : ILight
     {
         public float3 position;
         public float3 color;
+        public float intensity;
 
         public float3 GetRadiance(float3 worldPosition)
         {
@@ -35,6 +38,11 @@ namespace Light
         public float3 GetDirection(float3 worldPosition)
         {
             return normalize(this.position - worldPosition);
+        }
+
+        public float GetIntensity()
+        {
+            return this.intensity;
         }
     }
 
@@ -52,6 +60,11 @@ namespace Light
         {
             // FIXME:
             return normalize(-this.direction);
+        }
+
+        public float GetIntensity()
+        {
+            return 1.0f;
         }
     }
 

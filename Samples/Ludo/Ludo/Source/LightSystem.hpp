@@ -11,14 +11,14 @@ namespace Ludo
     struct LightComponent
     {
         Vector3f Color;
-        float Intensity = 1.0f;
+        float Intensity = 50.0f;
     };
 
     struct LightAnimationComponent
     {
         Vector3f BasePosition;
         Vector3f Axis = Vector3f(1.0f, 0.0f, 0.0f);
-        float Amplitude = 0.5f;
+        float Amplitude = 2.0f;
         float Velocity = 3.0f;
     };
 
