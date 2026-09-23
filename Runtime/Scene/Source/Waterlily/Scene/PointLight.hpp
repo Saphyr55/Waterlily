@@ -7,8 +7,10 @@ namespace Wl
 
     struct PointLight
     {
-        alignas(16) Vector3f Position;
-        alignas(16) Vector3f Color;
+        Vector3f Position;
+        float _pad0;
+        Vector3f Color;
+        float Intensity;
     };
 
     struct DirectionalLight

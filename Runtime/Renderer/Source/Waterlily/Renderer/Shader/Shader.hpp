@@ -7,7 +7,7 @@
 namespace Wl
 {
 
-    inline const StringID AssetType_Shader = WL_SID("Shader");
+    inline const StringID AssetType_Shader = StringID("Shader");
 
 	class WL_RENDERER_API Shader : public Asset
 	{

@@ -22,9 +22,7 @@ namespace Wl
 
         // TODO: The filepath should in the manifest file.
         // For now, we presume something like this; ../Waterlily.Core/Waterlily.Core.dll
-        String filepathLib("../");
-        filepathLib += name.data(); 
-        filepathLib += "/";
+        String filepathLib;
         filepathLib += name.data();
         filepathLib += DynamicLibraryLoader::Extension();
 

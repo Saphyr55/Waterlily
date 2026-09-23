@@ -4,7 +4,7 @@
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/DeviceFactory.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
-#include "Waterlily/Renderer/Shader/PipelineManager.hpp"
+
 
 namespace Wl
 {

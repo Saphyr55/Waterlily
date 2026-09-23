@@ -194,8 +194,6 @@ function BuildTool.SetupTargets()
     for name, preTarget in pairs(BuildTool.Targets) do
         target(name)
         do
-            set_targetdir("Build/Bin/$(plat)_$(arch)_$(mode)/" .. name)
-
             set_values("BuildTool.Targets", string.serialize(BuildTool.Targets))
             set_values("BuildTool.Modules", string.serialize(BuildTool.Modules))
             set_values("BuildTool.TargetDeps", string.serialize(preTarget.Deps))

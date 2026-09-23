@@ -34,7 +34,7 @@ namespace Wl
         template<>                                                      \
         struct hash<TYPE>                                               \
         {                                                               \
-            size_t operator()(const TYPE& VAR_NAME) const noexcept BODY \
+            uint64_t operator()(const TYPE& VAR_NAME) const noexcept BODY \
         };                                                              \
     }
 

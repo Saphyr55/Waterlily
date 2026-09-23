@@ -6,6 +6,7 @@
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Renderer/Shader/Shader.hpp"
+#include "WlTools/ShaderCompiler/ShaderReflection.hpp"
 
 #include <filesystem>
 
@@ -18,14 +19,20 @@ namespace Wl
         SlangGlobalSessionDesc globalSessionDesc = {};
         createGlobalSession(&globalSessionDesc, m_globalSession.writeRef());
 
+        slang::CompilerOptionEntry option = {}; // FIXME: Should use reflection API to solve this problem
+        option.name = slang::CompilerOptionName::PreserveParameters;
+
         slang::TargetDesc targetDesc = {};
         targetDesc.format = SLANG_SPIRV;
         targetDesc.profile = m_globalSession->findProfile("spirv_1_7");
         targetDesc.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
+        targetDesc.compilerOptionEntries = &option;
+        targetDesc.compilerOptionEntryCount = 1;
 
         FixedArray<const char*, 1> searchPaths = {m_envPath.data()};
-
+        
         slang::SessionDesc sessionDesc = {};
+        sessionDesc.skipSPIRVValidation = true; // FIXME: 
         sessionDesc.targets = &targetDesc;
         sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
         sessionDesc.targetCount = 1;
@@ -135,6 +142,8 @@ namespace Wl
         slang::ProgramLayout* layout = program->getLayout();
         Slang::ComPtr<slang::IComponentType> linkedProgram;
         Slang::ComPtr<ISlangBlob> programDiagnostic;
+
+        PrintProgramLayout(layout);
 
         program->link(linkedProgram.writeRef(), programDiagnostic.writeRef());
 

@@ -46,7 +46,10 @@ namespace Wl
         FrameGraphPhysicalTexturePool(const SharedPtr<FrameContext>& frameContext)
             : m_device(frameContext->GetDevice())
             , m_frameContext(frameContext)
-            , m_allocator(MemoryStack::GetCurrentAllocator(), 16 * WL_KB)
+            , m_allocator(MemoryStack::GetGlobalAllocator(), 16 * WL_KB)
+            , m_freeList(*MemoryStack::GetGlobalAllocator())
+            , m_pendingReleases(*MemoryStack::GetGlobalAllocator())
+            , m_resources(*MemoryStack::GetGlobalAllocator())
         {
         }
 

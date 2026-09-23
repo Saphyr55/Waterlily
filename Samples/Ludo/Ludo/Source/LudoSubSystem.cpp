@@ -74,7 +74,7 @@ namespace Ludo
 
         for (RenderSubMesh& subMesh: m_sponzaMesh->GetSubMeshes())
         {
-            subMesh.Model = Matrix4f::Scale(subMesh.Model, Vector3f(0.005f));
+            subMesh.Model = Matrix4f::Scale(subMesh.Model, Vector3f(0.05f));
         }
 
         Array<RHIDrawIndexedCommand> drawIndexedCommands = m_sponzaMesh->CreateDrawIndexedCommands();
@@ -131,21 +131,8 @@ namespace Ludo
         m_renderService->GetWindow()->Show();
     }
 
-    void LudoSubSystem::OnTick(double deltaTime)
+    void LudoSubSystem::UpdateCamera(double deltaTime)
     {
-        SharedPtr<FrameContext> frameContext = m_renderService->GetFrameContext();
-        SharedPtr<FrameGraph> frameGraph = m_renderService->GetFrameGraph();
-        SharedPtr<ShaderBundle> shaderBundle = m_renderService->GetShaderBundle();
-
-        const Matrix4f& correction = m_renderService->GetDevice()->GetMatrixCorrection();
-
-        float aspectRatio = frameContext->GetAspectRatio();
-
-        float width = static_cast<float>(frameContext->GetWidth());
-        float height = static_cast<float>(frameContext->GetHeight());
-
-        UpdateLights(m_entityRegistry, deltaTime);
-
         Vector3f direction(0.0f, 0.0f, 0.0f);
 
         if (Input::KeyIsDown(VirtualKey::Z))
@@ -186,6 +173,20 @@ namespace Ludo
         }
 
         m_camera.UpdateView();
+    }
+
+    void LudoSubSystem::RenderFrame()
+    {
+        SharedPtr<FrameContext> frameContext = m_renderService->GetFrameContext();
+        SharedPtr<FrameGraph> frameGraph = m_renderService->GetFrameGraph();
+        SharedPtr<ShaderBundle> shaderBundle = m_renderService->GetShaderBundle();
+
+        const Matrix4f& correction = m_renderService->GetDevice()->GetMatrixCorrection();
+
+        float aspectRatio = frameContext->GetAspectRatio();
+
+        float width = static_cast<float>(frameContext->GetWidth());
+        float height = static_cast<float>(frameContext->GetHeight());
 
         FrameResult result = frameContext->BeginFrame();
         WL_CHECK(result == FrameResult::Success);
@@ -194,7 +195,7 @@ namespace Ludo
 
         Frame& frame = frameContext->GetCurrentFrame();
 
-        FramePacket packet;
+        FramePacket packet = {};
 
         Matrix4f proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f) * correction;
         RenderView view = RenderView::CreateFromCamera(m_camera, proj);
@@ -220,7 +221,7 @@ namespace Ludo
         size_t i = 0;
         for (const auto [entity, transform, light]: lightEntityView)
         {
-            packet.PointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, light.Color);
+            packet.PointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, 0.0f, light.Color, light.Intensity);
         }
 
         auto directionalLightEntityView = m_entityRegistry.View<DirectionalLight>();
@@ -231,9 +232,9 @@ namespace Ludo
         frame.UniformAllocator.UpdateData(packet.DirectionalLightAllocation, directionalLightComponent);
 
         RenderView directionalLightView = {};
-        directionalLightView.Eye = -directionalLightComponent.Direction * 50.0f;
+        directionalLightView.Eye = -directionalLightComponent.Direction * 100.0f;
         directionalLightView.View = Matrix4f::LookAt(directionalLightView.Eye, Vector3f::Zero(), Vector3f::Up());
-        directionalLightView.Proj = Matrix4f::Orthographic(-30.0f, 30.0f, -30.0f, 30.0f, 0.1f, 300.0f) * correction;
+        directionalLightView.Proj = Matrix4f::Orthographic(-50.0f, 50.0f, -50.0f, 50.0f, 0.1f, 600.0f) * correction;
         directionalLightView.ViewProj = directionalLightView.Proj * directionalLightView.View;
         RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
         frame.UniformAllocator.UpdateData(directionalLightViewAllocation, directionalLightView);
@@ -292,9 +293,8 @@ namespace Ludo
         shadowMapTextureInfo.Name = "ShadowMap";
         shadowMapTextureInfo.Format = RHIFormat::D24;
         shadowMapTextureInfo.SizeClass = SizeClass::Absolute;
-        shadowMapTextureInfo.Height = 2048;
-        shadowMapTextureInfo.Width = 2048;
-        shadowMapTextureInfo.MipLevels = 4;
+        shadowMapTextureInfo.Height = 1024;
+        shadowMapTextureInfo.Width = 1024;
         FrameGraphTextureHandle shadowMap = frameGraph->CreateTexture(shadowMapTextureInfo);
 
         ShadowMapPassParameters shadowMapPassParamaters = {};
@@ -354,6 +354,13 @@ namespace Ludo
         frameContext->EndFrame();
     }
 
+    void LudoSubSystem::OnTick(double deltaTime)
+    {
+        UpdateLights(m_entityRegistry, deltaTime);
+        UpdateCamera(deltaTime);
+        RenderFrame();
+    }
+
     void LudoSubSystem::OnShutdown()
     {
         m_sponzaMesh->Destroy();
@@ -363,4 +370,4 @@ namespace Ludo
         m_renderService->GetWindow()->Close();
     }
 
-}// namespace Wl
+}// namespace Ludo

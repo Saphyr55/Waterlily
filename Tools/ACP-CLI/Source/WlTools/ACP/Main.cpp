@@ -28,7 +28,7 @@ static constexpr StringRef WorkingDirectory = "";
 static const StringRef VFSDirectory = "Assets/";
 static const String VFSOutputAssetDirectory = VFSDirectory + "Models/Sponza/";
 
-static constexpr StringRef OriginalAssetFilepath = "../../../../Assets/Models/Sponza/glTF/Sponza.gltf";
+static constexpr StringRef OriginalAssetFilepath = "../../../Assets/Models/Sponza/glTF/Sponza.gltf";
 
 static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Asset> asset)
 {
@@ -47,7 +47,7 @@ static int32_t StartConsole()
 {
     WL_LOG_INFO("ACP", "Build started");
 
-    ScopedFileSystem fileSystem(FileSystem::GetPlatform(), "../../../");
+    ScopedFileSystem fileSystem(FileSystem::GetPlatform(), "../../");
 
     std::filesystem::path outputAssetDir = WorkingDirectory.data();
     outputAssetDir /= VFSOutputAssetDirectory.GetData();
@@ -102,7 +102,7 @@ static int32_t StartConsole()
 
     AssetStorage storage;
 
-    ImportContext mainImportContext(source, registry, storage, assetType.GetText(), assetFilepath, VFSOutputAssetDirectory);
+    ImportContext mainImportContext(source, registry, storage, assetType, assetFilepath, VFSOutputAssetDirectory);
     if (SharedPtr<Asset> mainAsset = importer->ImportAsset(mainImportContext))
     {
         WL_LOG_INFO("ACP", "Importing succeeded");

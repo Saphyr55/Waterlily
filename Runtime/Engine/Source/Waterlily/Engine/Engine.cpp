@@ -1,4 +1,7 @@
 #include "Waterlily/Engine/Engine.hpp"
+#include "Waterlily/Core/Memory/LinearAllocator.hpp"
+#include "Waterlily/Core/Memory/Memory.hpp"
+#include "Waterlily/Core/Memory/MemoryScope.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
@@ -47,7 +50,6 @@ namespace Wl
 
     void Engine::Run()
     {
-
         m_isRunning = true;
         double lastTime = PlatformGetHighResolutionTime();
 
@@ -108,7 +110,7 @@ namespace Wl
     {
         return m_manifest;
     }
-    
+
     void Engine::StartupModules()
     {
         ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
@@ -119,7 +121,7 @@ namespace Wl
             module->OnStartup();
         }
     }
-    
+
     void Engine::ShutdownModules()
     {
         ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();

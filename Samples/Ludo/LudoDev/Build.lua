@@ -23,5 +23,11 @@ LudoDevModule.Defines = {
     "WL_LUDO_DEV_EXPORTS"
 }
 
+LudoDevModule.XMakePackages = {
+    "imgui"
+}
+
+add_requires(unpack(LudoDevModule.XMakePackages))
+
 BuildTool.RegisterTargets(LudoDevModule)
 BuildTool.RegisterModules(LudoDevModule)

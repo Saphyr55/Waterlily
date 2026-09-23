@@ -14,7 +14,7 @@ using namespace Wl;
 namespace Ludo
 {
 
-    inline const StringID LudoSubSystemName = WL_SID("LudoSubSystem");
+    inline const StringID LudoSubSystemName = "LudoSubSystem";
 
     class LUDO_API LudoSubSystem : public EngineSubSystem
     {
@@ -24,11 +24,16 @@ namespace Ludo
         virtual void OnShutdown() override;
 
         virtual void OnTick(double deltaTime) override;
+        
+        void UpdateCamera(double deltaTime);
+
+        void RenderFrame();
 
         static inline Camera CreateCamera()
         {
-            return Camera::Create(Vector3f(-6.0f, 1.0f, -0.1f), Vector3f(-15.0f, 1.0f, 0.0f), 6.0f);
+            return Camera::Create(Vector3f(-6.0f, 10.0f, -0.1f), Vector3f(-15.0f, 1.0f, 0.0f), 50.0f);
         }
+
 
         LudoSubSystem(const SharedPtr<RenderService>& renderService,
                       const SharedPtr<AssetManager>& assetManager)

@@ -9,7 +9,7 @@ namespace Wl
 
     class FrameGraphPass;
 
-    inline const StringID GBufferPassName = WL_SID("GBuffer");
+    inline const StringID GBufferPassName = "GBuffer";
 
     struct GBufferPassParameters
     {

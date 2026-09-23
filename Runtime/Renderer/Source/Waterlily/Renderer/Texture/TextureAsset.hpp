@@ -6,7 +6,7 @@
 namespace Wl
 {
 
-    inline const StringID AssetType_Texture2D = WL_SID("Texture2D");
+    inline const StringID AssetType_Texture2D = "Texture2D";
 
     struct TextureAsset : Asset
     {

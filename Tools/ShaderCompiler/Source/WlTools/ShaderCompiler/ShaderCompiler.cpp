@@ -1,6 +1,6 @@
 #include "ShaderCompiler.hpp"
 
-#include "WlTools/ShaderCompiler/Slang/SlangShaderCompiler.hpp"
+#include "WlTools/ShaderCompiler/SlangShaderCompiler.hpp"
 
 namespace Wl
 {

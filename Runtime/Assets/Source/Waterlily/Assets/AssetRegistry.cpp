@@ -14,12 +14,12 @@ namespace Wl
         return m_registry[m_uuidToTndex[handle.UUID]];
     }
 
-    AssetMetadata& AssetRegistry::GetMetadata(StringID uri)
+    AssetMetadata& AssetRegistry::GetMetadata(const StringID& uri)
     {
         return m_registry[m_uriToIndex[uri]];
     }
 
-    AssetHandle AssetRegistry::GetAssetHandle(StringID uri)
+    AssetHandle AssetRegistry::GetAssetHandle(const StringID& uri)
     {
         return {GetMetadata(uri).GetUUID()};
     }
@@ -31,8 +31,8 @@ namespace Wl
             m_registry.Append(metadata);
 
             size_t index = m_registry.GetSize() - 1;
-            m_uuidToTndex.Emplace(metadata.GetUUID(), index);
-            m_uriToIndex.Emplace(metadata.GetURI(), index);
+            m_uuidToTndex.Put(metadata.GetUUID(), index);
+            m_uriToIndex.Put(metadata.GetURI(), index);
         }
     }
 
@@ -41,12 +41,12 @@ namespace Wl
         return m_uuidToTndex.Contains(handle.UUID);
     }
 
-    bool AssetRegistry::HasMetadata(StringID uri) const
+    bool AssetRegistry::HasMetadata(const StringID& uri) const
     {
         return m_uriToIndex.Contains(uri);
     }
 
-    AssetHandle AssetRegistry::CreateAsset(StringID assetType, StringID uri)
+    AssetHandle AssetRegistry::CreateAsset(const StringID& assetType, const StringID& uri)
     {
         if (HasMetadata(uri))
         {

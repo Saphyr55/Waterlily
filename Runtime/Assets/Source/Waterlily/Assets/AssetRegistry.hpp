@@ -21,7 +21,7 @@ namespace Wl
     inline constexpr uint64_t WLAR_FILETYPE = Wl::CStringPack64("WLAR    ");
     inline constexpr uint32_t WLAR_VERSION = 1;
 
-    inline const StringID AssetRegistryURI = WL_SID("Assets/Registry.wlar");
+    inline const StringID AssetRegistryURI = "Assets/Registry.wlar";
 
     struct WLARHeader
     {
@@ -57,19 +57,19 @@ namespace Wl
         static void PersistFile(SharedPtr<AssetRegistry> registry, SharedPtr<File> file);
 
     public:
-        AssetHandle CreateAsset(StringID assetType, StringID uri);
+        AssetHandle CreateAsset(const StringID& assetType, const StringID& uri);
 
         void AddDependency(AssetHandle parent, AssetHandle child);
 
         AssetMetadata& GetMetadata(AssetHandle handle);
-        AssetMetadata& GetMetadata(StringID uri);
+        AssetMetadata& GetMetadata(const StringID& uri);
 
-        AssetHandle GetAssetHandle(StringID uri);
+        AssetHandle GetAssetHandle(const StringID& uri);
 
         void RegisterMetadata(const AssetMetadata& metadata);
 
         bool HasMetadata(AssetHandle handle) const;
-        bool HasMetadata(StringID uri) const;
+        bool HasMetadata(const StringID& uri) const;
 
         inline ArrayView<AssetMetadata> GetRegistry() const
         {

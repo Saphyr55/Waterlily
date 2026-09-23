@@ -61,7 +61,7 @@ namespace Wl
         }
 
         String lcaPath = PathToLCAFilepath(ctx.URI, ctx.OutputURI);
-        AssetHandle handle = ctx.Registry->CreateAsset(model->AssetType, CreateSID(lcaPath));
+        AssetHandle handle = ctx.Registry->CreateAsset(model->AssetType, StringID(lcaPath));
 
         if (!GlTFConstruct(handle, *model, m_importers, ctx, basedir.data()))
         {
