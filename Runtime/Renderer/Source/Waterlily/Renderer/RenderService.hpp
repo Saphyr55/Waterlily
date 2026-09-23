@@ -23,7 +23,7 @@
 
 namespace Wl
 {
-    inline StringID RenderServiceName = WL_SID("RenderService");
+    inline StringID RenderServiceName = StringID("RenderService");
 
     constexpr RHIGraphicsAPI DefaultGraphicsAPI = RHIGraphicsAPI::Vulkan;
 

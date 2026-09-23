@@ -15,13 +15,13 @@
 namespace Wl
 {
 
-    const inline StringID AssetManagerName = WL_SID("AssetManager"); 
+    const inline StringID AssetManagerName = StringID("AssetManager"); 
 
     class WL_ASSETS_API AssetManager
     {
     public:
         template<typename AssetType>
-        AssetType* GetAsset(StringID uri)
+        AssetType* GetAsset(const StringID& uri)
         {
             AssetMetadata& metadata = m_registry->GetMetadata(uri);
             return GetAsset<AssetType>(AssetHandle(metadata.GetUUID()));
@@ -44,7 +44,7 @@ namespace Wl
 
             AssetMetadata& metadata = m_registry->GetMetadata(uuid);
 
-            StringID assetType = metadata.GetAssetType();
+            const StringID& assetType = metadata.GetAssetType();
 
             SharedPtr<AssetPool<AssetType>> pool = GetAssetPoolOrCreate<AssetType>(assetType);
             AssetType* asset = pool->GetAsset(uuid);

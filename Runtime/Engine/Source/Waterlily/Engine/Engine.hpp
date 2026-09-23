@@ -2,6 +2,7 @@
 
 #include "EngineService.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
+#include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 #include "Waterlily/Core/String/StringID.hpp"

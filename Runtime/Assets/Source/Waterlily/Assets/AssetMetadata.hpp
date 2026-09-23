@@ -15,12 +15,12 @@ namespace Wl
             return m_uuid;
         }
 
-        inline StringID GetAssetType() const
+        inline const StringID& GetAssetType() const
         {
             return m_assetType;
         }
 
-        inline StringID GetURI() const
+        inline const StringID& GetURI() const
         {
             return m_uri;
         }

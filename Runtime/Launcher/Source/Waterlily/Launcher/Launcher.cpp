@@ -8,6 +8,9 @@
 #include "Waterlily/Core/Platform/Platform.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/Engine/Engine.hpp"
+#include <cmath>
+#include <cstdint>
+#include <exception>
 
 namespace Wl
 {
@@ -77,16 +80,23 @@ namespace Wl
 
     int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback* callback)
     {
+        int32_t result = EXIT_FAILURE;
+
         if (!MainPreLaunch(argc, argv))
         {
-            return EXIT_FAILURE;
+            return result;
         }
 
-        Engine::GetInstance().StartupModules();
-
-        int32_t result = callback();
-        
-        Engine::GetInstance().ShutdownModules();
+        try
+        {
+            Engine::GetInstance().StartupModules();
+            result = callback();
+            Engine::GetInstance().ShutdownModules();
+        }
+        catch (std::exception e)
+        {
+            WL_LOG_ERROR("Launcher", "%s", e.what());
+        }
 
         MainPostLaunch();
 
@@ -95,22 +105,33 @@ namespace Wl
 
     int32_t MainApplication(int32_t argc, const char* argv[])
     {
+        int32_t result = EXIT_FAILURE;
+
         if (!MainPreLaunch(argc, argv))
         {
-            return EXIT_FAILURE;
+            return result;
         }
+        
+        try
+        {
+            Engine::GetInstance().StartupModules();
 
-        Engine::GetInstance().StartupModules();
+            Engine::GetInstance().Startup();
+            Engine::GetInstance().Run();
+            Engine::GetInstance().Shutdown();
 
-        Engine::GetInstance().Startup();
-        Engine::GetInstance().Run();
-        Engine::GetInstance().Shutdown();
+            Engine::GetInstance().ShutdownModules();
 
-        Engine::GetInstance().ShutdownModules();
-
+            result = EXIT_SUCCESS;
+        }
+        catch (std::exception e)
+        {
+            WL_LOG_ERROR("Launcher", "%s", e.what());
+        }
+        
         MainPostLaunch();
 
-        return EXIT_SUCCESS;
+        return result;
     }
 
 }// namespace Wl

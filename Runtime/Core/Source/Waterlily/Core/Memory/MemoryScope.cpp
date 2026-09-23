@@ -4,12 +4,12 @@
 
 namespace Wl
 {
-
+    
     static HeapAllocator s_globalAllocator;
 
     size_t MemoryStack::s_depth = 0;
     Allocator* MemoryStack::s_allocators[MemoryStack::MaxAllocator] = {&s_globalAllocator};
-    
+
     Allocator* MemoryStack::GetGlobalAllocator()
     {
         return &s_globalAllocator;

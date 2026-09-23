@@ -177,7 +177,6 @@ namespace Ludo
 
     void LudoSubSystem::RenderFrame()
     {
-        
         SharedPtr<FrameContext> frameContext = m_renderService->GetFrameContext();
         SharedPtr<FrameGraph> frameGraph = m_renderService->GetFrameGraph();
         SharedPtr<ShaderBundle> shaderBundle = m_renderService->GetShaderBundle();
@@ -196,7 +195,7 @@ namespace Ludo
 
         Frame& frame = frameContext->GetCurrentFrame();
 
-        FramePacket packet;
+        FramePacket packet = {};
 
         Matrix4f proj = Matrix4f::Perspective(Math::Radians(75.0f), aspectRatio, 0.1f, 1000.0f) * correction;
         RenderView view = RenderView::CreateFromCamera(m_camera, proj);
@@ -222,7 +221,7 @@ namespace Ludo
         size_t i = 0;
         for (const auto [entity, transform, light]: lightEntityView)
         {
-            packet.PointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, light.Color, light.Intensity);
+            packet.PointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, 0.0f, light.Color, light.Intensity);
         }
 
         auto directionalLightEntityView = m_entityRegistry.View<DirectionalLight>();

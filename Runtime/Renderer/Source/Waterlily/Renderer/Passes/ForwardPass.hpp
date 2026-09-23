@@ -10,7 +10,7 @@
 namespace Wl
 {
 
-    inline const StringID LudoForwardPassName = WL_SID("Forward");
+    inline const StringID LudoForwardPassName = StringID("Forward");
 
     struct ForwardPassParameters
     {

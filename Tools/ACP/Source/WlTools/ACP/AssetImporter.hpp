@@ -1,7 +1,6 @@
 #pragma once
 
 #include "WlTools/ACP/ACPExports.hpp"
-#include "AssetStorage.hpp"
 #include "Waterlily/Assets/Asset.hpp"
 #include "Waterlily/Assets/AssetRegistry.hpp"
 #include "Waterlily/Assets/AssetSource.hpp"
@@ -9,6 +8,7 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
+#include "WlTools/ACP/AssetStorage.hpp"
 
 namespace Wl
 {
@@ -20,14 +20,14 @@ namespace Wl
         SharedPtr<AssetSource> Source;
         SharedPtr<AssetRegistry> Registry;
         AssetStorage& Storage;
-        StringRef AssetType;
+        StringID AssetType;
         StringRef URI;
         StringRef OutputURI;
 
         ImportContext(const SharedPtr<AssetSource>& source,
                       const SharedPtr<AssetRegistry>& registry,
                       AssetStorage& storage,
-                      StringRef assetType,
+                      const StringID& assetType,
                       StringRef uri,
                       StringRef outputURI)
             : Source(source)

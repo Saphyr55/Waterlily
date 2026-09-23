@@ -64,7 +64,7 @@ namespace PBR
         float3 kD = float3(1.0, 1.0, 1.0) - kS;
         kD *= 1.0 - material.metallic;
 
-        return (kD * material.albedo / Math.PI + specular) * radiance * NdotL;
+        return (kD * material.albedo / Math.PI + specular) * radiance * NdotL * light.GetIntensity();
     }
 
 }

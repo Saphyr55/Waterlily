@@ -10,7 +10,7 @@
 namespace Wl
 {
 
-    inline const StringID AssetType_Model = WL_SID("Model");
+    inline const StringID AssetType_Model = StringID("Model");
 
     struct WL_RENDERER_API Model : Asset
     {

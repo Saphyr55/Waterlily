@@ -175,7 +175,7 @@ namespace Wl
             }
 
             String lcaPath = PathToLCAFilepath(textureImportContext.URI, textureImportContext.OutputURI);
-            AssetHandle assetTextureHandle = registry.GetAssetHandle(CreateSID(lcaPath));
+            AssetHandle assetTextureHandle = registry.GetAssetHandle(StringID(lcaPath));
 
             WL_LOG_INFO("GlTFImporter", "Creating Texture2D Asset, URI: \"%s\"", lcaPath.data());
 
@@ -196,7 +196,7 @@ namespace Wl
             WL_LOG_INFO("GlTFImporter", "Creating Material Asset, URI: \"%s\"", pathURIText.data());
 
             StringRef pathURITextRef = pathURIText.data();
-            StringID uri = CreateSID(pathURITextRef);
+            StringID uri = StringID(pathURITextRef);
             AssetHandle materialHandle = registry.CreateAsset(materialAsset->AssetType, uri);
 
             tinygltf::Material& gltfMaterial = model.GlTFModel.materials[materialIndex];
@@ -272,7 +272,7 @@ namespace Wl
             WL_LOG_INFO("GlTFImporter", "Creating StaticMesh, URI: \"%s\"", pathURIText.data());
 
             StringRef pathURITextRef = pathURIText.data();
-            StringID uri = CreateSID(pathURITextRef);
+            StringID uri = StringID(pathURITextRef);
             AssetHandle meshHandle = registry.CreateAsset(meshAsset->AssetType, uri);
 
             for (uint32_t p = 0; p < gltfMesh.primitives.size(); p++)

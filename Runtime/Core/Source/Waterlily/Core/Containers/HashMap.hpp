@@ -182,8 +182,8 @@ namespace Wl
 
     public:
         HashMap(size_type capacity, Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
-            : m_slots(allocator)
-            , m_size(0)
+            : m_size(0)
+            , m_slots(allocator)
         {
             m_slots.Resize(capacity);
         }

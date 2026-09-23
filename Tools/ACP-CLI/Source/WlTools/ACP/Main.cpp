@@ -102,7 +102,7 @@ static int32_t StartConsole()
 
     AssetStorage storage;
 
-    ImportContext mainImportContext(source, registry, storage, assetType.GetText(), assetFilepath, VFSOutputAssetDirectory);
+    ImportContext mainImportContext(source, registry, storage, assetType, assetFilepath, VFSOutputAssetDirectory);
     if (SharedPtr<Asset> mainAsset = importer->ImportAsset(mainImportContext))
     {
         WL_LOG_INFO("ACP", "Importing succeeded");

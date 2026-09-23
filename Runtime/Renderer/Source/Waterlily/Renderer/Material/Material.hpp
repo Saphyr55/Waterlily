@@ -9,7 +9,7 @@
 namespace Wl
 {
 
-    inline const StringID AssetType_Material = WL_SID("Material");
+    inline const StringID AssetType_Material = StringID("Material");
 
     struct MaterialAsset : Asset
     {

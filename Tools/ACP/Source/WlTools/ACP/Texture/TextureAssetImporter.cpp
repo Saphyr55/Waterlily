@@ -1,5 +1,7 @@
 #include "WlTools/ACP/Texture/TextureAssetImporter.hpp"
+
 #include "WlTools/ACP/AssetImporter.hpp"
+#include "WlTools/ACP/AssetStorage.hpp"
 #include "WlTools/ACP/PathConvertion.hpp"
 #include "Waterlily/Assets/Asset.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
@@ -74,7 +76,7 @@ namespace Wl
         memoryStream.Write(data_guard.GetResource(), assetData->Image.Data.GetSize());
 
         String lcaPath = PathToLCAFilepath(context.URI, context.OutputURI);
-        StringID sid = CreateSID(lcaPath);
+        StringID sid(lcaPath);
 
         AssetHandle textureHandle = registry.CreateAsset(assetData->AssetType, sid);
 
