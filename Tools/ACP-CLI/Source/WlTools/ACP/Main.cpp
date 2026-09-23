@@ -25,7 +25,7 @@
 #include <filesystem>
 
 static constexpr StringRef WorkingDirectory = "";
-static const StringRef VFSDirectory = "../../Assets/";
+static const StringRef VFSDirectory = "Assets/";
 static const String VFSOutputAssetDirectory = VFSDirectory + "Models/Sponza/";
 
 static constexpr StringRef OriginalAssetFilepath = "../../../Assets/Models/Sponza/glTF/Sponza.gltf";
