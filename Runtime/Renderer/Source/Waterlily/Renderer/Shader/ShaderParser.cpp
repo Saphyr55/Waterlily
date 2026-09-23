@@ -293,7 +293,7 @@ namespace Wl
             SpvReflectDescriptorBinding* spvBinding = spvBindings[i];
 
             SPIRVBinding binding;
-            binding.Name = StringID(spvBinding->name);
+            binding.Name = spvBinding->name;
             binding.Binding = spvBinding->binding;
             binding.Count = spvBinding->count;
             binding.Set = spvBinding->set;

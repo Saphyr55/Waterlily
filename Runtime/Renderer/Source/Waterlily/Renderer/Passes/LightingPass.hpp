@@ -8,7 +8,8 @@
 
 namespace Wl
 {
-    inline const StringID LightingPassName = StringID("Lighting");
+    
+    inline const StringID LightingPassName = "Lighting";
 
     struct FrameGraphPass;
 

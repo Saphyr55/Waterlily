@@ -196,7 +196,7 @@ namespace Wl
             WL_LOG_INFO("GlTFImporter", "Creating Material Asset, URI: \"%s\"", pathURIText.data());
 
             StringRef pathURITextRef = pathURIText.data();
-            StringID uri = StringID(pathURITextRef);
+            StringID uri(pathURITextRef);
             AssetHandle materialHandle = registry.CreateAsset(materialAsset->AssetType, uri);
 
             tinygltf::Material& gltfMaterial = model.GlTFModel.materials[materialIndex];

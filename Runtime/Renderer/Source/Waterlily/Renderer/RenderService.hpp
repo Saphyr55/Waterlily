@@ -1,16 +1,12 @@
 #pragma once
 
 #include "Waterlily/Assets/AssetManager.hpp"
-#include "Waterlily/Core/IO/FileSystem.hpp"
-#include "Waterlily/Core/IO/PlatformFileSystem.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/Window.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 #include "Waterlily/Engine/EngineService.hpp"
-#include "Waterlily/RHI/ComputePipeline.hpp"
 #include "Waterlily/RHI/Device.hpp"
 #include "Waterlily/RHI/DeviceFactory.hpp"
-#include "Waterlily/RHI/GraphicsPipeline.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"
 #include "Waterlily/Renderer/FrameContext.hpp"
 #include "Waterlily/Renderer/FrameGraph/FrameGraph.hpp"
@@ -23,7 +19,7 @@
 
 namespace Wl
 {
-    inline StringID RenderServiceName = StringID("RenderService");
+    inline StringID RenderServiceName = "RenderService";
 
     constexpr RHIGraphicsAPI DefaultGraphicsAPI = RHIGraphicsAPI::Vulkan;
 

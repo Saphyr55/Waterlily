@@ -8,7 +8,7 @@
 namespace Wl
 {
 
-    inline const StringID AssetType_StaticMesh = StringID("StaticMesh");
+    inline const StringID AssetType_StaticMesh = "StaticMesh";
 
     struct WL_RENDERER_API StaticMesh : Asset
     {

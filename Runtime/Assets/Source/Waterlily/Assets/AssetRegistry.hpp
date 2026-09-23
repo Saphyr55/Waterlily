@@ -21,7 +21,7 @@ namespace Wl
     inline constexpr uint64_t WLAR_FILETYPE = Wl::CStringPack64("WLAR    ");
     inline constexpr uint32_t WLAR_VERSION = 1;
 
-    inline const StringID AssetRegistryURI = StringID("Assets/Registry.wlar");
+    inline const StringID AssetRegistryURI = "Assets/Registry.wlar";
 
     struct WLARHeader
     {

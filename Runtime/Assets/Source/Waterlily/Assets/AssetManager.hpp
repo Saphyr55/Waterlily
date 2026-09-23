@@ -15,7 +15,7 @@
 namespace Wl
 {
 
-    const inline StringID AssetManagerName = StringID("AssetManager"); 
+    const inline StringID AssetManagerName = "AssetManager"; 
 
     class WL_ASSETS_API AssetManager
     {

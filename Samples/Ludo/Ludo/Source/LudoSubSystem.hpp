@@ -14,7 +14,7 @@ using namespace Wl;
 namespace Ludo
 {
 
-    inline const StringID LudoSubSystemName = StringID("LudoSubSystem");
+    inline const StringID LudoSubSystemName = "LudoSubSystem";
 
     class LUDO_API LudoSubSystem : public EngineSubSystem
     {

@@ -10,7 +10,7 @@ using namespace Wl;
 namespace Ludo
 {
 
-    inline const StringID LudoDevSubSystemName = StringID("LudoDevSubSystem");
+    inline const StringID LudoDevSubSystemName = "LudoDevSubSystem";
 
     class LudoDevSubSystem : public EngineSubSystem
     {

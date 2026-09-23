@@ -10,7 +10,7 @@
 namespace Wl
 {
 
-    inline const StringID ShadowMapPassName = StringID("ShadowMap");
+    inline const StringID ShadowMapPassName = "ShadowMap";
 
     struct ShadowMapPassParameters
     {

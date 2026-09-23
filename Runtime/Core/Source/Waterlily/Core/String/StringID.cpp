@@ -29,10 +29,9 @@ namespace Wl
 
         std::shared_lock lock(registry.m_mutex);
 
-        auto it = registry.m_registry.find(hash);
-        if (it != registry.m_registry.end())
+        if (auto* text = registry.m_registry.GetPtr(hash))
         {
-            return it->Value.GetData();
+            return *text;
         }
 
         return nullptr;
@@ -45,20 +44,11 @@ namespace Wl
 
     StringID::StringID(uint64_t hash, StringRef text)
         : m_hash(hash)
-#if WL_DEBUG
-        , m_text(text)
-#endif
     {
         StringID::Register(m_hash, text);
-    }
-
-    StringID::StringID(StringRef text)
-        : m_hash(Wl::fnv1a_cstr(text.GetData(), text.GetSize()))
 #if WL_DEBUG
-        , m_text(text)
+        m_text = Resolve(m_hash);
 #endif
-    {
-        StringID::Register(m_hash, text);
     }
 
     StringRef StringID::GetText() const
