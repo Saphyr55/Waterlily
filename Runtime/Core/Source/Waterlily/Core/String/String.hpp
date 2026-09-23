@@ -40,12 +40,12 @@ namespace Wl
     }
 
     /**
- * @brief Converts a UTF-8 encoded string to a wide character string (UTF-16).
- * This function allocates memory for the large string and returns it, which can cause a number of performance problems.
- *
- * @param c_str The UTF-8 encoded string to convert.
- * @return A WString containing the converted wide character string.
- */
+    * @brief Converts a UTF-8 encoded string to a wide character string (UTF-16).
+    * This function allocates memory for the large string and returns it, which can cause a number of performance problems.
+    *
+    * @param c_str The UTF-8 encoded string to convert.
+    * @return A WString containing the converted wide character string.
+    */
     WL_CORE_API StringBase<wchar_t> UTF8ToWString(const char* p_str);
 
     template<typename CharType>
@@ -283,6 +283,12 @@ namespace Wl
     /**
      * @brief The text must be resized to the expected size before calling this function, otherwise it will cause
      * undefined behavior.
+     * 
+     * @tparam CharType 
+     * @param stream 
+     * @param text 
+     * @return true 
+     * @return false 
      */
     template<typename CharType>
     inline bool ReadText(InputStream& stream, StringBase<CharType>& text)

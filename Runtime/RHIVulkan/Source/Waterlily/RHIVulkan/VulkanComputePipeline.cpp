@@ -1,5 +1,5 @@
 #include "VulkanComputePipeline.hpp"
-#include "Waterlily/Core/Algorithms/Algorithms.hpp"
+#include "Waterlily/Core/Function/Functors.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 #include "Waterlily/RHIVulkan/VulkanDescriptorSetLayout.hpp"
 #include "Waterlily/RHIVulkan/VulkanShaderModule.hpp"

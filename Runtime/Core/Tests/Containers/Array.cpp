@@ -1,8 +1,7 @@
 #include <catch2/catch_all.hpp>
 
-#include "Waterlily/Core/Algorithms/Algorithms.hpp"
+#include "Waterlily/Core/Function/Functors.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
-#include "Waterlily/Core/Memory/Allocator.hpp"
 
 using namespace Wl;
 

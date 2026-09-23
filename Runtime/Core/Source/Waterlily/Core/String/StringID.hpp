@@ -20,8 +20,19 @@ namespace Wl
         static StringRef Resolve(uint64_t hash);
 
     public:
-        StringRef GetText() const;
-        uint64_t GetHash() const;
+        inline uint64_t GetHash() const
+        {
+            return m_hash;
+        }
+
+        StringRef GetText() const
+        {
+#if WL_DEBUG
+            return m_text;
+#else
+            return StringID::Resolve(m_hash);
+#endif
+        }
 
     public:
         StringID() = default;
@@ -54,8 +65,15 @@ namespace Wl
             return *this;
         }
 
-        bool operator==(const StringID& other) const;
-        bool operator!=(const StringID& other) const;
+        inline bool operator==(const StringID& other) const
+        {
+            return m_hash == other.m_hash;
+        }
+
+        inline bool operator!=(const StringID& other) const
+        {
+            return m_hash != other.m_hash;
+        }
 
     private:
         struct Registry
@@ -72,8 +90,20 @@ namespace Wl
 #endif
     };
 
-    WL_CORE_API void operator<<(OutputStream& stream, const StringID& sid);
-    WL_CORE_API void operator>>(InputStream& stream, StringID& sid);
+    inline void operator<<(OutputStream& stream, const StringID& sid)
+    {
+        stream << sid.GetHash();
+        stream << sid.GetText();
+    }
+
+    inline void operator>>(InputStream& stream, StringID& sid)
+    {
+        uint64_t hash = 0;
+        String str;
+        stream >> hash;
+        stream >> str;
+        sid = StringID(hash, str);
+    }
 
 }// namespace Wl
 

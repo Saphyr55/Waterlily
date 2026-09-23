@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/CoreExports.hpp"
-
 #include <cstddef>
 
 namespace Wl

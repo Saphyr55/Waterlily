@@ -1,5 +1,5 @@
 #include "Waterlily/RHIVulkan/VulkanCommandBuffer.hpp"
-#include "Waterlily/Core/Algorithms/Algorithms.hpp"
+#include "Waterlily/Core/Function/Functors.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Memory/Cast.hpp"
 #include "Waterlily/Core/Memory/LinearAllocator.hpp"
