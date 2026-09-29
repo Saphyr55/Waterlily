@@ -43,14 +43,14 @@ namespace std
     {
         size_t operator()(const RHIFramebufferDescription& description) const noexcept
         {
-            size_t h = Hash<RHIRenderPass*>()(description.RenderPass);
+            size_t h = Hash<RHIRenderPass*>(description.RenderPass);
             for (RHITextureView* view: description.Attachments)
             {
-                h ^= Hash<RHITextureView*>()(view);
+                h ^= Hash<RHITextureView*>(view);
             }
-            h ^= Hash<uint32_t>()(description.Width);
-            h ^= Hash<uint32_t>()(description.Height);
-            h ^= Hash<uint32_t>()(description.Layers);
+            h ^= Hash<uint32_t>(description.Width);
+            h ^= Hash<uint32_t>(description.Height);
+            h ^= Hash<uint32_t>(description.Layers);
             return h;
         }
     };

@@ -48,12 +48,12 @@ namespace Wl
         return ::wcscmp(str1, str2);
     }
 
-    uint64_t StringHash(const char* str, size_t length)
+    constexpr uint64_t StringHash(const char* str, size_t length)
     {
         return fnv1a_cstr(str, length);
     }
 
-    uint64_t StringHash(const wchar_t* str, size_t length)
+    constexpr uint64_t StringHash(const wchar_t* str, size_t length)
     {
         return fnv1a_cstr(str, length);
     }

@@ -17,7 +17,7 @@ namespace Wl
 
     template<typename KeyType,
              typename ValueType,
-             typename HashType = Hash<KeyType>>
+             typename HashType = Hasher<KeyType>>
     class HashMap
     {
     public:

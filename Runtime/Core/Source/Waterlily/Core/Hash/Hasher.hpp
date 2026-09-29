@@ -1,26 +1,21 @@
 #pragma once
 
-#include "Waterlily/Core/CoreExports.hpp"
-
+#include <cstdint>
 #include <functional>
 
 namespace Wl
 {
-    
+
     template<typename Type>
-    using Hash = std::hash<Type>;
+    using Hasher = std::hash<Type>;
 
-    class WL_CORE_API Hasher
+    template<typename T>
+    inline uint64_t Hash(const T& value)
     {
-    public:
-        template<typename T>
-        static size_t hash(const T& value)
-        {
-            return Hash<T> {}(value);
-        }
-    };
-
-    inline size_t HashCombine(size_t seed, size_t value)
+        return ::Wl::Hasher<T> {}(value);
+    }
+    
+    inline uint64_t HashCombine(uint64_t seed, uint64_t value)
     {
         seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         return seed;
@@ -28,14 +23,14 @@ namespace Wl
 
 }// namespace Wl
 
-#define WL_HASH_DEFINE(TYPE, VAR_NAME, BODY)                            \
-    namespace std                                                       \
-    {                                                                   \
-        template<>                                                      \
-        struct hash<TYPE>                                               \
-        {                                                               \
+#define WL_HASH_DEFINE(TYPE, VAR_NAME, BODY)                              \
+    namespace std                                                         \
+    {                                                                     \
+        template<>                                                        \
+        struct hash<TYPE>                                                 \
+        {                                                                 \
             uint64_t operator()(const TYPE& VAR_NAME) const noexcept BODY \
-        };                                                              \
+        };                                                                \
     }
 
 #define WL_HASH_TEMPLATED_DEFINE(TEMPLATE_TYPE, TYPE, VAR_NAME, BODY)                  \

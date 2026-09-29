@@ -60,17 +60,17 @@ struct std::hash<Wl::MaterialData>
     {
         size_t hash = 0;
 
-        hash = Wl::Hasher::hash(material.baseColorFactor.x);
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.y));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.z));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColorFactor.w));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicFactor));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.roughnessFactor));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.baseColor));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.normal));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.emissive));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.occlusion));
-        hash = Wl::HashCombine(hash, Wl::Hasher::hash(material.metallicRoughness));
+        hash = Wl::Hash(material.baseColorFactor.x);
+        hash = Wl::HashCombine(hash, Wl::Hash(material.baseColorFactor.y));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.baseColorFactor.z));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.baseColorFactor.w));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.metallicFactor));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.roughnessFactor));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.baseColor));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.normal));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.emissive));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.occlusion));
+        hash = Wl::HashCombine(hash, Wl::Hash(material.metallicRoughness));
         
         return hash;
     }

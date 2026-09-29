@@ -232,9 +232,9 @@ namespace Ludo
         frame.UniformAllocator.UpdateData(packet.DirectionalLightAllocation, directionalLightComponent);
 
         RenderView directionalLightView = {};
-        directionalLightView.Eye = -directionalLightComponent.Direction * 100.0f;
+        directionalLightView.Eye = -directionalLightComponent.Direction * 200.0f;
         directionalLightView.View = Matrix4f::LookAt(directionalLightView.Eye, Vector3f::Zero(), Vector3f::Up());
-        directionalLightView.Proj = Matrix4f::Orthographic(-50.0f, 50.0f, -50.0f, 50.0f, 0.1f, 600.0f) * correction;
+        directionalLightView.Proj = Matrix4f::Orthographic(-100.0f, 100.0f, -100.0f, 100.0f, 0.1f, 600.0f) * correction;
         directionalLightView.ViewProj = directionalLightView.Proj * directionalLightView.View;
         RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
         frame.UniformAllocator.UpdateData(directionalLightViewAllocation, directionalLightView);

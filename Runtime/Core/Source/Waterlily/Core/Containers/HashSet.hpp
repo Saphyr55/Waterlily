@@ -37,7 +37,7 @@ namespace Wl
     };
 
     template<typename KeyType,
-             typename HasherType = Hasher>
+             typename HasherType = Hasher<KeyType>>
     class HashSet
     {
     public:

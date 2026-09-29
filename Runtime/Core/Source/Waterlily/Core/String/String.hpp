@@ -25,8 +25,8 @@ namespace Wl
     WL_CORE_API int32_t StringCompare(const char* str1, const char* str2);
     WL_CORE_API int32_t StringCompare(const wchar_t* str1, const wchar_t* str2);
 
-    WL_CORE_API size_t StringHash(const char* str, size_t length);
-    WL_CORE_API size_t StringHash(const wchar_t* str, size_t length);
+    WL_CORE_API constexpr size_t StringHash(const char* str, size_t length);
+    WL_CORE_API constexpr size_t StringHash(const wchar_t* str, size_t length);
 
     consteval uint64_t CStringPack64(const char str[9])
     {
