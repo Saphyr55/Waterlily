@@ -1,4 +1,5 @@
 #include "Waterlily/Core/Object/Variable.hpp"
+#include "Waterlily/Core/Object/MetaTable.hpp"
 #include "Waterlily/Core/Object/TypeInfo.hpp"
 
 #include <catch2/catch_test_macros.hpp>
@@ -8,7 +9,7 @@ using namespace Wl;
 template<typename FirstParamaterType, typename... ParamaterTypes>
 void PrintParams()
 {
-    Variable var = Variable::Of<FirstParamaterType>();
+    Variable var = MetaTable::VariableOf<FirstParamaterType>();
     std::cout << "\t" << var.GetVariableTypeName() << "\n";
     if constexpr (sizeof...(ParamaterTypes) != 0)
     {
@@ -19,7 +20,7 @@ void PrintParams()
 template<typename ReturnType, typename... ParamaterTypes>
 void PrintFunction(ReturnType (*)(ParamaterTypes...))
 {
-    Variable returnVar = Variable::Of<ReturnType>();
+    Variable returnVar = MetaTable::VariableOf<ReturnType>();
     std::cout << "Return Type " << returnVar.GetVariableTypeName() << "\n";
     std::cout << "Params[\n";
     PrintParams<ParamaterTypes...>();
@@ -28,8 +29,8 @@ void PrintFunction(ReturnType (*)(ParamaterTypes...))
 
 TEST_CASE("Variable equality", "[Variable]")
 {
-    Type intType = Type::Of<int>();
-    Type floatType = Type::Of<float>();
+    Type intType = MetaTable::TypeOf<int>();
+    Type floatType = MetaTable::TypeOf<float>();
 
     SECTION("Default variables are equal")
     {
@@ -58,7 +59,7 @@ TEST_CASE("Variable equality", "[Variable]")
 
 TEST_CASE("Variable complex state", "[Variable]")
 {
-    Variable variable(Type::Of<int>());
+    Variable variable(MetaTable::TypeOf<int>());
     REQUIRE(variable.IsPlain());
 
     variable.SetConst();
@@ -66,7 +67,7 @@ TEST_CASE("Variable complex state", "[Variable]")
     variable.SetArraySize(16);
 
     REQUIRE_FALSE(variable.IsPlain());
-    REQUIRE(variable.GetUnderlineType() == Type::Of<int>());
+    REQUIRE(variable.GetUnderlineType() == MetaTable::TypeOf<int>());
     REQUIRE(variable.IsConst());
     REQUIRE(variable.IsPointer());
     REQUIRE(variable.GetPointerCount() == 1);
@@ -78,10 +79,10 @@ TEST_CASE("Variable can be used as HashMap key", "[Variable]")
 {
     HashMap<Variable, int> values;
 
-    Variable intVariable(Type::Of<int>());
+    Variable intVariable(MetaTable::TypeOf<int>());
     intVariable.SetConst();
 
-    Variable sameVariable(Type::Of<int>());
+    Variable sameVariable(MetaTable::TypeOf<int>());
     sameVariable.SetConst();
 
     values.Emplace(intVariable, 42);
@@ -90,14 +91,14 @@ TEST_CASE("Variable can be used as HashMap key", "[Variable]")
     REQUIRE(values.Get(sameVariable) == 42);
 }
 
-TEST_CASE("Variable::Of", "[Variable]")
+TEST_CASE("MetaTable::VariableOf", "[Variable]")
 {
-    Type intType = Type::Of<int>();
-    Type floatType = Type::Of<float>();
+    Type intType = MetaTable::TypeOf<int>();
+    Type floatType = MetaTable::TypeOf<float>();
 
     SECTION("Void")
     {
-        Variable var = Variable::Of<void>();
+        Variable var = MetaTable::VariableOf<void>();
 
         REQUIRE(var.GetUnderlineType() == Type(TypeID<void>()));
         REQUIRE(var.GetPointerCount() == 0);
@@ -110,7 +111,7 @@ TEST_CASE("Variable::Of", "[Variable]")
 
     SECTION("Plain type")
     {
-        Variable var = Variable::Of<int>();
+        Variable var = MetaTable::VariableOf<int>();
 
         REQUIRE(var.GetUnderlineType() == intType);
         REQUIRE(var.GetPointerCount() == 0);
@@ -123,7 +124,7 @@ TEST_CASE("Variable::Of", "[Variable]")
 
     SECTION("Const reference")
     {
-        Variable var = Variable::Of<const int&>();
+        Variable var = MetaTable::VariableOf<const int&>();
 
         REQUIRE(var.GetUnderlineType() == intType);
         REQUIRE(var.GetPointerCount() == 0);
@@ -136,7 +137,7 @@ TEST_CASE("Variable::Of", "[Variable]")
 
     SECTION("RValue reference")
     {
-        Variable var = Variable::Of<int&&>();
+        Variable var = MetaTable::VariableOf<int&&>();
 
         REQUIRE(var.GetUnderlineType() == intType);
         REQUIRE(var.GetPointerCount() == 0);
@@ -149,7 +150,7 @@ TEST_CASE("Variable::Of", "[Variable]")
 
     SECTION("Const array of pointers")
     {
-        Variable var = Variable::Of<volatile const int** [4]>();
+        Variable var = MetaTable::VariableOf<volatile const int** [4]>();
 
         REQUIRE(var.GetUnderlineType() == intType);
         REQUIRE(var.GetPointerCount() == 2);

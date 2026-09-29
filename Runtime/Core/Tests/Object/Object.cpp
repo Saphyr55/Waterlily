@@ -1,5 +1,5 @@
 #include "Waterlily/Core/Object/Object.hpp"
-#include "Waterlily/Core/Object/Property.hpp"
+#include "Waterlily/Core/Object/MetaTable.hpp"
 #include "Waterlily/Core/Object/Type.hpp"
 #include "Waterlily/Core/Object/TypeInfo.hpp"
 #include "Waterlily/Core/Object/Variable.hpp"
@@ -64,10 +64,10 @@ public:
 
 void Foo::_ObjectRegisterBindings()
 {
-    Variable xVar = Variable::Of<decltype(Foo::m_x)>();
+    Variable xVar = MetaTable::VariableOf<decltype(Foo::m_x)>();
 
-    Property::Register(StaticType(), xVar, "x", OffsetOfX(), xVar.GetSize(), xVar.GetAlign());
-    Property::Register("y", &Foo::m_y);
+    MetaTable::RegisterMember(StaticType(), xVar, "x", OffsetOfX(), xVar.GetSize(), xVar.GetAlign());
+    MetaTable::RegisterMember("y", &Foo::m_y);
 }
 
 TEST_CASE("Object::StaticClass", "[Object]")
@@ -78,9 +78,9 @@ TEST_CASE("Object::StaticClass", "[Object]")
         REQUIRE(foo.GetObjectType().GetName() == "class Foo");
     }
 
-    SECTION("Wl::Type::GetTypeInfo<Foo>().name == \"class Foo\"")
+    SECTION("Wl::MetaTable::GetTypeInfo<Foo>().name == \"class Foo\"")
     {
-        REQUIRE(Type::GetTypeInfo<Foo>().name == "class Foo");
+        REQUIRE(MetaTable::GetTypeInfo<Foo>().name == "class Foo");
     }
 
     SECTION("Foo::StaticType().GetName() == \"class Foo\"")
@@ -88,26 +88,25 @@ TEST_CASE("Object::StaticClass", "[Object]")
         REQUIRE(Foo::StaticType().GetName() == "class Foo");
     }
 
-    SECTION("Foo::StaticType().InheritFrom(Bar::StaticType()) == true")
+    SECTION("Foo::StaticType().InheritFrom(Bar::StaticType()) is true")
     {
         REQUIRE(Foo::StaticType().InheritFrom(Bar::StaticType()));
         REQUIRE(Foo::StaticType().InheritFrom(Object::StaticType()));
     }
 
-    SECTION("Foo::StaticType().InheritFrom(Bar::StaticType()) == true")
+    SECTION("Bar::StaticType().InheritFrom(Foo::StaticType()) is false")
     {
         REQUIRE_FALSE(Bar::StaticType().InheritFrom(Foo::StaticType()));
         REQUIRE(Bar::StaticType().InheritFrom(Object::StaticType()));
     }
-
 }
 
 TEST_CASE("Object::Properties", "[Object]")
 {
     Foo::BindAll();
 
-    const PropertyInfo& infoX = Property::GetPropertyInfo(Foo::StaticType(), "x");
-    const PropertyInfo& infoY = Property::GetPropertyInfo(Foo::StaticType(), "y");
+    const MemberInfo& infoX = MetaTable::GetMemberInfo(Foo::StaticType(), "x");
+    const MemberInfo& infoY = MetaTable::GetMemberInfo(Foo::StaticType(), "y");
 
     SECTION("Property x")
     {

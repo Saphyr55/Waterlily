@@ -10,6 +10,7 @@
 
 namespace Wl
 {
+    using IdentifierType = uint64_t;
 
     template<typename T>
     consteval std::string_view TypeName();
@@ -21,10 +22,10 @@ namespace Wl
     }
 
     template<typename T>
-    consteval uint64_t TypeID();
+    consteval IdentifierType TypeID();
 
     template<>
-    consteval uint64_t TypeID<void>()
+    consteval IdentifierType TypeID<void>()
     {
         return fnv1a_cstr("void");
     }
@@ -63,7 +64,7 @@ namespace Wl
     }
 
     template<typename T>
-    consteval uint64_t TypeID()
+    consteval IdentifierType TypeID()
     {
         constexpr std::string_view typeName = TypeName<T>();
         return fnv1a_cstr(typeName.data(), typeName.size());
@@ -103,10 +104,6 @@ namespace Wl
             info.align = 0;
             return info;
         }
-
-
-        TypeInfo() = default;
-        ~TypeInfo() = default;
     };
 
 }// namespace Wl

@@ -1,12 +1,29 @@
-#include "Type.hpp"
+#include "Waterlily/Core/Object/Type.hpp"
+#include "MetaTable.hpp"
 
 namespace Wl
 {
 
-    Type::Registry& Type::GetRegistry()
+    const TypeInfo& Type::GetTypeInfo() const
     {
-        static Registry registry;
-        return registry;
+        return MetaTable::Get().GetTypeInfo(m_id);
+    }
+
+    bool Type::InheritFrom(Type parentType) const
+    {
+        const StringID& target = parentType.GetName();
+        const StringID& rootName = MetaTable::TypeOf<void>().GetName();
+
+        StringID current = GetName();
+        while (current != rootName)
+        {
+            if (current == target)
+                return true;
+
+            const TypeInfo& info = MetaTable::GetTypeInfo(current);
+            current = info.inherit;
+        }
+        return false;
     }
 
     constexpr Type::Type(IdentifierType id) noexcept

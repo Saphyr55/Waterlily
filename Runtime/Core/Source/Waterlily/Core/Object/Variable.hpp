@@ -52,48 +52,8 @@ namespace Wl
     class WL_CORE_API Variable
     {
     public:
-        template<typename T>
-        constexpr inline static Variable Of()
-        {
-            using DetailsType = VariableDetails<T>;
-
-            Variable var(Type::Of<typename DetailsType::PlainType>());
-
-            if constexpr (std::is_reference_v<T>)
-            {
-                var.SetReference();
-            }
-
-            if constexpr (std::is_rvalue_reference_v<T>)
-            {
-                var.SetRValueReference();
-            }
-
-            if constexpr (std::is_const_v<typename DetailsType::RemovedPointersType>)
-            {
-                var.SetConst();
-            }
-
-            if constexpr (std::is_volatile_v<typename DetailsType::RemovedPointersType>)
-            {
-                var.SetVolatile();
-            }
-
-            var.SetArraySize(DetailsType::GetArraySize());
-            var.SetPointerCount(DetailsType::GetPointerCount());
-
-            return var;
-        }
-
-        template<>
-        constexpr inline static Variable Of<void>()
-        {
-            return Variable();
-        }
-
         String GetVariableTypeName() const;
 
-    public:
         inline const StringID& GetUnderlineTypeName() const
         {
             return m_type.GetTypeInfo().name;

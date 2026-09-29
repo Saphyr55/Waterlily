@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Waterlily/Core/Object/Type.hpp"
+#include "Waterlily/Core/Object/MetaTable.hpp"
 
 #define _WL_OBJECT_NAME_PREFIX(Suffix) _Object##Suffix
 #define _WL_OBJECT_NAME_TYPE(Name) _WL_OBJECT_NAME_PREFIX(Name##Type)
@@ -10,7 +10,7 @@
 #define _WL_OBJECT(TypeName, InheritTypeName)                       \
 private:                                                            \
     const inline static ::Wl::Type _WL_OBJECT_NAME_TYPE(TypeName) = \
-            ::Wl::Type::Register<TypeName, InheritTypeName>();      \
+            ::Wl::MetaTable::TypeOf<TypeName, InheritTypeName>();   \
                                                                     \
 public:                                                             \
     inline static ::Wl::Type StaticType()                           \

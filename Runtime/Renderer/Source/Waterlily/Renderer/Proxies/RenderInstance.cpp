@@ -1,5 +1,5 @@
 #include "RenderInstance.hpp"
-#include "Waterlily/Core/Object/Property.hpp"
+#include "Waterlily/Core/Object/Member.hpp"
 #include "Waterlily/Renderer/Mesh/RenderMesh.hpp"
 
 namespace Wl
