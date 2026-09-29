@@ -3,6 +3,8 @@
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
 #include "Waterlily/Core/Object/TypeInfo.hpp"
+#include "Waterlily/Core/String/StringID.hpp"
+#include <cstdint>
 
 namespace Wl
 {
@@ -10,28 +12,76 @@ namespace Wl
     class WL_CORE_API Type
     {
     public:
-        template<typename T>
-        inline static Type Register()
+        using IdentifierType = uint64_t;
+
+    public:
+        template<typename T, typename InheritType = void>
+        inline static Type Of()
         {
-            TypeInfo info = TypeInfo::Create<T>();
-            GetRegistry().infos.Emplace(info.Name.GetHash(), info);
-            return Type(info.Name.GetHash());
+            if (Type::Contains<T>())
+            {
+                return Type(TypeID<T>());
+            }
+            return Type::Register<T, InheritType>();
+        }
+
+        template<typename T, typename InheritType = void>
+        inline static Type Register() noexcept
+        {
+            TypeInfo info = TypeInfo::Of<T, InheritType>();
+            GetRegistry().infos.Emplace(info.name.GetHash(), info);
+            return Type(TypeID<T>());
         }
 
         template<typename T>
         inline static bool Contains()
         {
-            return GetRegistry().infos.Contains(TypeID<T>());
+            return Contains(TypeID<T>());
+        }
+
+        inline static bool Contains(const StringID& name)
+        {
+            return Contains(name.GetHash());
+        }
+
+        inline static bool Contains(IdentifierType id)
+        {
+            return GetRegistry().infos.Contains(id);
         }
 
         template<typename T>
         inline static const TypeInfo& GetTypeInfo()
         {
-            return GetRegistry().infos.Get(TypeID<T>());
+            return GetTypeInfo(TypeID<T>());
+        }
+
+        inline static const TypeInfo& GetTypeInfo(const StringID& name)
+        {
+            return GetTypeInfo(name.GetHash());
+        }
+
+        inline static const TypeInfo& GetTypeInfo(IdentifierType id)
+        {
+            return GetRegistry().infos.Get(id);
         }
 
     public:
-        constexpr inline uint64_t GetID() const
+        inline const StringID& GetName() const
+        {
+            return GetTypeInfo().name;
+        }
+
+        inline size_t GetSize() const
+        {
+            return GetTypeInfo().size;
+        }
+
+        inline size_t GetAlign() const
+        {
+            return GetTypeInfo().align;
+        }
+
+        constexpr inline IdentifierType GetID() const
         {
             return m_id;
         }
@@ -39,6 +89,23 @@ namespace Wl
         inline const TypeInfo& GetTypeInfo() const
         {
             return GetRegistry().infos.Get(m_id);
+        }
+
+        inline bool InheritFrom(Type parentType) const
+        {
+            const StringID& target = parentType.GetName();
+            const StringID& rootName = Type::Of<void>().GetName();
+
+            StringID current = GetName();
+            while (current != rootName)
+            {
+                if (current == target)
+                    return true;
+
+                const TypeInfo& info = Type::GetTypeInfo(current);
+                current = info.inherit;
+            }
+            return false;
         }
 
     public:
@@ -53,37 +120,23 @@ namespace Wl
         }
 
     public:
-        constexpr explicit Type(uint64_t id);
-        constexpr Type(const Type&) = default;
-        constexpr Type(Type&&) = default;
-        constexpr ~Type() = default;
+        constexpr explicit Type(IdentifierType id = TypeID<void>()) noexcept;
+        constexpr Type(const Type&) noexcept = default;
+        Type(Type&&) noexcept = default;
+        constexpr ~Type() noexcept = default;
 
-        constexpr Type& operator=(const Type& other) = default;
-        constexpr Type& operator=(Type&& other) = default;
+        constexpr Type& operator=(const Type& other) noexcept = default;
+        Type& operator=(Type&& other) noexcept = default;
 
     private:
         struct Registry
         {
-            HashMap<uint64_t, TypeInfo> infos;
+            HashMap<IdentifierType, TypeInfo> infos;
         };
 
         static Registry& GetRegistry();
 
-        uint64_t m_id;
-    };
-
-    template<typename T>
-    inline Type TypeOf()
-    {
-        if (Type::Contains<T>())
-        {
-            return Type(TypeID<T>());
-        }
-        return Type::Register<T>();
-    }
-
-    class TypeBuilder
-    {
+        IdentifierType m_id;
     };
 
 }// namespace Wl

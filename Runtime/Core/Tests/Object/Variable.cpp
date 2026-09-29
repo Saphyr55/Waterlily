@@ -1,13 +1,35 @@
 #include "Waterlily/Core/Object/Variable.hpp"
 #include "Waterlily/Core/Object/TypeInfo.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 
 using namespace Wl;
 
+template<typename FirstParamaterType, typename... ParamaterTypes>
+void PrintParams()
+{
+    Variable var = Variable::Of<FirstParamaterType>();
+    std::cout << "\t" << var.GetVariableTypeName() << "\n";
+    if constexpr (sizeof...(ParamaterTypes) != 0)
+    {
+        PrintParams<ParamaterTypes...>();
+    }
+}
+
+template<typename ReturnType, typename... ParamaterTypes>
+void PrintFunction(ReturnType (*)(ParamaterTypes...))
+{
+    Variable returnVar = Variable::Of<ReturnType>();
+    std::cout << "Return Type " << returnVar.GetVariableTypeName() << "\n";
+    std::cout << "Params[\n";
+    PrintParams<ParamaterTypes...>();
+    std::cout << "]\n";
+}
+
 TEST_CASE("Variable equality", "[Variable]")
 {
-    Type intType = TypeOf<int>();
-    Type floatType = TypeOf<float>();
+    Type intType = Type::Of<int>();
+    Type floatType = Type::Of<float>();
 
     SECTION("Default variables are equal")
     {
@@ -36,7 +58,7 @@ TEST_CASE("Variable equality", "[Variable]")
 
 TEST_CASE("Variable complex state", "[Variable]")
 {
-    Variable variable(TypeOf<int>());
+    Variable variable(Type::Of<int>());
     REQUIRE(variable.IsPlain());
 
     variable.SetConst();
@@ -44,7 +66,7 @@ TEST_CASE("Variable complex state", "[Variable]")
     variable.SetArraySize(16);
 
     REQUIRE_FALSE(variable.IsPlain());
-    REQUIRE(variable.GetType() == TypeOf<int>());
+    REQUIRE(variable.GetUnderlineType() == Type::Of<int>());
     REQUIRE(variable.IsConst());
     REQUIRE(variable.IsPointer());
     REQUIRE(variable.GetPointerCount() == 1);
@@ -56,10 +78,10 @@ TEST_CASE("Variable can be used as HashMap key", "[Variable]")
 {
     HashMap<Variable, int> values;
 
-    Variable intVariable(TypeOf<int>());
+    Variable intVariable(Type::Of<int>());
     intVariable.SetConst();
 
-    Variable sameVariable(TypeOf<int>());
+    Variable sameVariable(Type::Of<int>());
     sameVariable.SetConst();
 
     values.Emplace(intVariable, 42);
@@ -68,16 +90,16 @@ TEST_CASE("Variable can be used as HashMap key", "[Variable]")
     REQUIRE(values.Get(sameVariable) == 42);
 }
 
-TEST_CASE("Variable::Create", "[Variable]")
+TEST_CASE("Variable::Of", "[Variable]")
 {
-    Type intType = TypeOf<int>();
-    Type floatType = TypeOf<float>();
+    Type intType = Type::Of<int>();
+    Type floatType = Type::Of<float>();
 
     SECTION("Void")
     {
-        Variable var = Variable::Create<void>();
+        Variable var = Variable::Of<void>();
 
-        REQUIRE(var.GetType() == Type(TypeID<void>()));
+        REQUIRE(var.GetUnderlineType() == Type(TypeID<void>()));
         REQUIRE(var.GetPointerCount() == 0);
         REQUIRE(var.GetArraySize() == 0);
         REQUIRE_FALSE(var.IsConst());
@@ -88,9 +110,9 @@ TEST_CASE("Variable::Create", "[Variable]")
 
     SECTION("Plain type")
     {
-        Variable var = Variable::Create<int>();
+        Variable var = Variable::Of<int>();
 
-        REQUIRE(var.GetType() == intType);
+        REQUIRE(var.GetUnderlineType() == intType);
         REQUIRE(var.GetPointerCount() == 0);
         REQUIRE(var.GetArraySize() == 1);
         REQUIRE_FALSE(var.IsConst());
@@ -101,9 +123,9 @@ TEST_CASE("Variable::Create", "[Variable]")
 
     SECTION("Const reference")
     {
-        Variable var = Variable::Create<const int&>();
+        Variable var = Variable::Of<const int&>();
 
-        REQUIRE(var.GetType() == intType);
+        REQUIRE(var.GetUnderlineType() == intType);
         REQUIRE(var.GetPointerCount() == 0);
         REQUIRE(var.GetArraySize() == 1);
         REQUIRE(var.IsConst());
@@ -114,9 +136,9 @@ TEST_CASE("Variable::Create", "[Variable]")
 
     SECTION("RValue reference")
     {
-        Variable var = Variable::Create<int&&>();
+        Variable var = Variable::Of<int&&>();
 
-        REQUIRE(var.GetType() == intType);
+        REQUIRE(var.GetUnderlineType() == intType);
         REQUIRE(var.GetPointerCount() == 0);
         REQUIRE(var.GetArraySize() == 1);
         REQUIRE_FALSE(var.IsConst());
@@ -127,12 +149,9 @@ TEST_CASE("Variable::Create", "[Variable]")
 
     SECTION("Const array of pointers")
     {
-        Variable var = Variable::Create<volatile const int** [4]>();
+        Variable var = Variable::Of<volatile const int** [4]>();
 
-        auto typeInfo = intType.GetTypeInfo();
-        auto varTypeInfo = var.GetType().GetTypeInfo();
-
-        REQUIRE(var.GetType() == intType);
+        REQUIRE(var.GetUnderlineType() == intType);
         REQUIRE(var.GetPointerCount() == 2);
         REQUIRE(var.GetArraySize() == 4);
         REQUIRE(var.IsConst());

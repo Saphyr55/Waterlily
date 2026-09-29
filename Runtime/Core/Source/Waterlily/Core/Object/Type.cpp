@@ -9,7 +9,7 @@ namespace Wl
         return registry;
     }
 
-    constexpr Type::Type(uint64_t id)
+    constexpr Type::Type(IdentifierType id) noexcept
         : m_id(id)
     {
     }

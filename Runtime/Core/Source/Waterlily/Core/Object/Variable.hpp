@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Waterlily/Core/CoreExports.hpp"
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
-#include "Waterlily/Core/Traits/Traits.hpp"
 #include "Waterlily/Core/Object/Type.hpp"
-#include "Waterlily/Core/Object/TypeInfo.hpp"
+#include "Waterlily/Core/Traits/Traits.hpp"
 
 #include <cstdint>
 #include <type_traits>
@@ -22,7 +22,6 @@ namespace Wl
         Volatile = 1 << 2,
         RValueReference = 1 << 3,
     };
-
     WL_ENUM_FLAGS_CUSTOM_DERIVED(Modifier, ModifierBase);
 
     template<typename T>
@@ -50,15 +49,15 @@ namespace Wl
         }
     };
 
-    class Variable
+    class WL_CORE_API Variable
     {
     public:
         template<typename T>
-        constexpr inline static Variable Create()
+        constexpr inline static Variable Of()
         {
             using DetailsType = VariableDetails<T>;
 
-            Variable var(TypeOf<typename DetailsType::PlainType>());
+            Variable var(Type::Of<typename DetailsType::PlainType>());
 
             if constexpr (std::is_reference_v<T>)
             {
@@ -87,18 +86,25 @@ namespace Wl
         }
 
         template<>
-        constexpr inline Variable Create<void>()
+        constexpr inline static Variable Of<void>()
         {
             return Variable();
         }
 
+        String GetVariableTypeName() const;
+
     public:
-        constexpr inline Type GetType() const
+        inline const StringID& GetUnderlineTypeName() const
+        {
+            return m_type.GetTypeInfo().name;
+        }
+
+        constexpr inline Type GetUnderlineType() const
         {
             return m_type;
         };
 
-        constexpr inline void SetType(Type type)
+        constexpr inline void SetUnderlineType(Type type)
         {
             m_type = type;
         }
@@ -213,7 +219,7 @@ namespace Wl
 
         constexpr inline bool IsArray() const
         {
-            return m_arraySize != 0;
+            return m_arraySize > 1;
         }
 
         constexpr inline uint32_t GetArraySize() const
@@ -246,6 +252,19 @@ namespace Wl
             return (m_modifierFlags & modifier) != Modifier::None;
         }
 
+        constexpr inline size_t GetSize() const
+        {
+            bool isPointOrRef = IsPointer() || IsReference(); 
+            return isPointOrRef ? sizeof(void*) : GetArraySize() * GetUnderlineType().GetSize();
+        }
+
+        constexpr inline size_t GetAlign() const
+        {
+            bool isPointOrRef = IsPointer() || IsReference(); 
+            return isPointOrRef ? alignof(void*) : GetUnderlineType().GetAlign();
+        }
+
+    public:
         constexpr bool operator==(const Variable& other) const
         {
             return m_type == other.m_type &&
@@ -260,7 +279,8 @@ namespace Wl
         }
 
     public:
-        constexpr explicit Variable(Type type = Type(TypeID<void>()))
+        constexpr Variable() = default;
+        constexpr explicit Variable(Type type)
             : m_type(type)
         {
         }
@@ -276,7 +296,7 @@ namespace Wl
 }// namespace Wl
 
 WL_HASH_DEFINE(Wl::Variable, var, {
-    Wl::Type type = var.GetType();
+    Wl::Type type = var.GetUnderlineType();
     uint64_t hash = Wl::Hash(type);
     hash = Wl::HashCombine(hash, Wl::Hash(var.GetArraySize()));
     hash = Wl::HashCombine(hash, Wl::Hash(var.GetPointerCount()));

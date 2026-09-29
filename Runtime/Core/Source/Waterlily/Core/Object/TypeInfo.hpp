@@ -2,9 +2,7 @@
 
 #include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Hash/fnv-1a.hpp"
-#include "Waterlily/Core/String/String.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
-#include "Waterlily/Core/String/StringRef.hpp"
 
 #include <cstdint>
 #include <string>
@@ -28,7 +26,7 @@ namespace Wl
     template<>
     consteval uint64_t TypeID<void>()
     {
-        return 0;
+        return fnv1a_cstr("void");
     }
 
     namespace Internal
@@ -73,19 +71,39 @@ namespace Wl
 
     struct TypeInfo
     {
-        StringID Name;
-        uint32_t Size;
-        uint32_t Align;
+        StringID name;
+        StringID inherit;
+        uint32_t size;
+        uint32_t align;
 
-        template<typename T>
-        inline static TypeInfo Create()
+        template<typename T, typename InheritType = void>
+        inline static TypeInfo Of() noexcept
         {
+            std::string name(TypeName<T>());
+            std::string inherit(TypeName<InheritType>());
+
             TypeInfo info = {};
-            info.Name = StringID(TypeID<T>(), std::string(TypeName<T>()).c_str());
-            info.Size = sizeof(T);
-            info.Align = alignof(T);
+            info.name = StringID(TypeID<T>(), name.c_str());
+            info.inherit = StringID(TypeID<InheritType>(), inherit.c_str());
+            info.size = sizeof(T);
+            info.align = alignof(T);
             return info;
         }
+
+        template<>
+        inline static TypeInfo Of<void, void>() noexcept
+        {
+            std::string name(TypeName<void>());
+            std::string inherit(TypeName<void>());
+
+            TypeInfo info = {};
+            info.name = StringID(TypeID<void>(), name.c_str());
+            info.inherit = StringID(TypeID<void>(), inherit.c_str());
+            info.size = 0;
+            info.align = 0;
+            return info;
+        }
+
 
         TypeInfo() = default;
         ~TypeInfo() = default;

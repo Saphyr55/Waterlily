@@ -34,12 +34,6 @@ TEST_CASE("TypeName", "[TypeName]")
 
 TEST_CASE("TypeID", "[TypeID]")
 {
-
-    SECTION("Wl::TypeID<void>() is valued to '0'")
-    {
-        REQUIRE(Wl::TypeID<void>() == 0);
-    }
-
     SECTION("Wl::TypeID<Namespace1::Namespace2::AClass>() is valued to '281095620820113821'")
     {
         REQUIRE(Wl::TypeID<Namespace1::Namespace2::AClass>() == 281095620820113821);

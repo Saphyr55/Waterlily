@@ -16,8 +16,8 @@ namespace Wl
         size_t offset = 0;
         RenderInstanceLayout layout;
 
-        offset = FieldOffsetAlignUp<Matrix4f>(offset, alignment, layout.ModelOffset);
-        offset = FieldOffsetAlignUp<MaterialHandle>(offset, alignment, layout.MaterialOffset);
+        offset = MemberOffsetAlignUp<Matrix4f>(offset, alignment, layout.ModelOffset);
+        offset = MemberOffsetAlignUp<MaterialHandle>(offset, alignment, layout.MaterialOffset);
 
         layout.Stride = Memory::AlignUp(offset, alignment);
 

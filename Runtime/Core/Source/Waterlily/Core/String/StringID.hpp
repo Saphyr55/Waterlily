@@ -35,30 +35,30 @@ namespace Wl
         }
 
     public:
-        StringID() = default;
-        StringID(uint64_t hash, StringRef text);
+        StringID() noexcept = default;
+        StringID(uint64_t hash, StringRef text) noexcept;
 
-        StringID(const char* text)
+        StringID(const char* text) noexcept
             : StringID(StringRef(text))
         {
         }
 
-        explicit StringID(StringRef text)
+        explicit StringID(StringRef text) noexcept
             : StringID(Wl::fnv1a_cstr(text.GetData(), text.GetSize()), text)
         {
         }
 
         ~StringID() = default;
 
-        StringID(const StringID& other) = default;
-        StringID(StringID&& other)
+        StringID(const StringID& other) noexcept = default;
+        StringID(StringID&& other) noexcept
         {
             m_hash = other.m_hash;
             m_text = Resolve(m_hash).GetData();
         }
 
-        StringID& operator=(const StringID& other) = default;
-        StringID& operator=(StringID&& other)
+        StringID& operator=(const StringID& other) noexcept = default;
+        StringID& operator=(StringID&& other) noexcept
         {
             m_hash = other.m_hash;
             m_text = Resolve(m_hash).GetData();

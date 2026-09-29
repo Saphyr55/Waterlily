@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/CoreExports.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Math/Matrix4.hpp"
 #include "Waterlily/Core/Math/Vector3.hpp"
 
@@ -15,15 +14,11 @@ namespace Wl
         float z = 0.0f;
         float w = 1.0f;
 
-        static constexpr float Normal(const Quaternion& quaternion);
-
-        static constexpr Quaternion Normalize(const Quaternion& quaternion);
-
-        static constexpr Quaternion Conjugate(const Quaternion& quaternion);
-
-        static constexpr Matrix4f RotationMatrix(const Quaternion& q);
-
-        static constexpr Quaternion FromAxisAngle(const Vector3f& axis, float angle);
+        constexpr static float Normal(const Quaternion& quaternion);
+        constexpr static Quaternion Normalize(const Quaternion& quaternion);
+        constexpr static Quaternion Conjugate(const Quaternion& quaternion);
+        constexpr static Matrix4f RotationMatrix(const Quaternion& q);
+        constexpr static Quaternion FromAxisAngle(const Vector3f& axis, float angle);
 
         constexpr Quaternion operator*(const Quaternion& quaternion) const;
         constexpr Quaternion operator*(const Vector3f& vec) const;

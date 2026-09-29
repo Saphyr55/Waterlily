@@ -43,7 +43,7 @@ namespace Wl
         return Resolve(sid.GetHash());
     }
 
-    StringID::StringID(uint64_t hash, StringRef text)
+    StringID::StringID(uint64_t hash, StringRef text) noexcept
         : m_hash(hash)
     {
         StringID::Register(m_hash, text);
