@@ -12,7 +12,7 @@ namespace Wl
         return table;
     }
 
-    Member MetaTable::RegisterMember(Type type, const Variable& variable, const StringID& name, uint32_t offset, uint32_t size, uint32_t align)
+    Member MetaTable::RegisterMember(Type type, const TypeDescriptor& variable, const StringID& name, uint32_t offset, uint32_t size, uint32_t align)
     {
         MetaTable& table = MetaTable::Get();
 
@@ -26,19 +26,11 @@ namespace Wl
         info.size = size;
         info.offset = offset;
 
-        if (!table.nameToOffsetMap.Contains(type))
+        TypeTable& typeTable = table.typeTableMap.Get(type);
+        if (!typeTable.nameToOffsetMap.Contains(name))
         {
-            table.nameToOffsetMap.Put(type, HashMap<StringID, uint32_t>());
-            table.memberInfoMap.Put(type, OrderedSet<MemberInfo>());
-        }
-
-        HashMap<StringID, uint32_t>& map = table.nameToOffsetMap.Get(type);
-        OrderedSet<MemberInfo>& infos = table.memberInfoMap.Get(type);
-
-        if (!map.Contains(name))
-        {
-            infos.insert(info);
-            map.Put(name, offset);
+            typeTable.memberInfoMap.insert(info);
+            typeTable.nameToOffsetMap.Put(name, offset);
         }
 
         return member;
@@ -47,15 +39,15 @@ namespace Wl
     Member MetaTable::GetMember(Type type, const StringID& name)
     {
         MetaTable& table = MetaTable::Get();
-        HashMap<StringID, uint32_t>& map = table.nameToOffsetMap.Get(type);
-        return Member(type, map.Get(name));
+        TypeTable& typeTable = table.typeTableMap.Get(type);
+        return Member(type, typeTable.nameToOffsetMap.Get(name));
     }
 
     const MemberInfo& MetaTable::GetMemberInfo(Type type, const StringID& name)
     {
         MetaTable& table = MetaTable::Get();
+        TypeTable& typeTable = table.typeTableMap.Get(type);
 
-        OrderedSet<MemberInfo>& infos = table.memberInfoMap.Get(type);
         Member member = GetMember(type, name);
 
         MemberInfo info;
@@ -63,39 +55,32 @@ namespace Wl
         info.owner = type;
         info.offset = member.GetOffset();
 
-        return *infos.find(info);
+        return *typeTable.memberInfoMap.find(info);
     }
 
     bool MetaTable::ContainsMember(Type type, const StringID& name)
     {
-        if (auto* ptr = MetaTable::Get().nameToOffsetMap.GetPtr(type))
+        if (auto* ptr = MetaTable::Get().typeTableMap.GetPtr(type))
         {
-            return ptr->Contains(name);
+            return ptr->nameToOffsetMap.Contains(name);
         }
         return false;
     }
-    
+
     bool MetaTable::ConstainsMethod(Type type, const StringID& name)
     {
-        if (auto* ptr = MetaTable::Get().methodMap.GetPtr(type))
+        if (auto* ptr = MetaTable::Get().typeTableMap.GetPtr(type))
         {
-            return ptr->Contains(name);
+            return ptr->methodMap.Contains(name);
         }
-        return false; 
+        return false;
     }
 
     const MethodInfo& MetaTable::GetMethodInfo(Type type, const StringID& name)
     {
         MetaTable& table = Get();
-
-        if (!table.methodMap.Contains(type))
-        {
-            table.methodMap.Put(type, HashMap<StringID, MethodInfo>());
-        }
-
-        HashMap<StringID, MethodInfo>& methods = table.methodMap.Get(type);
-
-        return methods.Get(name);
+        TypeTable& typeTable = table.typeTableMap.Get(type);
+        return typeTable.methodMap.Get(name);
     }
 
 

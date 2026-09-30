@@ -1,13 +1,13 @@
-#include "Variable.hpp"
+#include "TypeDescriptor.hpp"
 #include "TypeInfo.hpp"
 #include "Waterlily/Core/String/Format.hpp"
 
 namespace Wl
 {
 
-    String Variable::GetVariableTypeName() const
+    String TypeDescriptor::GetTypeName() const
     {
-        const TypeInfo& info = GetUnderlineType().GetTypeInfo();
+        const TypeInfo& info = GetUnderlyingType().GetTypeInfo();
         String fullTypeName(info.name.GetText());
 
         if (IsVolatile())

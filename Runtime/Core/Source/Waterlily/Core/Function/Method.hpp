@@ -35,17 +35,21 @@ namespace Wl
                 }
                 else if constexpr (std::is_reference_v<ReturnType>)
                 {
-                    auto* p = &InvokeImpl();
+                    using Address = std::remove_reference_t<ReturnType>;
+
+                    ReturnType ref = InvokeImpl();
+                    Address* p = std::addressof(ref);
+
                     if (returnObject)
                     {
-                        *static_cast<decltype(p)*>(returnObject) = p;
+                        *static_cast<Address**>(returnObject) = p;
                     }
                 }
                 else
                 {
                     if (returnObject)
                     {
-                        new (returnObject) ReturnType(InvokeImpl());
+                        WL_PLACEMENT_NEW(returnObject, ReturnType(InvokeImpl()));
                     }
                     else
                     {
@@ -89,10 +93,12 @@ namespace Wl
         template<typename R = void, typename Obj, typename... Args>
         R Invoke(Obj& object, Args&&... args) const
         {
+            using AddressType = const volatile void*;
+
             WL_CHECK(IsValid());
 
-            void* argv[] = {const_cast<void*>(static_cast<const volatile void*>(std::addressof(args)))..., nullptr};
-            void* self = const_cast<void*>(static_cast<const volatile void*>(std::addressof(object)));
+            void* argv[] = {const_cast<void*>(static_cast<AddressType>(std::addressof(args)))...};
+            void* self = const_cast<void*>(static_cast<AddressType>(std::addressof(object)));
             return Call<R>(self, argv);
         }
 

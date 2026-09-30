@@ -24,7 +24,8 @@ namespace Wl
         virtual ~OutputStream() = default;
     };
 
-    class Stream : public InputStream
+    class Stream
+        : public InputStream
         , public OutputStream
     {
     public:

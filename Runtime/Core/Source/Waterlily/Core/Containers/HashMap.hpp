@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/Entry.hpp"
 #include "Waterlily/Core/Containers/HashMapSlot.hpp"
@@ -263,6 +264,8 @@ namespace Wl
 
         ValueType& Get(const KeyType& key)
         {
+            WL_CHECK(!IsEmpty());
+
             SlotType* slot = LookupImpl(key).first;
             WL_CHECK(slot);
             return slot->Value.GetRef();
@@ -270,6 +273,8 @@ namespace Wl
 
         const ValueType& Get(const KeyType& key) const
         {
+            WL_CHECK(!IsEmpty());
+
             const SlotType* slot = LookupImpl(key).first;
             WL_CHECK(slot);
             return slot->Value.GetRef();

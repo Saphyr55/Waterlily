@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MemberInfo.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/Set.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
@@ -13,16 +12,24 @@
 namespace Wl
 {
 
+    class TypeTable
+    {
+    public:
+        OrderedSet<MemberInfo> memberInfoMap;
+        HashMap<StringID, uint32_t> nameToOffsetMap;
+        HashMap<StringID, MethodInfo> methodMap;
+    };
+
     class WL_CORE_API MetaTable
     {
     public:
         template<typename T>
-        constexpr inline static Variable VariableOf();
+        constexpr inline static TypeDescriptor TypeDescriptorOf();
 
         template<>
-        inline Variable VariableOf<void>()
+        inline TypeDescriptor TypeDescriptorOf<void>()
         {
-            return Variable(TypeOf<void>());
+            return TypeDescriptor(TypeOf<void>());
         }
 
     public:
@@ -62,7 +69,10 @@ namespace Wl
         }
 
     public:
-        static Member RegisterMember(Type objectType, const Variable& variable, const StringID& name, uint32_t offset, uint32_t size, uint32_t align);
+        template<typename T, typename ObjectType>
+        static T ReadMember(const ObjectType& object, const StringID& name);
+
+        static Member RegisterMember(Type objectType, const TypeDescriptor& variable, const StringID& name, uint32_t offset, uint32_t size, uint32_t align);
 
         template<typename ObjectType, typename MemberType>
         static Member RegisterMember(const StringID& name, MemberType ObjectType::* member);
@@ -91,21 +101,31 @@ namespace Wl
         template<typename MethodType>
         inline static void RegisterMethodImpl(const StringID& name, MethodType method);
 
+        template<typename T, typename InheritType>
+        inline static void RegisterTypeImpl();
+
     public:
         static MetaTable& Get();
 
         HashMap<IdentifierType, TypeInfo> types;
-        HashMap<Type, OrderedSet<MemberInfo>> memberInfoMap;
-        HashMap<Type, HashMap<StringID, uint32_t>> nameToOffsetMap;
-        HashMap<Type, HashMap<StringID, MethodInfo>> methodMap;
+        HashMap<Type, TypeTable> typeTableMap;
     };
 
-    template<typename T>
-    constexpr inline Variable MetaTable::VariableOf()
+    template<typename T, typename ObjectType>
+    T MetaTable::ReadMember(const ObjectType& object, const StringID& name)
     {
-        using DetailsType = VariableDetails<T>;
+        const MemberInfo& info = GetMemberInfo(TypeOf<ObjectType>(), name);
+        const uint8_t* base = reinterpret_cast<const uint8_t*>(&object);
+        const T value = *reinterpret_cast<const T*>(base + info.offset);
+        return value;
+    }
 
-        Variable var(TypeOf<typename DetailsType::PlainType>());
+    template<typename T>
+    constexpr inline TypeDescriptor MetaTable::TypeDescriptorOf()
+    {
+        using DetailsType = TypeDescriptorDetails<T>;
+
+        TypeDescriptor var(TypeOf<typename DetailsType::PlainType>());
 
         if constexpr (std::is_reference_v<T>)
         {
@@ -134,17 +154,26 @@ namespace Wl
     }
 
     template<typename T, typename InheritType>
-    inline Type MetaTable::TypeOf()
+    inline void MetaTable::RegisterTypeImpl()
     {
-        if (ContainsType<T>())
-        {
-            return Type(TypeID<T>());
-        }
-
         MetaTable& table = Get();
         TypeInfo info = TypeInfo::Of<T, InheritType>();
         table.types.Put(info.name.GetHash(), info);
+        table.typeTableMap.Put(Type(TypeID<T>()), TypeTable());
 
+        if constexpr (requires { T::_RegisterBindings(); })
+        {
+            T::_RegisterBindings();
+        }
+    }
+
+    template<typename T, typename InheritType>
+    inline Type MetaTable::TypeOf()
+    {
+        if (!ContainsType<T>())
+        {
+            RegisterTypeImpl<T, InheritType>();
+        }
         return Type(TypeID<T>());
     }
 
@@ -153,7 +182,7 @@ namespace Wl
     {
         Type objectType = MetaTable::TypeOf<ObjectType>();
         size_t offset = MemberOffset(property);
-        Variable variable = MetaTable::VariableOf<MemberType>();
+        TypeDescriptor variable = MetaTable::TypeDescriptorOf<MemberType>();
         size_t size = sizeof(MemberType);
         size_t align = alignof(MemberType);
         return RegisterMember(objectType, variable, name, offset, size, align);
@@ -169,7 +198,7 @@ namespace Wl
 
         Type ownerType = MetaTable::TypeOf<ObjectType>();
         Type signature = MetaTable::TypeOf<MethodType>();
-        Variable returnVar = MetaTable::VariableOf<ReturnType>();
+        TypeDescriptor returnVar = MetaTable::TypeDescriptorOf<ReturnType>();
 
         MethodInfo info;
         info.owner = ownerType;
@@ -179,17 +208,13 @@ namespace Wl
         info.returnVar = returnVar;
         ParamsType::ForEach([&info]<typename ParamType>(TypeTag<ParamType>)
         {
-            info.paramVars.Append(MetaTable::VariableOf<ParamType>());
+            info.paramVars.Append(MetaTable::TypeDescriptorOf<ParamType>());
         });
 
         MetaTable& table = MetaTable::Get();
+        TypeTable& typeTable = table.typeTableMap.Get(ownerType);
 
-        if (!table.methodMap.Contains(ownerType))
-        {
-            table.methodMap.Put(ownerType, HashMap<StringID, MethodInfo>());
-        }
-
-        HashMap<StringID, MethodInfo>& methods = table.methodMap[ownerType];
+        HashMap<StringID, MethodInfo>& methods = typeTable.methodMap;
         methods.Put(name, info);
     }
 

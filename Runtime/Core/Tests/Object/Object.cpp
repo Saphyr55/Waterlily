@@ -1,8 +1,11 @@
 #include "Waterlily/Core/Object/Object.hpp"
 #include "Waterlily/Core/Object/MetaTable.hpp"
 #include "Waterlily/Core/Object/Type.hpp"
+#include "Waterlily/Core/Object/TypeDescriptor.hpp"
 #include "Waterlily/Core/Object/TypeInfo.hpp"
-#include "Waterlily/Core/Object/Variable.hpp"
+#include "Waterlily/Core/String/Format.hpp"
+#include "Waterlily/Core/String/String.hpp"
+
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -18,14 +21,9 @@ class Foo : public Bar
     WL_OBJECT(Foo, Bar);
 
 public:
-    static void BindAll()
+    String FooMethod(int x, float r) const
     {
-        _ObjectRegisterBindings();
-    }
-
-    float FooMethod(int x, float r) const
-    {
-        return (x + m_y) / r;
+        return Format("%.1f", (x + m_y) / r);
     }
 
     int& GetRefX()
@@ -67,22 +65,22 @@ public:
     }
 };
 
-void Foo::_ObjectRegisterBindings()
+void Bar::_RegisterBindings()
 {
-    Variable xVar = MetaTable::VariableOf<decltype(Foo::m_x)>();
+}
 
-    MetaTable::RegisterMember(StaticType(), xVar, "x", OffsetOfX(), xVar.GetSize(), xVar.GetAlign());
+void Foo::_RegisterBindings()
+{
+    TypeDescriptor xVar = MetaTable::TypeDescriptorOf<decltype(Foo::m_x)>();
+
+    Type fooType = Foo::StaticType();
+
+    MetaTable::RegisterMember(fooType, xVar, "x", OffsetOfX(), xVar.GetSize(), xVar.GetAlign());
     MetaTable::RegisterMember("y", &Foo::m_y);
 
     MetaTable::RegisterMethod("FooMethod", &Foo::FooMethod);
     MetaTable::RegisterMethod("GetRefX", &Foo::GetRefX);
 }
-
-static int before = []()
-{
-    Foo::BindAll();
-    return 1;
-}();
 
 TEST_CASE("Object::StaticClass", "[Object]")
 {
@@ -130,27 +128,27 @@ TEST_CASE("MetaTable::Method", "[Object]")
         REQUIRE(info.name == fooMethodName);
         REQUIRE(info.owner == Foo::StaticType());
         REQUIRE(info.paramVars.GetSize() == 2);
-        REQUIRE(info.paramVars[0] == MetaTable::VariableOf<int>());
-        REQUIRE(info.paramVars[1] == MetaTable::VariableOf<float>());
-        REQUIRE(info.returnVar == MetaTable::VariableOf<float>());
+        REQUIRE(info.paramVars[0] == MetaTable::TypeDescriptorOf<int>());
+        REQUIRE(info.paramVars[1] == MetaTable::TypeDescriptorOf<float>());
+        REQUIRE(info.returnVar == MetaTable::TypeDescriptorOf<String>());
     }
 
     SECTION("Check method handle invoke")
     {
         Foo foo;
         const MethodInfo& info = MetaTable::GetMethodInfo(Foo::StaticType(), fooMethodName);
-        float x = info.handle.Invoke<float>(foo, 2, 1.0f);
-        REQUIRE(x == 2.0f);
+        String x = info.handle.Invoke<String>(foo, 2, 1.0f);
+        REQUIRE(x == String("2.0"));
     }
 }
 
 TEST_CASE("MetaTable::Member", "[Object]")
 {
-    const MemberInfo& infoX = MetaTable::GetMemberInfo(Foo::StaticType(), "x");
-    const MemberInfo& infoY = MetaTable::GetMemberInfo(Foo::StaticType(), "y");
 
     SECTION("Member x")
     {
+        const MemberInfo& infoX = MetaTable::GetMemberInfo(Foo::StaticType(), "x");
+
         REQUIRE(infoX.name == "x");
         REQUIRE(infoX.offset == Foo::OffsetOfX());
         REQUIRE(infoX.size == sizeof(int));
@@ -159,6 +157,8 @@ TEST_CASE("MetaTable::Member", "[Object]")
 
     SECTION("Member y")
     {
+        const MemberInfo& infoY = MetaTable::GetMemberInfo(Foo::StaticType(), "y");
+
         REQUIRE(infoY.name == "y");
         REQUIRE(infoY.offset == Foo::OffsetOfY());
         REQUIRE(infoY.size == sizeof(const int));
@@ -168,12 +168,7 @@ TEST_CASE("MetaTable::Member", "[Object]")
     SECTION("Can read member with an offset.")
     {
         Foo foo;
-
-        const uint8_t* base = reinterpret_cast<const uint8_t*>(&foo);
         foo.SetX(42);
-
-        const int value = *reinterpret_cast<const int*>(base + infoX.offset);
-
-        REQUIRE(value == 42);
+        REQUIRE(MetaTable::ReadMember<int>(foo, "x") == 42);
     }
 }

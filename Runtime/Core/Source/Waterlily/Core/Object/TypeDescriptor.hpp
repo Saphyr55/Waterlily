@@ -25,7 +25,7 @@ namespace Wl
     WL_ENUM_FLAGS_CUSTOM_DERIVED(Modifier, ModifierBase);
 
     template<typename T>
-    struct VariableDetails
+    struct TypeDescriptorDetails
     {
         using RemovedExtentsType = std::remove_all_extents_t<T>;
         using RemovedReferencesType = std::remove_reference_t<RemovedExtentsType>;
@@ -49,24 +49,24 @@ namespace Wl
         }
     };
 
-    class WL_CORE_API Variable
+    class WL_CORE_API TypeDescriptor
     {
     public:
-        String GetVariableTypeName() const;
+        String GetTypeName() const;
 
-        inline const StringID& GetUnderlineTypeName() const
+        inline const StringID& GetUnderlyingTypeName() const
         {
-            return m_type.GetTypeInfo().name;
+            return m_underlyingType.GetTypeInfo().name;
         }
 
-        constexpr inline Type GetUnderlineType() const
+        constexpr inline Type GetUnderlyingType() const
         {
-            return m_type;
+            return m_underlyingType;
         };
 
         constexpr inline void SetUnderlineType(Type type)
         {
-            m_type = type;
+            m_underlyingType = type;
         }
 
         constexpr inline void SetModifier(Modifier modifier)
@@ -215,39 +215,39 @@ namespace Wl
         constexpr inline size_t GetSize() const
         {
             bool isPointOrRef = IsPointer() || IsReference(); 
-            return isPointOrRef ? sizeof(void*) : GetArraySize() * GetUnderlineType().GetSize();
+            return isPointOrRef ? sizeof(void*) : GetArraySize() * GetUnderlyingType().GetSize();
         }
 
         constexpr inline size_t GetAlign() const
         {
             bool isPointOrRef = IsPointer() || IsReference(); 
-            return isPointOrRef ? alignof(void*) : GetUnderlineType().GetAlign();
+            return isPointOrRef ? alignof(void*) : GetUnderlyingType().GetAlign();
         }
 
     public:
-        constexpr bool operator==(const Variable& other) const
+        constexpr bool operator==(const TypeDescriptor& other) const
         {
-            return m_type == other.m_type &&
+            return m_underlyingType == other.m_underlyingType &&
                    m_arraySize == other.m_arraySize &&
                    m_pointerCount == other.m_pointerCount &&
                    m_modifierFlags == other.m_modifierFlags;
         }
 
-        constexpr bool operator!=(const Variable& other) const
+        constexpr bool operator!=(const TypeDescriptor& other) const
         {
             return !(*this == other);
         }
 
     public:
-        constexpr Variable() = default;
-        constexpr explicit Variable(Type type)
-            : m_type(type)
+        constexpr TypeDescriptor() = default;
+        constexpr explicit TypeDescriptor(Type type)
+            : m_underlyingType(type)
         {
         }
-        constexpr ~Variable() = default;
+        constexpr ~TypeDescriptor() = default;
 
     private:
-        Type m_type;
+        Type m_underlyingType;
         uint32_t m_arraySize = 0;
         uint32_t m_pointerCount = 0;
         Modifier m_modifierFlags = Modifier::None;
@@ -255,11 +255,11 @@ namespace Wl
 
 }// namespace Wl
 
-WL_HASH_DEFINE(Wl::Variable, var, {
-    Wl::Type type = var.GetUnderlineType();
+WL_HASH_DEFINE(Wl::TypeDescriptor, desc, {
+    Wl::Type type = desc.GetUnderlyingType();
     uint64_t hash = Wl::Hash(type);
-    hash = Wl::HashCombine(hash, Wl::Hash(var.GetArraySize()));
-    hash = Wl::HashCombine(hash, Wl::Hash(var.GetPointerCount()));
-    hash = Wl::HashCombine(hash, Wl::Hash(static_cast<Wl::ModifierBase>(var.GetModifiers())));
+    hash = Wl::HashCombine(hash, Wl::Hash(desc.GetArraySize()));
+    hash = Wl::HashCombine(hash, Wl::Hash(desc.GetPointerCount()));
+    hash = Wl::HashCombine(hash, Wl::Hash(static_cast<Wl::ModifierBase>(desc.GetModifiers())));
     return hash;
 })

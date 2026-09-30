@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Waterlily/Core/Function/Method.hpp"
-#include "Waterlily/Core/Object/Variable.hpp"
+#include "Waterlily/Core/Object/TypeDescriptor.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 
 namespace Wl
@@ -11,7 +11,7 @@ namespace Wl
     {
         StringID name;
         Type owner;
-        Variable variable;
+        TypeDescriptor variable;
         uint32_t offset;
         uint32_t size;
         uint32_t align;
@@ -28,8 +28,8 @@ namespace Wl
         StringID name;
         Type owner;
         Type signature;
-        Variable returnVar;
-        Array<Variable> paramVars;
+        TypeDescriptor returnVar;
+        Array<TypeDescriptor> paramVars;
         MethodHandle handle;
     };
 
