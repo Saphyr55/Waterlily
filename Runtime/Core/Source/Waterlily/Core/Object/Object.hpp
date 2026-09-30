@@ -32,14 +32,14 @@ private:                                                            \
     using Super = InheritTypeName;           \
     _WL_OBJECT(TypeName, InheritTypeName)
 
-#define WL_OBJECT_ROOT(TypeName) _WL_OBJECT(TypeName, void)
+#define WL_TYPE(TypeName) _WL_OBJECT(TypeName, void)
 
 namespace Wl
 {
 
     class Object
     {
-        WL_OBJECT_ROOT(Object);
+        WL_TYPE(Object);
     };
 
 }// namespace Wl

@@ -1,14 +1,16 @@
 #pragma once
 
+#include "Waterlily/Core/Function/Method.hpp"
 #include "Waterlily/Core/Object/Variable.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 
-namespace Wl 
+namespace Wl
 {
-    
+
     struct MemberInfo
     {
         StringID name;
+        Type owner;
         Variable variable;
         uint32_t offset;
         uint32_t size;
@@ -20,5 +22,15 @@ namespace Wl
             return offset < rhs.offset;
         }
     };
-    
-}
+
+    struct MethodInfo
+    {
+        StringID name;
+        Type owner;
+        Type signature;
+        Variable returnVar;
+        Array<Variable> paramVars;
+        MethodHandle handle;
+    };
+
+}// namespace Wl

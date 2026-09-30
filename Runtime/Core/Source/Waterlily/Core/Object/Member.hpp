@@ -10,6 +10,17 @@ namespace Wl
     class Member
     {
     public:
+        inline Type GetOwnerType() const
+        {
+            return m_type;
+        }
+
+        inline uint32_t GetOffset() const
+        {
+            return m_offset;
+        }
+
+    public:
         constexpr Member() = default;
         constexpr explicit Member(Type type, uint32_t offset)
             : m_type(type)

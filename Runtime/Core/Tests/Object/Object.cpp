@@ -23,9 +23,14 @@ public:
         _ObjectRegisterBindings();
     }
 
-    int BarMethod(int x)
+    float FooMethod(int x, float r) const
     {
-        return x + GetX();
+        return (x + m_y) / r;
+    }
+
+    int& GetRefX()
+    {
+        return m_x;
     }
 
     int GetX() const
@@ -39,7 +44,7 @@ public:
     }
 
 private:
-    int m_x;
+    int m_x = 91;
     const int m_y = 0;
 
 public:
@@ -68,7 +73,16 @@ void Foo::_ObjectRegisterBindings()
 
     MetaTable::RegisterMember(StaticType(), xVar, "x", OffsetOfX(), xVar.GetSize(), xVar.GetAlign());
     MetaTable::RegisterMember("y", &Foo::m_y);
+
+    MetaTable::RegisterMethod("FooMethod", &Foo::FooMethod);
+    MetaTable::RegisterMethod("GetRefX", &Foo::GetRefX);
 }
+
+static int before = []()
+{
+    Foo::BindAll();
+    return 1;
+}();
 
 TEST_CASE("Object::StaticClass", "[Object]")
 {
@@ -101,14 +115,41 @@ TEST_CASE("Object::StaticClass", "[Object]")
     }
 }
 
-TEST_CASE("Object::Properties", "[Object]")
+TEST_CASE("MetaTable::Method", "[Object]")
 {
-    Foo::BindAll();
+    StringID fooMethodName = "FooMethod";
 
+    SECTION("Check contains Method")
+    {
+        REQUIRE(MetaTable::ConstainsMethod(Foo::StaticType(), fooMethodName));
+    }
+
+    SECTION("Check method info")
+    {
+        const MethodInfo& info = MetaTable::GetMethodInfo(Foo::StaticType(), fooMethodName);
+        REQUIRE(info.name == fooMethodName);
+        REQUIRE(info.owner == Foo::StaticType());
+        REQUIRE(info.paramVars.GetSize() == 2);
+        REQUIRE(info.paramVars[0] == MetaTable::VariableOf<int>());
+        REQUIRE(info.paramVars[1] == MetaTable::VariableOf<float>());
+        REQUIRE(info.returnVar == MetaTable::VariableOf<float>());
+    }
+
+    SECTION("Check method handle invoke")
+    {
+        Foo foo;
+        const MethodInfo& info = MetaTable::GetMethodInfo(Foo::StaticType(), fooMethodName);
+        float x = info.handle.Invoke<float>(foo, 2, 1.0f);
+        REQUIRE(x == 2.0f);
+    }
+}
+
+TEST_CASE("MetaTable::Member", "[Object]")
+{
     const MemberInfo& infoX = MetaTable::GetMemberInfo(Foo::StaticType(), "x");
     const MemberInfo& infoY = MetaTable::GetMemberInfo(Foo::StaticType(), "y");
 
-    SECTION("Property x")
+    SECTION("Member x")
     {
         REQUIRE(infoX.name == "x");
         REQUIRE(infoX.offset == Foo::OffsetOfX());
@@ -116,7 +157,7 @@ TEST_CASE("Object::Properties", "[Object]")
         REQUIRE(infoX.align == alignof(int));
     }
 
-    SECTION("Property y")
+    SECTION("Member y")
     {
         REQUIRE(infoY.name == "y");
         REQUIRE(infoY.offset == Foo::OffsetOfY());
@@ -124,7 +165,7 @@ TEST_CASE("Object::Properties", "[Object]")
         REQUIRE(infoY.align == alignof(const int));
     }
 
-    SECTION("Can read with offset.")
+    SECTION("Can read member with an offset.")
     {
         Foo foo;
 
