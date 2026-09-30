@@ -33,4 +33,17 @@ namespace Wl
         MethodHandle handle;
     };
 
+    struct PropertyInfo
+    {
+        StringID name;
+        Type owner;
+        StringID getterMethodName;
+        StringID setterMethodName;
+
+        bool IsReadOnly()
+        {
+            return setterMethodName == "";
+        }
+    };
+
 }// namespace Wl

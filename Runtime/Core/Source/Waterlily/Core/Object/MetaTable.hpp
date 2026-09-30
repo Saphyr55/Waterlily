@@ -3,6 +3,7 @@
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/Set.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
+#include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Object/Member.hpp"
 #include "Waterlily/Core/Object/MemberInfo.hpp"
 #include "Waterlily/Core/Object/Type.hpp"
@@ -12,12 +13,12 @@
 namespace Wl
 {
 
-    class TypeTable
+    struct TypeTable
     {
-    public:
         OrderedSet<MemberInfo> memberInfoMap;
         HashMap<StringID, uint32_t> nameToOffsetMap;
         HashMap<StringID, MethodInfo> methodMap;
+        HashMap<StringID, PropertyInfo> propertyMap;
     };
 
     class WL_CORE_API MetaTable
@@ -70,12 +71,10 @@ namespace Wl
 
     public:
         template<typename T, typename ObjectType>
-        static T ReadMember(const ObjectType& object, const StringID& name);
-
-        static Member RegisterMember(Type objectType, const TypeDescriptor& variable, const StringID& name, uint32_t offset, uint32_t size, uint32_t align);
+        static T ReadMember(ObjectType& object, const StringID& name);
 
         template<typename ObjectType, typename MemberType>
-        static Member RegisterMember(const StringID& name, MemberType ObjectType::* member);
+        static void RegisterMember(const StringID& name, MemberType ObjectType::* member);
 
         static Member GetMember(Type type, const StringID& name);
         static const MemberInfo& GetMemberInfo(Type type, const StringID& name);
@@ -97,12 +96,31 @@ namespace Wl
         static bool ConstainsMethod(Type type, const StringID& name);
         static const MethodInfo& GetMethodInfo(Type type, const StringID& name);
 
+        static void RegisterProperty(Type type, const StringID& name, const StringID& getterName, const StringID& setterName = "");
+
+        static bool ConstainsProperty(Type type, const StringID& name);
+        static const PropertyInfo& GetPropertyInfo(Type type, const StringID& name);
+
+        template<typename PropertyType, typename ObjectType>
+        static PropertyType ReadProperty(ObjectType& object, const StringID& name);
+
+        template<typename ObjectType, typename PropertyType>
+        static void WriteProperty(ObjectType& object, const StringID& name, const PropertyType& value);
+
     private:
         template<typename MethodType>
         inline static void RegisterMethodImpl(const StringID& name, MethodType method);
 
         template<typename T, typename InheritType>
         inline static void RegisterTypeImpl();
+
+        static void RegisterMemberImpl(
+                Type objectType,
+                const TypeDescriptor& variable,
+                const StringID& name,
+                uint32_t offset,
+                uint32_t size,
+                uint32_t align);
 
     public:
         static MetaTable& Get();
@@ -112,7 +130,7 @@ namespace Wl
     };
 
     template<typename T, typename ObjectType>
-    T MetaTable::ReadMember(const ObjectType& object, const StringID& name)
+    T MetaTable::ReadMember(ObjectType& object, const StringID& name)
     {
         const MemberInfo& info = GetMemberInfo(TypeOf<ObjectType>(), name);
         const uint8_t* base = reinterpret_cast<const uint8_t*>(&object);
@@ -178,14 +196,14 @@ namespace Wl
     }
 
     template<typename ObjectType, typename MemberType>
-    inline Member MetaTable::RegisterMember(const StringID& name, MemberType ObjectType::* property)
+    inline void MetaTable::RegisterMember(const StringID& name, MemberType ObjectType::* member)
     {
         Type objectType = MetaTable::TypeOf<ObjectType>();
-        size_t offset = MemberOffset(property);
+        size_t offset = MemberOffset(member);
         TypeDescriptor variable = MetaTable::TypeDescriptorOf<MemberType>();
         size_t size = sizeof(MemberType);
         size_t align = alignof(MemberType);
-        return RegisterMember(objectType, variable, name, offset, size, align);
+        RegisterMemberImpl(objectType, variable, name, offset, size, align);
     }
 
     template<typename MethodType>
@@ -216,6 +234,47 @@ namespace Wl
 
         HashMap<StringID, MethodInfo>& methods = typeTable.methodMap;
         methods.Put(name, info);
+    }
+
+    template<typename PropertyType, typename ObjectType>
+    PropertyType MetaTable::ReadProperty(ObjectType& object, const StringID& name)
+    {
+        Type objectType = MetaTable::TypeOf<ObjectType>();
+        MetaTable& table = MetaTable::Get();
+        TypeTable& typeTable = table.typeTableMap.Get(objectType);
+
+        const PropertyInfo& property = MetaTable::GetPropertyInfo(objectType, name);
+
+        WL_CHECK(property.getterMethodName != "");
+
+        WL_CHECK_MSG(
+                typeTable.methodMap.Contains(property.getterMethodName),
+                "'%s' method has been not registered.",
+                property.getterMethodName.GetText().GetData());
+
+        const MethodInfo& getter = MetaTable::GetMethodInfo(objectType, property.getterMethodName);
+
+        return getter.handle.Invoke<PropertyType>(object);
+    }
+
+    template<typename ObjectType, typename PropertyType>
+    void MetaTable::WriteProperty(ObjectType& object, const StringID& name, const PropertyType& value)
+    {
+        Type objectType = MetaTable::TypeOf<ObjectType>();
+        MetaTable& table = MetaTable::Get();
+        TypeTable& typeTable = table.typeTableMap.Get(objectType);
+
+        const PropertyInfo& property = MetaTable::GetPropertyInfo(objectType, name);
+
+        WL_CHECK(property.setterMethodName != "");
+        WL_CHECK_MSG(
+                typeTable.methodMap.Contains(property.setterMethodName),
+                "'%s' method has been not registered.",
+                property.setterMethodName.GetText().GetData());
+
+                const MethodInfo& setter = MetaTable::GetMethodInfo(objectType, property.setterMethodName);
+
+        setter.handle.Invoke<void>(object, value);
     }
 
 }// namespace Wl

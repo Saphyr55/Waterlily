@@ -128,7 +128,6 @@ namespace Ludo
             }
         });
 
-        m_renderService->GetWindow()->Show();
     }
 
     void LudoSubSystem::UpdateCamera(double deltaTime)

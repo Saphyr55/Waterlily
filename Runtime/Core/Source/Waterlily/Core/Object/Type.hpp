@@ -31,7 +31,7 @@ namespace Wl
         }
 
         const TypeInfo& GetTypeInfo() const;
-
+        
         bool InheritFrom(Type parentType) const;
 
     public:

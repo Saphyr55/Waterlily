@@ -97,7 +97,7 @@ namespace Wl
 
             WL_CHECK(IsValid());
 
-            void* argv[] = {const_cast<void*>(static_cast<AddressType>(std::addressof(args)))...};
+            void* argv[] = {const_cast<void*>(static_cast<AddressType>(std::addressof(args)))..., nullptr};
             void* self = const_cast<void*>(static_cast<AddressType>(std::addressof(object)));
             return Call<R>(self, argv);
         }

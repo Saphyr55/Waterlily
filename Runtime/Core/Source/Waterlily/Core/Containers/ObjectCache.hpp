@@ -7,7 +7,7 @@
 namespace Wl
 {
 
-    template<typename KeyType, typename ObjectType, typename HashType = Hash<KeyType>>
+    template<typename KeyType, typename ObjectType, typename HashType = Hasher<KeyType>>
     class ObjectCache
     {
     public:
