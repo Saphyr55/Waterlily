@@ -60,7 +60,7 @@ namespace Wl
         }
     };
 
-    class MethodHandle
+    class WL_CORE_API MethodHandle
     {
         using Invoker = Function<void(void* self, void** args, void* returnObject)>;
 

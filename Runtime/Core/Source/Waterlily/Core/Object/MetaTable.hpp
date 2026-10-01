@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/Set.hpp"
 #include "Waterlily/Core/CoreExports.hpp"
@@ -36,6 +37,12 @@ namespace Wl
     public:
         template<typename T, typename InheritType = void>
         inline static Type TypeOf();
+    
+        inline static Type GetType(const StringID& name)
+        {
+            WL_CHECK(ContainsType(name));
+            return Type(name.GetHash());
+        }
 
         template<typename T>
         inline static bool ContainsType()
@@ -71,7 +78,7 @@ namespace Wl
 
     public:
         template<typename T, typename ObjectType>
-        static T ReadMember(ObjectType& object, const StringID& name);
+        static T& ReadMember(ObjectType& object, const StringID& name);
 
         template<typename ObjectType, typename MemberType>
         static void RegisterMember(const StringID& name, MemberType ObjectType::* member);
@@ -107,6 +114,21 @@ namespace Wl
         template<typename ObjectType, typename PropertyType>
         static void WriteProperty(ObjectType& object, const StringID& name, const PropertyType& value);
 
+        inline static const OrderedSet<MemberInfo>& GetMembers(Type type)
+        {
+            return Get().typeTableMap.Get(type).memberInfoMap;
+        }
+
+        inline static const HashMap<StringID, PropertyInfo>& GetProperties(Type type)
+        {
+            return Get().typeTableMap.Get(type).propertyMap;
+        }
+
+        inline static const HashMap<StringID, MethodInfo>& GetMethods(Type type)
+        {
+            return Get().typeTableMap.Get(type).methodMap;
+        }
+
     private:
         template<typename MethodType>
         inline static void RegisterMethodImpl(const StringID& name, MethodType method);
@@ -116,7 +138,7 @@ namespace Wl
 
         static void RegisterMemberImpl(
                 Type objectType,
-                const TypeDescriptor& variable,
+                const TypeDescriptor& typeDesc,
                 const StringID& name,
                 uint32_t offset,
                 uint32_t size,
@@ -128,13 +150,13 @@ namespace Wl
         HashMap<IdentifierType, TypeInfo> types;
         HashMap<Type, TypeTable> typeTableMap;
     };
-
+    
     template<typename T, typename ObjectType>
-    T MetaTable::ReadMember(ObjectType& object, const StringID& name)
+    T& MetaTable::ReadMember(ObjectType& object, const StringID& name)
     {
         const MemberInfo& info = GetMemberInfo(TypeOf<ObjectType>(), name);
-        const uint8_t* base = reinterpret_cast<const uint8_t*>(&object);
-        const T value = *reinterpret_cast<const T*>(base + info.offset);
+        uint8_t* base = reinterpret_cast<uint8_t*>(&object);
+        T& value = *reinterpret_cast<T*>(base + info.offset);
         return value;
     }
 
@@ -143,32 +165,32 @@ namespace Wl
     {
         using DetailsType = TypeDescriptorDetails<T>;
 
-        TypeDescriptor var(TypeOf<typename DetailsType::PlainType>());
+        TypeDescriptor typeDesc(TypeOf<typename DetailsType::PlainType>());
 
         if constexpr (std::is_reference_v<T>)
         {
-            var.SetReference();
+            typeDesc.SetReference();
         }
 
         if constexpr (std::is_rvalue_reference_v<T>)
         {
-            var.SetRValueReference();
+            typeDesc.SetRValueReference();
         }
 
         if constexpr (std::is_const_v<typename DetailsType::RemovedPointersType>)
         {
-            var.SetConst();
+            typeDesc.SetConst();
         }
 
         if constexpr (std::is_volatile_v<typename DetailsType::RemovedPointersType>)
         {
-            var.SetVolatile();
+            typeDesc.SetVolatile();
         }
 
-        var.SetArraySize(DetailsType::GetArraySize());
-        var.SetPointerCount(DetailsType::GetPointerCount());
+        typeDesc.SetArraySize(DetailsType::GetArraySize());
+        typeDesc.SetPointerCount(DetailsType::GetPointerCount());
 
-        return var;
+        return typeDesc;
     }
 
     template<typename T, typename InheritType>
@@ -200,10 +222,10 @@ namespace Wl
     {
         Type objectType = MetaTable::TypeOf<ObjectType>();
         size_t offset = MemberOffset(member);
-        TypeDescriptor variable = MetaTable::TypeDescriptorOf<MemberType>();
+        TypeDescriptor typeDesc = MetaTable::TypeDescriptorOf<MemberType>();
         size_t size = sizeof(MemberType);
         size_t align = alignof(MemberType);
-        RegisterMemberImpl(objectType, variable, name, offset, size, align);
+        RegisterMemberImpl(objectType, typeDesc, name, offset, size, align);
     }
 
     template<typename MethodType>
@@ -272,7 +294,7 @@ namespace Wl
                 "'%s' method has been not registered.",
                 property.setterMethodName.GetText().GetData());
 
-                const MethodInfo& setter = MetaTable::GetMethodInfo(objectType, property.setterMethodName);
+        const MethodInfo& setter = MetaTable::GetMethodInfo(objectType, property.setterMethodName);
 
         setter.handle.Invoke<void>(object, value);
     }

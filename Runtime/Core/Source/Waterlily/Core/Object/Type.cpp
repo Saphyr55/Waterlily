@@ -25,6 +25,11 @@ namespace Wl
         }
         return false;
     }
+    
+    Type Type::GetParent() const
+    {
+        return MetaTable::GetType(GetTypeInfo().inherit);
+    }
 
     constexpr Type::Type(IdentifierType id) noexcept
         : m_id(id)

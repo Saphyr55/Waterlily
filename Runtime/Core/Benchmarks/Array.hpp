@@ -30,7 +30,7 @@ struct ArrayBenchmarkResult
 };
 
 template<typename ArrayType, typename InsertFunc, typename AccessFunc, typename RemoveFunc, typename ClearFunc>
-ArrayBenchmarkResult run_array_benchmark(const std::string_view name,
+ArrayBenchmarkResult RunArrayBenchmark(std::string_view name,
                                          std::vector<int32_t>& keys,
                                          ArrayType& arr,
                                          InsertFunc insert,
@@ -41,7 +41,7 @@ ArrayBenchmarkResult run_array_benchmark(const std::string_view name,
     ArrayBenchmarkResult result;
     result.name = name;
 
-    result.insert = Wl::benchmark::start([&]()
+    result.insert = Wl::Benchmark::Start([&]()
     {
         for (auto& k: keys)
         {
@@ -49,7 +49,7 @@ ArrayBenchmarkResult run_array_benchmark(const std::string_view name,
         }
     });
 
-    result.random_access = Wl::benchmark::start([&]()
+    result.random_access = Wl::Benchmark::Start([&]()
     {
         for (auto& k: keys)
         {
@@ -57,7 +57,7 @@ ArrayBenchmarkResult run_array_benchmark(const std::string_view name,
         }
     });
 
-    result.erase = Wl::benchmark::start([&]()
+    result.erase = Wl::Benchmark::Start([&]()
     {
         for (auto& k: keys)
         {
@@ -65,7 +65,7 @@ ArrayBenchmarkResult run_array_benchmark(const std::string_view name,
         }
     });
 
-    result.clear = Wl::benchmark::start([&]()
+    result.clear = Wl::Benchmark::Start([&]()
     {
         clear(arr);
     });
@@ -73,7 +73,7 @@ ArrayBenchmarkResult run_array_benchmark(const std::string_view name,
     return result;
 }
 
-inline void print_array_results_table(const std::vector<ArrayBenchmarkResult>& results)
+inline void PrintArrayResultsTable(const std::vector<ArrayBenchmarkResult>& results)
 {
     std::cout << std::setw(25) << "Array" << std::setw(25) << "Insert (s)" << std::setw(25) << "Access (s)"
               << std::setw(25) << "Erase (s)" << std::setw(25) << "Clear (s)" << "\n";
@@ -87,7 +87,7 @@ inline void print_array_results_table(const std::vector<ArrayBenchmarkResult>& r
     }
 }
 
-inline void run_array_benchmarks()
+inline void RunArrayBenchmarks()
 {
     const auto [N, N_cstr] = NUMBER_AND_QUOTE(1000000);
 
@@ -107,7 +107,7 @@ inline void run_array_benchmarks()
     {
         std::vector<Object> v;
 
-        results.push_back(run_array_benchmark(
+        results.push_back(RunArrayBenchmark(
                 "std::vector",
                 keys,
                 v,
@@ -133,7 +133,7 @@ inline void run_array_benchmarks()
     {
         Wl::Array<Object> arr;
 
-        results.push_back(run_array_benchmark(
+        results.push_back(RunArrayBenchmark(
                 "Wl::Array",
                 keys,
                 arr,
@@ -155,5 +155,5 @@ inline void run_array_benchmarks()
         }));
     }
 
-    print_array_results_table(results);
+    PrintArrayResultsTable(results);
 }

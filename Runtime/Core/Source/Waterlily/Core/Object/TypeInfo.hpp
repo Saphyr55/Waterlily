@@ -88,11 +88,12 @@ namespace Wl
             info.inherit = StringID(TypeID<InheritType>(), inherit.c_str());
             info.size = sizeof(T);
             info.align = alignof(T);
+
             return info;
         }
 
         template<>
-        inline static TypeInfo Of<void, void>() noexcept
+        inline TypeInfo Of<void, void>() noexcept
         {
             std::string name(TypeName<void>());
             std::string inherit(TypeName<void>());

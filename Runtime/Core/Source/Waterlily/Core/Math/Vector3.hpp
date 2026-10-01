@@ -6,7 +6,7 @@
 namespace Wl
 {
 
-    template<Real R = float>
+    template<IsReal R = Real>
     struct Vector3
     {
         R x = 0;
@@ -64,13 +64,13 @@ namespace Wl
     using Vector3i = Vector3<int32_t>;
     using Vector3u = Vector3<uint32_t>;
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R>::Vector3(Vector2<R> vec, R z)
         : Vector3(vec.x, vec.y, z)
     {
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R>::Vector3(R x, R y, R z)
         : x(x)
         , y(y)
@@ -78,117 +78,117 @@ namespace Wl
     {
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R>::Vector3(R r)
         : Vector3(r, r, r)
     {
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R> Vector3<R>::Zero()
     {
         return Vector3<R>(R(0.0), R(0.0), R(0.0));
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R> Vector3<R>::Right()
     {
         return Vector3<R>(R(1.0), R(0.0), R(0.0));
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R> Vector3<R>::Up()
     {
         return Vector3<R>(R(0.0), R(1.0), R(0.0));
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R> Vector3<R>::Forward()
     {
         return Vector3<R>(R(0.0), R(0.0), R(1.0));
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr float Vector3<R>::LengthSquared(const Vector3& vec)
     {
         return vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr float Vector3<R>::Length(const Vector3& vec)
     {
         return Math::Sqrt(LengthSquared(vec));
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R> Vector3<R>::Normalize(const Vector3& vec)
     {
         float l = Length(vec);
         return Vector3(vec.x / l, vec.y / l, vec.z / l);
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector3<R> Vector3<R>::Cross(const Vector3& v1, const Vector3& v2)
     {
         return Vector3((v1.y * v2.z - v1.z * v2.y), 0, 0) - Vector3(0, (v1.x * v2.z - v1.z * v2.x), 0) -
                Vector3(0, 0, (v1.x * v2.y - v1.y * v2.x));
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr auto Vector3<R>::Dot(const Vector3& v1, const Vector3& v2)
     {
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R> Vector3<R>::operator-() const
     {
-        return Vector3{-x, -y, -z};
+        return Vector3 {-x, -y, -z};
     }
 
-    template<Real R>
+    template<IsReal R>
     R Vector3<R>::Dot(const Vector3& vec) const
     {
         return vec.x * x + vec.y * y + vec.z * z;
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R> Vector3<R>::operator*(const R& t) const
     {
-        return Vector3{x * t, y * t, z * t};
+        return Vector3 {x * t, y * t, z * t};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R> Vector3<R>::operator+(const R& t) const
     {
-        return Vector3{x + t, y + t, z + t};
+        return Vector3 {x + t, y + t, z + t};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R> Vector3<R>::operator-(const R& t) const
     {
-        return Vector3{x - t, y - t, z - t};
+        return Vector3 {x - t, y - t, z - t};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R> Vector3<R>::operator*(const Vector3& vec) const
     {
-        return Vector3{vec.x * x, vec.y * y, vec.z * z};
+        return Vector3 {vec.x * x, vec.y * y, vec.z * z};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R> Vector3<R>::operator+(const Vector3& vec) const
     {
-        return Vector3{vec.x + x, vec.y + y, vec.z + z};
+        return Vector3 {vec.x + x, vec.y + y, vec.z + z};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R> Vector3<R>::operator-(const Vector3& vec) const
     {
-        return Vector3{vec.x - x, vec.y - y, vec.z - z};
+        return Vector3 {vec.x - x, vec.y - y, vec.z - z};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R>& Vector3<R>::operator+=(const Vector3& vec)
     {
         x += vec.x;
@@ -197,7 +197,7 @@ namespace Wl
         return *this;
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R>& Vector3<R>::operator-=(const Vector3& vec)
     {
         x -= vec.x;
@@ -206,7 +206,7 @@ namespace Wl
         return *this;
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R>& Vector3<R>::operator*=(const Vector3& vec)
     {
         x *= vec.x;
@@ -215,7 +215,7 @@ namespace Wl
         return *this;
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R>& Vector3<R>::operator+=(const R& t)
     {
         x += t;
@@ -224,7 +224,7 @@ namespace Wl
         return *this;
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R>& Vector3<R>::operator-=(const R& t)
     {
         x -= t;
@@ -233,7 +233,7 @@ namespace Wl
         return *this;
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R>& Vector3<R>::operator*=(const R& t)
     {
         x *= t;
@@ -242,7 +242,7 @@ namespace Wl
         return *this;
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector3<R>& Vector3<R>::operator/=(const R& t)
     {
         x /= t;

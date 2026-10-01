@@ -11,7 +11,7 @@ namespace Wl
     {
         StringID name;
         Type owner;
-        TypeDescriptor variable;
+        TypeDescriptor typeDesc;
         uint32_t offset;
         uint32_t size;
         uint32_t align;

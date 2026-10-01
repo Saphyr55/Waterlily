@@ -6,7 +6,7 @@
 namespace Wl
 {
 
-    template<Real R = float>
+    template<IsReal R = float>
     struct Vector2
     {
         R x = 0;
@@ -14,9 +14,9 @@ namespace Wl
 
         R Dot(const Vector2& vec) const;
 
-        Vector2 operator*(const Real auto&) const;
-        Vector2 operator+(const Real auto&) const;
-        Vector2 operator-(const Real auto&) const;
+        Vector2 operator*(const IsReal auto&) const;
+        Vector2 operator+(const IsReal auto&) const;
+        Vector2 operator-(const IsReal auto&) const;
         Vector2 operator*(const Vector2&) const;
         Vector2 operator+(const Vector2&) const;
         Vector2 operator-(const Vector2&) const;
@@ -38,49 +38,49 @@ namespace Wl
     using Vector2i = Vector2<int32_t>;
     using Vector2u = Vector2<uint32_t>;
 
-    template<Real R>
+    template<IsReal R>
     R Vector2<R>::Dot(const Vector2& vec) const
     {
         return vec.x * x + vec.y * y;
     }
 
-    template<Real R>
-    Vector2<R> Vector2<R>::operator*(const Real auto& t) const
+    template<IsReal R>
+    Vector2<R> Vector2<R>::operator*(const IsReal auto& t) const
     {
         return Vector2{x * t, y * t};
     }
 
-    template<Real R>
-    Vector2<R> Vector2<R>::operator+(const Real auto& t) const
+    template<IsReal R>
+    Vector2<R> Vector2<R>::operator+(const IsReal auto& t) const
     {
         return Vector2{x + t, y + t};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector2<R> Vector2<R>::operator-() const
     {
         return Vector2{-x, -y};
     }
 
-    template<Real R>
-    Vector2<R> Vector2<R>::operator-(const Real auto& t) const
+    template<IsReal R>
+    Vector2<R> Vector2<R>::operator-(const IsReal auto& t) const
     {
         return Vector2{x - t, y - t};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector2<R> Vector2<R>::operator*(const Vector2& vec) const
     {
         return Vector2{vec.x * x, vec.y * y};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector2<R> Vector2<R>::operator+(const Vector2& vec) const
     {
         return Vector2{vec.x + x, vec.y + y};
     }
 
-    template<Real R>
+    template<IsReal R>
     Vector2<R> Vector2<R>::operator-(const Vector2& vec) const
     {
         return Vector2{vec.x - x, vec.y - y};

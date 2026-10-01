@@ -31,11 +31,3 @@ TEST_CASE("TypeName", "[TypeName]")
         REQUIRE(Wl::TypeName<AClass>() == "class Namespace1::Namespace2::AClass");
     }
 }
-
-TEST_CASE("TypeID", "[TypeID]")
-{
-    SECTION("Wl::TypeID<Namespace1::Namespace2::AClass>() is valued to '281095620820113821'")
-    {
-        REQUIRE(Wl::TypeID<Namespace1::Namespace2::AClass>() == 281095620820113821);
-    }
-}

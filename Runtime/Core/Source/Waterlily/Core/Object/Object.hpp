@@ -7,12 +7,12 @@
 #define _WL_OBJECT_NAME_TYPE(Name) _WL_OBJECT_NAME_PREFIX(Name##Type)
 
 #define _WL_OBJECT_AUTO_REGISTRANT(TypeName, InheritTypeName) \
-    AutoObjectTypeRegistrant<TypeName, InheritTypeName>       \
+    AutoRegistrantObjectType<TypeName, InheritTypeName>       \
     _WL_OBJECT_NAME_TYPE(_AutoRegistrant##TypeName)
 
 #define _WL_OBJECT(TypeName, InheritTypeName)                                  \
 private:                                                                       \
-    const inline static _WL_OBJECT_AUTO_REGISTRANT(TypeName, InheritTypeName); \
+    inline static const _WL_OBJECT_AUTO_REGISTRANT(TypeName, InheritTypeName); \
                                                                                \
                                                                                \
 public:                                                                        \
@@ -44,10 +44,10 @@ namespace Wl
 {
 
     template<typename ObjectType, typename InheritType>
-    class AutoObjectTypeRegistrant
+    class AutoRegistrantObjectType
     {
     public:
-        AutoObjectTypeRegistrant()
+        AutoRegistrantObjectType()
         {
             ::Wl::MetaTable::TypeOf<ObjectType, InheritType>();
         }

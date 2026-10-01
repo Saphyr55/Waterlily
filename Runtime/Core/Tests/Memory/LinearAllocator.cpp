@@ -1,14 +1,14 @@
+#include "Waterlily/Core/Memory/LinearAllocator.hpp"
+#include "Waterlily/Core/Memory/HeapAllocator.hpp"
+
+
 #include <catch2/catch_all.hpp>
 #include <catch2/catch_approx.hpp>
-#include <cstdint>
-
-#include "Waterlily/Core/Memory/HeapAllocator.hpp"
-#include "Waterlily/Core/Memory/LinearAllocator.hpp"
 
 
 using namespace Wl;
 
-static thread_local HeapAllocator heap;
+static HeapAllocator heap;
 
 TEST_CASE("LinearAllocator basic allocation", "[LinearAllocator]")
 {
@@ -76,5 +76,4 @@ TEST_CASE("TypedLinearAllocator usage.", "[TypedLinearAllocator]")
         REQUIRE(ints[0] == 7);
         REQUIRE(doubles[0] == Catch::Approx(3.1415));
     }
-
 }

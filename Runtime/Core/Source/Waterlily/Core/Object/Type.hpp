@@ -34,6 +34,8 @@ namespace Wl
         
         bool InheritFrom(Type parentType) const;
 
+        Type GetParent() const;
+
     public:
         constexpr bool operator==(const Type& other) const
         {

@@ -15,7 +15,7 @@ namespace Wl
 
     void MetaTable::RegisterMemberImpl(
             Type type,
-            const TypeDescriptor& variable,
+            const TypeDescriptor& typeDesc,
             const StringID& name,
             uint32_t offset,
             uint32_t size,
@@ -26,7 +26,7 @@ namespace Wl
         MemberInfo info;
         info.owner = type;
         info.name = name;
-        info.variable = variable;
+        info.typeDesc = typeDesc;
         info.align = align;
         info.size = size;
         info.offset = offset;
