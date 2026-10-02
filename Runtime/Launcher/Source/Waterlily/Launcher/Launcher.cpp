@@ -5,6 +5,7 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Modules/ModuleManifest.hpp"
 #include "Waterlily/Core/Modules/ModuleRegistry.hpp"
+#include "Waterlily/Core/Object/MetaTable.hpp"
 #include "Waterlily/Core/Platform/Platform.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
 #include "Waterlily/Engine/Engine.hpp"
@@ -60,6 +61,7 @@ namespace Wl
 
     bool MainPreLaunch(int32_t argc, const char** argv)
     {
+        MetaTable::Init();
         Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
 
         PlatformStartup();
@@ -76,9 +78,11 @@ namespace Wl
     {
         MainUnloadManifest();
         PlatformShutdown();
+        Logger::UnregisterWriter(ConsoleLoggerWriter::Name);
+        MetaTable::Shutdown();
     }
 
-    int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback* callback)
+    int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback callback)
     {
         int32_t result = EXIT_FAILURE;
 

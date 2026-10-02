@@ -26,6 +26,7 @@ namespace Ludo
 
         WindowProperties windowProperties("Demo Window", 1080, 720, 100, 100);
         m_window = Window::Create(windowProperties);
+        m_window->Show();
 
         // TODD: Find a better way to do this.
         m_assetFileSystem = MakeShared<ScopedFileSystem>(FileSystem::GetPlatform(), "../../");

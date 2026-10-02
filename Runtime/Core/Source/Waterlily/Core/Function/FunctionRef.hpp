@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Function/Callable.hpp"
 #include "Waterlily/Core/Function/Function.hpp"
 
 #include <type_traits>
@@ -12,7 +11,7 @@ namespace Wl
     class FunctionRef;
 
     template<typename ReturnType, typename... ArgumentTypes>
-    class FunctionRef<ReturnType(ArgumentTypes...)> : public Callable
+    class FunctionRef<ReturnType(ArgumentTypes...)>
     {
     public:
         constexpr FunctionRef() = default;

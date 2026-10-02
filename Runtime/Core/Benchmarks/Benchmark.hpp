@@ -6,11 +6,11 @@
 
 #define NUMBER_AND_QUOTE(x) std::make_tuple<size_t, const char*>(x, #x)
 
-namespace Wl::benchmark
+namespace Wl::Benchmark
 {
 
     template<typename Func>
-    inline double start(Func func, size_t repeat = 3)
+    inline double Start(Func func, size_t repeat = 3)
     {
         using namespace std::chrono;
         double total = 0.0;
@@ -24,4 +24,4 @@ namespace Wl::benchmark
         return total / repeat;
     }
 
-}// namespace Wl::benchmark
+}// namespace Wl::Benchmark

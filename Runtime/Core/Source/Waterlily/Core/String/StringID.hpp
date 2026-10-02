@@ -20,42 +20,69 @@ namespace Wl
         static StringRef Resolve(uint64_t hash);
 
     public:
-        StringRef GetText() const;
-        uint64_t GetHash() const;
+        inline uint64_t GetHash() const
+        {
+            return m_hash;
+        }
+
+        StringRef GetText() const
+        {
+#if WL_DEBUG
+            return m_text;
+#else
+            return StringID::Resolve(m_hash);
+#endif
+        }
+
+        const char* GetData() const
+        {
+            return GetText().GetData();
+        }
 
     public:
-        StringID() = default;
-        StringID(uint64_t hash, StringRef text);
+        StringID() noexcept = default;
+        StringID(uint64_t hash, StringRef text) noexcept;
 
-        StringID(const char* text)
+        StringID(const char* text) noexcept
             : StringID(StringRef(text))
         {
         }
 
-        explicit StringID(StringRef text)
+        explicit StringID(StringRef text) noexcept
             : StringID(Wl::fnv1a_cstr(text.GetData(), text.GetSize()), text)
         {
         }
 
         ~StringID() = default;
 
-        StringID(const StringID& other) = default;
-        StringID(StringID&& other)
+        StringID(const StringID& other) noexcept = default;
+        StringID(StringID&& other) noexcept
         {
             m_hash = other.m_hash;
+#if WL_DEBUG
             m_text = Resolve(m_hash).GetData();
+#endif
         }
 
-        StringID& operator=(const StringID& other) = default;
-        StringID& operator=(StringID&& other)
+        StringID& operator=(const StringID& other) noexcept = default;
+        StringID& operator=(StringID&& other) noexcept
         {
             m_hash = other.m_hash;
+#if WL_DEBUG
             m_text = Resolve(m_hash).GetData();
+#endif
             return *this;
         }
 
-        bool operator==(const StringID& other) const;
-        bool operator!=(const StringID& other) const;
+        inline bool operator==(const StringID& other) const
+        {
+            return m_hash == other.m_hash;
+        }
+
+        inline bool operator!=(const StringID& other) const
+        {
+            return m_hash != other.m_hash;
+        }
 
     private:
         struct Registry
@@ -72,8 +99,20 @@ namespace Wl
 #endif
     };
 
-    WL_CORE_API void operator<<(OutputStream& stream, const StringID& sid);
-    WL_CORE_API void operator>>(InputStream& stream, StringID& sid);
+    inline void operator<<(OutputStream& stream, const StringID& sid)
+    {
+        stream << sid.GetHash();
+        stream << sid.GetText();
+    }
+
+    inline void operator>>(InputStream& stream, StringID& sid)
+    {
+        uint64_t hash = 0;
+        String str;
+        stream >> hash;
+        stream >> str;
+        sid = StringID(hash, str);
+    }
 
 }// namespace Wl
 

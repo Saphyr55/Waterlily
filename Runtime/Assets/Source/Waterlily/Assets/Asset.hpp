@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Hash/Hasher.hpp"
 #include "Waterlily/Core/IO/Stream.hpp"
 #include "Waterlily/Core/Identifiers/UUID.hpp"
@@ -68,4 +67,4 @@ namespace Wl
 
 }// namespace Wl
 
-WL_HASH_DEFINE(Wl::AssetHandle, h, { return Wl::Hash<uint64_t>()(h.UUID.GetValue()); })
+WL_HASH_DEFINE(Wl::AssetHandle, h, { return Wl::Hash<uint64_t>(h.UUID.GetValue()); })

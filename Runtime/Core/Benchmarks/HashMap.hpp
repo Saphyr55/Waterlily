@@ -19,18 +19,18 @@ struct HashMapBenchmarkResult
 };
 
 template<typename MapType, typename PutFunc, typename GetFunc, typename RemoveFunc, typename ClearFunc>
-HashMapBenchmarkResult run_benchmark(const std::string_view name,
-                                     std::vector<int32_t>& keys,
-                                     MapType& map,
-                                     PutFunc put,
-                                     GetFunc get,
-                                     RemoveFunc remove,
-                                     ClearFunc clear)
+HashMapBenchmarkResult RunBenchmark(std::string_view name,
+                                    std::vector<int32_t>& keys,
+                                    MapType& map,
+                                    PutFunc put,
+                                    GetFunc get,
+                                    RemoveFunc remove,
+                                    ClearFunc clear)
 {
     HashMapBenchmarkResult result = {};
     result.name = name;
 
-    result.insert = Wl::benchmark::start([&]()
+    result.insert = Wl::Benchmark::Start([&]()
     {
         for (auto k: keys)
         {
@@ -38,7 +38,7 @@ HashMapBenchmarkResult run_benchmark(const std::string_view name,
         }
     });
 
-    result.lookup = Wl::benchmark::start([&]()
+    result.lookup = Wl::Benchmark::Start([&]()
     {
         for (auto k: keys)
         {
@@ -46,7 +46,7 @@ HashMapBenchmarkResult run_benchmark(const std::string_view name,
         }
     });
 
-    result.erase = Wl::benchmark::start([&]()
+    result.erase = Wl::Benchmark::Start([&]()
     {
         for (auto k: keys)
         {
@@ -54,7 +54,7 @@ HashMapBenchmarkResult run_benchmark(const std::string_view name,
         }
     });
 
-    result.clear = Wl::benchmark::start([&]()
+    result.clear = Wl::Benchmark::Start([&]()
     {
         clear(map);
     });
@@ -62,7 +62,7 @@ HashMapBenchmarkResult run_benchmark(const std::string_view name,
     return result;
 }
 
-inline void print_results_table(const std::vector<HashMapBenchmarkResult>& results)
+inline void PrintResultsTable(const std::vector<HashMapBenchmarkResult>& results)
 {
     std::cout << std::setw(25) << "Map" << std::setw(25) << "Insert (s)" << std::setw(25) << "Lookup (s)"
               << std::setw(25) << "Erase (s)" << std::setw(25) << "Clear (s)" << "\n";
@@ -76,7 +76,7 @@ inline void print_results_table(const std::vector<HashMapBenchmarkResult>& resul
     }
 }
 
-inline void run_hash_map_benchmarks()
+inline void RunHashMapBenchmarks()
 {
     const auto [N, N_cstr] = NUMBER_AND_QUOTE(10'000'000);
     std::vector<int32_t> keys(N);
@@ -84,7 +84,7 @@ inline void run_hash_map_benchmarks()
     {
         keys[i] = i;
     }
-    std::shuffle(keys.begin(), keys.end(), std::mt19937{std::random_device{}()});
+    std::shuffle(keys.begin(), keys.end(), std::mt19937 {std::random_device {}()});
 
     std::cout << "\n\nBenchmark insertion, lookup, erase, clear on " << N_cstr << " elements\n\n";
 
@@ -92,7 +92,7 @@ inline void run_hash_map_benchmarks()
     // STL unordered_map
     {
         std::unordered_map<int32_t, int32_t> stl_unordered_map;
-        results.push_back(run_benchmark(
+        results.push_back(RunBenchmark(
                 "std::unordered_map",
                 keys,
                 stl_unordered_map,
@@ -117,7 +117,7 @@ inline void run_hash_map_benchmarks()
     // Linear Probing HashMap
     {
         Wl::HashMap<int32_t, int32_t> robin_map;
-        results.push_back(run_benchmark(
+        results.push_back(RunBenchmark(
                 "Wl::HashMap",
                 keys,
                 robin_map,
@@ -139,5 +139,5 @@ inline void run_hash_map_benchmarks()
         }));
     }
 
-    print_results_table(results);
+    PrintResultsTable(results);
 }

@@ -42,7 +42,7 @@ namespace Wl
 
     MaterialHandle MaterialRegistry::ObtainMaterial(const MaterialData& data)
     {
-        MaterialDataKey key = Wl::Hasher::hash(data);
+        MaterialDataKey key = Wl::Hash(data);
         if (m_cache.Contains(key))
         {
             MaterialHandle handle = m_cache[key];
@@ -69,7 +69,7 @@ namespace Wl
     void MaterialRegistry::SetMaterial(MaterialHandle handle, const MaterialData& data)
     {
         MaterialDataKey oldKey = m_reverseCache[handle];
-        MaterialDataKey key = Wl::Hasher::hash(data);
+        MaterialDataKey key = Wl::Hash(data);
 
         if (key != oldKey)
         {

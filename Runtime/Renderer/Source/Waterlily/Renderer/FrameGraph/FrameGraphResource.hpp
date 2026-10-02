@@ -93,7 +93,7 @@ namespace Wl
     public:
         inline uint32_t operator()(const FrameGraphPhysicalTextureKey& key) const noexcept
         {
-            uint32_t h = Hash<uint32_t>()(uint32_t(key.Format));
+            uint32_t h = Hash<uint32_t>(uint32_t(key.Format));
             h = HashCombine(h, key.Width);
             h = HashCombine(h, key.Width);
             h = HashCombine(h, key.Height);

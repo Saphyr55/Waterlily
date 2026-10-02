@@ -24,6 +24,10 @@ CoreTestTarget.Name = "Waterlily.Core.Tests"
 CoreTestTarget.Kind = "binary"
 CoreTestTarget.Group = "Engine.Tests"
 
+CoreTestTarget.PublicIncludes = {
+    "Tests"
+}
+
 CoreTestTarget.XMakePackages = {
     "catch2"
 }

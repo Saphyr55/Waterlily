@@ -5,7 +5,7 @@ local XMakePackages = {
     "vulkan-memory-allocator"
 }
 
-add_requires(unpack(XMakePackages))
+add_requires("vulkan-headers 1.4.335", "vulkan-memory-allocator v3.4.0")
 
 RHIVulkanModule.Name = "Waterlily.RHI.Vulkan"
 RHIVulkanModule.Kind = "shared"

@@ -7,7 +7,7 @@
 namespace Wl
 {
 
-    template<Real R = float>
+    template<IsReal R = float>
     struct Matrix4
     {
         constexpr Matrix4<R> operator*(const Matrix4<R>& m) const;
@@ -49,25 +49,25 @@ namespace Wl
 
         static constexpr Matrix4 Scale(const Matrix4<R>& mat, const Vector3<R>& vec);
 
-        static constexpr Matrix4 Rotate(const Matrix4<R>& mat, const Real auto& theta, const Vector3<R>& vec);
+        static constexpr Matrix4 Rotate(const Matrix4<R>& mat, const IsReal auto& theta, const Vector3<R>& vec);
 
-        static constexpr Matrix4 RotateX(const Real auto& theta);
+        static constexpr Matrix4 RotateX(const IsReal auto& theta);
 
-        static constexpr Matrix4 RotateY(const Real auto& theta);
+        static constexpr Matrix4 RotateY(const IsReal auto& theta);
 
-        static constexpr Matrix4 RotateZ(const Real auto& theta);
+        static constexpr Matrix4 RotateZ(const IsReal auto& theta);
 
-        static constexpr Matrix4 Perspective(const Real auto& view,
-                                             const Real auto& aspect,
-                                             const Real auto& near,
-                                             const Real auto& far);
+        static constexpr Matrix4 Perspective(const IsReal auto& view,
+                                             const IsReal auto& aspect,
+                                             const IsReal auto& near,
+                                             const IsReal auto& far);
 
-        static constexpr Matrix4 Orthographic(const Real auto& left,
-                                              const Real auto& right,
-                                              const Real auto& bottom,
-                                              const Real auto& top,
-                                              const Real auto& near,
-                                              const Real auto& far);
+        static constexpr Matrix4 Orthographic(const IsReal auto& left,
+                                              const IsReal auto& right,
+                                              const IsReal auto& bottom,
+                                              const IsReal auto& top,
+                                              const IsReal auto& near,
+                                              const IsReal auto& far);
 
         static constexpr Matrix4 LookAt(const Vector3<R>& eye, const Vector3<R>& center, const Vector3<R>& up);
 
@@ -75,13 +75,13 @@ namespace Wl
         Vector4<R> m_value[4];
     };
 
-    template<Real RealType>
+    template<IsReal RealType>
     inline void operator<<(OutputStream& stream, const Matrix4<RealType>& v)
     {
         stream.Write(reinterpret_cast<const uint8_t*>(v), sizeof(Matrix4<RealType>));
     }
 
-    template<Real RealType>
+    template<IsReal RealType>
     inline void operator>>(InputStream& stream, Matrix4<RealType>& v)
     {
         stream.Read(reinterpret_cast<uint8_t*>(v), sizeof(Matrix4<RealType>));
@@ -90,13 +90,13 @@ namespace Wl
     using Matrix4f = Matrix4<float>;
     using Matrix4d = Matrix4<double>;
 
-    template<Real R>
+    template<IsReal R>
     constexpr Matrix4<R> Matrix4<R>::Identity()
     {
         return Matrix4(1);
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Matrix4<R> Matrix4<R>::Translate(const Matrix4<R>& mat, const Vector3<R>& vec)
     {
         Matrix4<R> transformation(1);
@@ -104,7 +104,7 @@ namespace Wl
         return mat * transformation;
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Matrix4<R> Matrix4<R>::Scale(const Matrix4<R>& mat, const Vector3<R>& vec)
     {
         return mat * Matrix4<R>(Vector4<R>(vec.x, 0, 0, 0),
@@ -113,8 +113,8 @@ namespace Wl
                                 Vector4<R>(0, 0, 0, 1));
     }
 
-    template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::Rotate(const Matrix4<R>& mat, const Real auto& theta, const Vector3<R>& vec)
+    template<IsReal R>
+    constexpr Matrix4<R> Matrix4<R>::Rotate(const Matrix4<R>& mat, const IsReal auto& theta, const Vector3<R>& vec)
     {
         auto c = Math::Cos(theta);
         auto s = Math::Sin(theta);
@@ -138,8 +138,8 @@ namespace Wl
                                 1);
     }
 
-    template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::RotateX(const Real auto& theta)
+    template<IsReal R>
+    constexpr Matrix4<R> Matrix4<R>::RotateX(const IsReal auto& theta)
     {
         return Matrix4<R>(Vector4<R>(1.0, 0.0, 0.0, 0.0),
                           Vector4<R>(0.0, Math::Cos(theta), Math::Sin(theta), 0.0),
@@ -147,8 +147,8 @@ namespace Wl
                           Vector4<R>(0.0, 0.0, 0.0, 1.0));
     }
 
-    template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::RotateY(const Real auto& theta)
+    template<IsReal R>
+    constexpr Matrix4<R> Matrix4<R>::RotateY(const IsReal auto& theta)
     {
         return Matrix4<R>(Vector4<R>(Math::Cos(theta), 0.0, -Math::Sin(theta), 0.0),
                           Vector4<R>(0.0, 1.0, 0.0, 0.0),
@@ -156,8 +156,8 @@ namespace Wl
                           Vector4<R>(0.0, 0.0, 0.0, 1.0));
     }
 
-    template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::RotateZ(const Real auto& theta)
+    template<IsReal R>
+    constexpr Matrix4<R> Matrix4<R>::RotateZ(const IsReal auto& theta)
     {
         return Matrix4<R>(Vector4<R>(Math::Cos(theta), Math::Sin(theta), 0.0, 0.0),
                           Vector4<R>(-Math::Sin(theta), Math::Cos(theta), 0.0, 0.0),
@@ -166,11 +166,11 @@ namespace Wl
     }
 
  
-    template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::Perspective(const Real auto& view,
-                                                 const Real auto& aspect,
-                                                 const Real auto& near,
-                                                 const Real auto& far)
+    template<IsReal R>
+    constexpr Matrix4<R> Matrix4<R>::Perspective(const IsReal auto& view,
+                                                 const IsReal auto& aspect,
+                                                 const IsReal auto& near,
+                                                 const IsReal auto& far)
     {
         Matrix4<R> result(0.0);
 
@@ -184,13 +184,13 @@ namespace Wl
         return result;
     }
 
-    template<Real R>
-    constexpr Matrix4<R> Matrix4<R>::Orthographic(const Real auto& left,
-                                                  const Real auto& right,
-                                                  const Real auto& bottom,
-                                                  const Real auto& top,
-                                                  const Real auto& near,
-                                                  const Real auto& far)
+    template<IsReal R>
+    constexpr Matrix4<R> Matrix4<R>::Orthographic(const IsReal auto& left,
+                                                  const IsReal auto& right,
+                                                  const IsReal auto& bottom,
+                                                  const IsReal auto& top,
+                                                  const IsReal auto& near,
+                                                  const IsReal auto& far)
     {
         WL_CHECK(far - near != 0);
         Matrix4<R> result(1.0);
@@ -203,7 +203,7 @@ namespace Wl
         return result;
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Matrix4<R> Matrix4<R>::LookAt(const Vector3<R>& eye, const Vector3<R>& center, const Vector3<R>& up)
     {
         auto f = Vector3<R>::Normalize(center - eye);
@@ -226,13 +226,13 @@ namespace Wl
         return result;
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector4<R> Matrix4<R>::Col(uint32_t index) const
     {
         return (*this)[index];
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Matrix4<R>::Matrix4(const Vector4<R>& col1, const Vector4<R>& col2, const Vector4<R>& col3, const Vector4<R>& col4)
     {
         m_value[0] = col1;
@@ -241,7 +241,7 @@ namespace Wl
         m_value[3] = col4;
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Matrix4<R>::Matrix4(R m11,
                                   R m21,
                                   R m31,
@@ -266,13 +266,13 @@ namespace Wl
     {
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Matrix4<R>::Matrix4(R r)
         : Matrix4(Vector4<R>(r, 0, 0, 0), Vector4<R>(0, r, 0, 0), Vector4<R>(0, 0, r, 0), Vector4<R>(0, 0, 0, r))
     {
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Matrix4<R> Matrix4<R>::operator*(const Matrix4<R>& m) const
     {
         Matrix4<R> result(0);
@@ -291,7 +291,7 @@ namespace Wl
         return result;
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector4<R> Matrix4<R>::operator*(const Vector4<R>& v) const
     {
         return Vector4<R>((*this)[0][0] * v[0] + (*this)[0][1] * v[1] + (*this)[0][2] * v[2] + (*this)[0][3] * v[3],
@@ -300,13 +300,13 @@ namespace Wl
                           (*this)[3][0] * v[0] + (*this)[3][1] * v[1] + (*this)[3][2] * v[2] + (*this)[3][3] * v[3]);
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr const Vector4<R>& Matrix4<R>::operator[](size_t i) const
     {
         return m_value[i];
     }
 
-    template<Real R>
+    template<IsReal R>
     constexpr Vector4<R>& Matrix4<R>::operator[](size_t i)
     {
         return m_value[i];

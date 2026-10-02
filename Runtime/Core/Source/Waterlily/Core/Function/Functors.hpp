@@ -23,4 +23,30 @@ namespace Wl
         return value;
     }
 
+    template<typename BeginIterator, typename EndIterator, typename OutputIterator, typename Func>
+    inline auto Transform(BeginIterator begin, EndIterator end, OutputIterator output, Func&& func)
+    {
+        while (begin != end)
+        {
+            *output = func(*begin);
+
+            begin++;
+            output++;
+        }
+    }
+
+    template<typename BeginIterator, typename EndIterator, typename T>
+    inline auto Constains(BeginIterator begin, EndIterator end, const T& value) -> bool
+    {
+        while (begin != end)
+        {
+            if (*begin == value)
+            {
+                return true;
+            }
+            begin++;
+        }
+        return false;
+    }
+
 }// namespace Wl

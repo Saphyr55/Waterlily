@@ -1,5 +1,5 @@
 
-#include "Waterlily/Core/Algorithms/Algorithms.hpp"
+#include "Waterlily/Core/Function/Functors.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"

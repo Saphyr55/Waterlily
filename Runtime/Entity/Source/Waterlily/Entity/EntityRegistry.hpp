@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Waterlily/Core/Containers/HashMap.hpp"
-#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Memory/Cast.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
+#include "Waterlily/Core/Object/TypeInfo.hpp"
 #include "Waterlily/Entity/ComponentPool.hpp"
 #include "Waterlily/Entity/Entity.hpp"
 #include "Waterlily/Entity/EntityExports.hpp"
@@ -41,7 +41,7 @@ namespace Wl
         template<typename ComponentType>
         void RemoveComponent(Entity e)
         {
-            if (auto it = m_componentPools.find(GetTypeIndex<ComponentType>()); it != m_componentPools.end())
+            if (auto it = m_componentPools.Find(TypeID<ComponentType>()); it != m_componentPools.end())
             {
                 Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->RemoveComponent(e);
             }
@@ -50,7 +50,7 @@ namespace Wl
         template<typename ComponentType>
         bool HasComponent(Entity e) const
         {
-            if (auto it = m_componentPools.find(GetTypeIndex<ComponentType>()); it != m_componentPools.cend())
+            if (auto it = m_componentPools.Find(TypeID<ComponentType>()); it != m_componentPools.cend())
             {
                 return Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->HasComponent(e);
             }
@@ -66,12 +66,12 @@ namespace Wl
         template<typename ComponentType>
         ComponentType* GetComponent(Entity e)
         {
-            auto it = m_componentPools.find(GetTypeIndex<ComponentType>());
-            if (it == m_componentPools.end())
+            if (auto it = m_componentPools.Find(TypeID<ComponentType>()); it == m_componentPools.end())
             {
-                return nullptr;
+                return Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->GetComponent(e);
             }
-            return Wl::StaticPtrCast<ComponentPool<ComponentType>>(it->Value)->GetComponent(e);
+
+            return nullptr;
         }
 
         template<typename... Components>
@@ -92,7 +92,7 @@ namespace Wl
         template<typename ComponentType>
         ComponentPool<ComponentType>& GetPool()
         {
-            ComponentTypeID key = GetTypeIndex<ComponentType>();
+            ComponentTypeID key = TypeID<ComponentType>();
             auto it = m_componentPools.find(key);
             if (it == m_componentPools.end())
             {

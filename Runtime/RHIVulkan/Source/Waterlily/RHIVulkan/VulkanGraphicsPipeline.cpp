@@ -1,6 +1,6 @@
 #include "Waterlily/RHIVulkan/VulkanGraphicsPipeline.hpp"
 
-#include "Waterlily/Core/Algorithms/Algorithms.hpp"
+#include "Waterlily/Core/Function/Functors.hpp"
 #include "Waterlily/Core/Containers/FixedArray.hpp"
 #include "Waterlily/RHI/CompiledShader.hpp"
 #include "Waterlily/RHI/ShaderResource.hpp"

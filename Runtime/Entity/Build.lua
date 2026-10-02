@@ -3,10 +3,7 @@ local EntityModule = BuildTool.DefaultTargetTemplate()
 EntityModule.Name = "Waterlily.Entity"
 EntityModule.Kind = "shared"
 EntityModule.Group = "Engine"
-EntityModule.XMakePackages = {
-    "libsdl3",
-    "lua"
-}
+
 EntityModule.Deps = {
     "Waterlily.Core"
 }

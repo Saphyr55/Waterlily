@@ -37,6 +37,12 @@ namespace Wl
 
         return hash;
     }
+    
+    template<size_t N>
+    constexpr uint64_t fnv1a_cstr(const char (&data)[N])
+    {
+        return fnv1a_cstr(data, N);
+    }
 
     constexpr uint64_t fnv1a_cstr(const wchar_t* data, size_t length)
     {

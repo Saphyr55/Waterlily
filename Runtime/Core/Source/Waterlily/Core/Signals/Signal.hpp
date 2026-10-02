@@ -6,7 +6,7 @@
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Signals/Connection.hpp"
 
-#define WL_SIGNAL_DETAILS(keyword, name, ...)            \
+#define WL_SIGNAL_DETAILS(keyword, name, ...)           \
     using name##SignalType = ::Wl::Signal<__VA_ARGS__>; \
     keyword name##SignalType name
 
@@ -94,8 +94,7 @@ namespace Wl
 
     template<typename... ArgumentTypes>
     template<typename ObjectType>
-    auto Signal<ArgumentTypes...>::Connect(SharedPtr<ObjectType> object, void (ObjectType::*method)(ArgumentTypes...))
-            -> ConnectionType
+    auto Signal<ArgumentTypes...>::Connect(SharedPtr<ObjectType> object, void (ObjectType::*method)(ArgumentTypes...)) -> ConnectionType
     {
         return Connect(object.GetResource(), method);
     }

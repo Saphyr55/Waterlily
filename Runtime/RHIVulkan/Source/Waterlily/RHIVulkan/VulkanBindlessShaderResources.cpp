@@ -1,5 +1,5 @@
 #include "VulkanBindlessShaderResources.hpp"
-#include "Waterlily/Core/Algorithms/Algorithms.hpp"
+#include "Waterlily/Core/Function/Functors.hpp"
 #include "Waterlily/Core/Function/FunctionRef.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 

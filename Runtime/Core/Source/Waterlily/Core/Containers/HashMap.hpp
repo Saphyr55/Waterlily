@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/Array.hpp"
 #include "Waterlily/Core/Containers/Entry.hpp"
 #include "Waterlily/Core/Containers/HashMapSlot.hpp"
@@ -17,7 +18,7 @@ namespace Wl
 
     template<typename KeyType,
              typename ValueType,
-             typename HashType = Hash<KeyType>>
+             typename HashType = Hasher<KeyType>>
     class HashMap
     {
     public:
@@ -263,6 +264,8 @@ namespace Wl
 
         ValueType& Get(const KeyType& key)
         {
+            WL_CHECK(!IsEmpty());
+
             SlotType* slot = LookupImpl(key).first;
             WL_CHECK(slot);
             return slot->Value.GetRef();
@@ -270,6 +273,8 @@ namespace Wl
 
         const ValueType& Get(const KeyType& key) const
         {
+            WL_CHECK(!IsEmpty());
+
             const SlotType* slot = LookupImpl(key).first;
             WL_CHECK(slot);
             return slot->Value.GetRef();
@@ -298,9 +303,19 @@ namespace Wl
             return Insert(ImmutableEntryType {key, value});
         }
 
+        EntryType Put(const KeyType& key, ValueType&& value)
+        {
+            return Insert(ImmutableEntryType {key, std::move(value)});
+        }
+
         EntryType Emplace(const KeyType& key, const ValueType& value)
         {
             return Insert(ImmutableEntryType {key, value});
+        }
+
+        EntryType Emplace(const KeyType& key, ValueType&& value)
+        {
+            return Insert(ImmutableEntryType {key, std::move(value)});
         }
 
         EntryType Insert(const ImmutableEntryType& entry)

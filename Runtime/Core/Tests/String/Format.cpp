@@ -3,7 +3,7 @@
 
 using namespace Wl;
 
-TEST_CASE("Wl::Format - Basic formatting", "[format]")
+TEST_CASE("Wl::Format - Basic formatting", "[Format]")
 {
     SECTION("Simple string formatting")
     {

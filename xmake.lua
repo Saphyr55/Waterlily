@@ -17,7 +17,7 @@ if is_mode("debug") then
     add_defines("WL_DEBUG")
 end
 
-add_requires("libsdl3", "catch2")
+add_requires("libsdl3 3.4.12", "catch2 v3.15.2")
 
 target("Assets")
 do

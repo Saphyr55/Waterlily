@@ -18,8 +18,8 @@ namespace Wl
         using pointer = ElementType*;
         using const_pointer = const ElementType*;
 
-        using sparse_type = Array<KeyIndexType>;
-        using dense_type = Array<value_type>;
+        using SparseType = Array<KeyIndexType>;
+        using DenseType = Array<value_type>;
 
         static constexpr const KeyIndexType s_InvalidIndex = std::numeric_limits<KeyIndexType>::max();
 
@@ -89,7 +89,7 @@ namespace Wl
             m_denseIdentification.Pop();
         }
 
-        sparse_type& GetDense()
+        SparseType& GetDense()
         {
             return m_denseIdentification;
         }
@@ -99,7 +99,7 @@ namespace Wl
             return m_denseIdentification[denseIndex];
         }
 
-        inline const dense_type& GetElements() const
+        inline const DenseType& GetElements() const
         {
             return m_denseValue;
         }
@@ -147,10 +147,10 @@ namespace Wl
         }
 
     public:
-        SparseSet(size_t capacity_page = 100)
-            : m_capacityPage(capacity_page)
-            , m_denseValue(capacity_page)
-            , m_sparses(capacity_page)
+        SparseSet(size_t capacityPage = 100)
+            : m_capacityPage(capacityPage)
+            , m_denseValue(capacityPage)
+            , m_sparses(capacityPage)
         {
         }
 
@@ -167,7 +167,7 @@ namespace Wl
                 m_sparses.Resize(page + 1);
             }
 
-            sparse_type& sparse = m_sparses[page];
+            SparseType& sparse = m_sparses[page];
             if (sparseIndex >= sparse.GetSize())
             {
                 sparse.Resize(sparseIndex + 1, s_InvalidIndex);
@@ -183,7 +183,7 @@ namespace Wl
 
             if (page < m_sparses.GetSize())
             {
-                const sparse_type& sparse = m_sparses[page];
+                const SparseType& sparse = m_sparses[page];
                 if (sparseIndex < sparse.GetSize())
                 {
                     return sparse[sparseIndex];
@@ -194,9 +194,9 @@ namespace Wl
         }
 
     private:
-        Array<sparse_type> m_sparses;
-        dense_type m_denseValue;
-        sparse_type m_denseIdentification;
+        Array<SparseType> m_sparses;
+        DenseType m_denseValue;
+        SparseType m_denseIdentification;
         size_type m_capacityPage;
     };
 

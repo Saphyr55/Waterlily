@@ -1,12 +1,14 @@
 #pragma once
 
-#include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Object/TypeInfo.hpp"
+
+#include <cstdint>
 
 namespace Wl
 {
 
     using Entity = uint64_t;
 
-    using ComponentTypeID = TypeIndex;
+    using ComponentTypeID = IdentifierType;
 
 }// namespace Wl

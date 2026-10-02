@@ -9,7 +9,7 @@ namespace Wl
     class WL_CORE_API ConsoleLoggerWriter : public LoggerWriter
     {
     public:
-        inline static const StringID Name = "Console";
+        inline static const StringID Name = "ConsoleLoggerWriter";
 
         virtual void Write(const char* formattedTime,
                            LogSeverity severity,

@@ -3,9 +3,9 @@
 
 int32_t main()
 {
-    run_hash_map_benchmarks();
+    RunHashMapBenchmarks();
 
-    run_array_benchmarks();
+    RunArrayBenchmarks();
 
     return 0;
 }
