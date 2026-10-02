@@ -12,9 +12,9 @@ namespace Wl
     struct ShaderBinding
     {
         String Name;
-        uint32_t Binding;
-        uint32_t Group;
-        uint32_t Count = 1;
+        uint32 Binding;
+        uint32 Group;
+        uint32 Count = 1;
         RHIShaderResourceType Type;
         RHIShaderStage Stage = RHIShaderStage::AllGraphics;
     };
@@ -22,8 +22,8 @@ namespace Wl
     struct ShaderVertexInput
     {
         RHIFormat Format;
-        uint32_t Location;
-        uint32_t Stride;
+        uint32 Location;
+        uint32 Stride;
     };
 
     WL_TOOLS_SHADER_COMPILER_API void PrintProgramLayout(slang::ProgramLayout* programLayout);

@@ -23,12 +23,12 @@ namespace Wl
     class VulkanDevice : public RHIDevice
     {
     public:
-        virtual size_t GetCountBufferAllocation() override
+        virtual usize GetCountBufferAllocation() override
         {
             return m_countBufferAllocation;
         }
 
-        virtual size_t GetCountTextureAllocation() override
+        virtual usize GetCountTextureAllocation() override
         {
             return m_countTextureAllocation;
         }
@@ -49,7 +49,7 @@ namespace Wl
         virtual const RHIDeviceProperties& GetDeviceProperties() const override;
 
         virtual RHIBindlessShaderResources* CreateBindlessShaderResources(
-                uint32_t maxResources,
+                uint32 maxResources,
                 const Array<RHIShaderResourceBinding>& bindings) override;
         virtual void DestroyBindlessShaderResources(RHIBindlessShaderResources* group) override;
 
@@ -58,7 +58,7 @@ namespace Wl
         virtual void DestroySRGLayout(RHIShaderResourceGroupLayout* layout) override;
 
         virtual RHIShaderResourceGroupPool* CreateSRGPool(
-                size_t maxGroups,
+                usize maxGroups,
                 const Array<RHIShaderResourceBinding>& totalBindings) override;
         virtual void DestroySRGPool(RHIShaderResourceGroupPool* pool) override;
 
@@ -86,8 +86,8 @@ namespace Wl
         virtual RHIComputePipeline* CreateComputePipeline(const RHIComputePipelineDescription& description) override;
         virtual void DestroyComputePipeline(RHIComputePipeline* pipeline) override;
 
-        virtual RHISwapchain* CreateSwapchain(uint32_t width, uint32_t height, uint32_t imageCount) override;
-        virtual void RecreateSwapchain(RHISwapchain* swapchain, uint32_t width, uint32_t height) override;
+        virtual RHISwapchain* CreateSwapchain(uint32 width, uint32 height, uint32 imageCount) override;
+        virtual void RecreateSwapchain(RHISwapchain* swapchain, uint32 width, uint32 height) override;
         virtual void DestroySwapchain(RHISwapchain* swapchain) override;
 
         virtual RHIFramebuffer* CreateFramebuffer(const RHIFramebufferDescription& description) override;
@@ -112,8 +112,8 @@ namespace Wl
         RHIDeviceProperties m_properties;
         Allocator* m_allocator;
         VulkanContext& m_context;
-        size_t m_countTextureAllocation = 0;
-        size_t m_countBufferAllocation = 0;
+        usize m_countTextureAllocation = 0;
+        usize m_countBufferAllocation = 0;
     };
 
 }// namespace Wl

@@ -11,21 +11,21 @@ namespace Wl
     class WL_CORE_API LinearAllocator : public Allocator
     {
     public:
-        virtual void* Allocate(size_t size, size_t alignment = 1) override;
+        virtual void* Allocate(usize size, usize alignment = 1) override;
 
-        virtual void Deallocate(void* block, size_t size, size_t alignment = 1) override;
+        virtual void Deallocate(void* block, usize size, usize alignment = 1) override;
 
     public:
         void Destroy();
 
         void Reset();
 
-        inline size_t GetSize() const
+        inline usize GetSize() const
         {
             return m_size;
         }
 
-        inline size_t GetOffset() const
+        inline usize GetOffset() const
         {
             return m_offset;
         }
@@ -36,14 +36,14 @@ namespace Wl
         }
 
     public:
-        LinearAllocator(Allocator* parent, size_t size);
+        LinearAllocator(Allocator* parent, usize size);
         ~LinearAllocator();
 
     private:
         Allocator* m_parent;
-        uint8_t* m_buffer;
-        size_t m_size;
-        size_t m_offset;
+        uint8* m_buffer;
+        usize m_size;
+        usize m_offset;
     };
 
 }// namespace Wl

@@ -10,8 +10,8 @@ namespace Wl
     class WL_CORE_API StackAllocator : public Allocator
     {
     public:
-        virtual void* Allocate(size_t size, size_t alignment) override;
-        virtual void Deallocate(void* memory, size_t size, size_t alignment) override;
+        virtual void* Allocate(usize size, usize alignment) override;
+        virtual void Deallocate(void* memory, usize size, usize alignment) override;
 
     public:
         inline void Reset()
@@ -24,34 +24,34 @@ namespace Wl
             Pop(m_head);
         }
 
-        void Pop(size_t marker)
+        void Pop(usize marker)
         {
             WL_CHECK(marker <= m_size);
             m_head = marker - 1;
         }
 
-        size_t GetHead() const
+        usize GetHead() const
         {
             return m_head;
         }
 
-        size_t GetSize() const
+        usize GetSize() const
         {
             return m_size;
         }
 
     private:
-        void Initialize(size_t size);
+        void Initialize(usize size);
         void Destroy();
 
     public:
-        explicit StackAllocator(size_t size);
+        explicit StackAllocator(usize size);
         ~StackAllocator();
 
     private:
-        size_t m_size;
-        size_t m_head;
-        uint8_t* m_buffer;
+        usize m_size;
+        usize m_head;
+        uint8* m_buffer;
     };
 
 }// namespace Wl

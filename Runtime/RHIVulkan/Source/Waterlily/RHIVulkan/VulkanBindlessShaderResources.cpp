@@ -1,6 +1,5 @@
 #include "VulkanBindlessShaderResources.hpp"
 #include "Waterlily/Core/Function/Functors.hpp"
-#include "Waterlily/Core/Function/FunctionRef.hpp"
 #include "Waterlily/RHIVulkan/VulkanContext.hpp"
 
 namespace Wl
@@ -21,13 +20,13 @@ namespace Wl
         return layoutBinding;
     };
 
-    void VulkanBindlessShaderResources::Create(uint32_t maxResources, const Array<RHIShaderResourceBinding>& bindings)
+    void VulkanBindlessShaderResources::Create(uint32 maxResources, const Array<RHIShaderResourceBinding>& bindings)
     {
         m_maxResources = maxResources;
 
         VulkanContext& context = VulkanContextGet();
 
-        HashMap<VkDescriptorType, uint32_t> typeCounts(bindings.GetSize());
+        HashMap<VkDescriptorType, uint32> typeCounts(bindings.GetSize());
         for (const RHIShaderResourceBinding& binding: bindings)
         {
             typeCounts[VulkanDescriptorTypeGet(binding.Type)] = maxResources;

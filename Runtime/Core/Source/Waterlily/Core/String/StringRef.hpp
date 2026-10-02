@@ -39,7 +39,7 @@ namespace Wl
 
         constexpr StringRefBase& operator=(const StringRefBase& other) = default;
 
-        constexpr const CharType& operator[](size_t index) const
+        constexpr const CharType& operator[](usize index) const
         {
             WL_CHECK(index < GetSize());
             return m_data[index];
@@ -55,7 +55,7 @@ namespace Wl
             return m_data;
         }
 
-        constexpr size_t GetSize() const
+        constexpr usize GetSize() const
         {
             return StringLength(m_data);
         }
@@ -94,8 +94,8 @@ namespace Wl
     inline void operator<<(OutputStream& stream, const StringRefBase<CharType>& str)
     {
         const CharType* data = str.GetData();
-        const uint8_t* buffer = reinterpret_cast<const uint8_t*>(data);
-        uint64_t size = static_cast<uint64_t>(str.GetSize());
+        const uint8* buffer = reinterpret_cast<const uint8*>(data);
+        uint64 size = static_cast<uint64>(str.GetSize());
         stream << size;
         stream.Write(buffer, str.GetSize() * sizeof(CharType));
     }

@@ -3,7 +3,7 @@
 namespace Wl
 {
 
-    Button ButtonFromSDL(int32_t button)
+    Button ButtonFromSDL(int32 button)
     {
         switch (button)
         {
@@ -226,7 +226,7 @@ namespace Wl
         }
     }
 
-    int32_t ButtonToSDL(Button b)
+    int32 ButtonToSDL(Button b)
     {
         switch (b)
         {

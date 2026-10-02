@@ -7,7 +7,7 @@
 namespace Wl
 {
 
-    using Entity = uint64_t;
+    using Entity = uint64;
 
     using ComponentTypeID = IdentifierType;
 

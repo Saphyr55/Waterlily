@@ -63,7 +63,7 @@ namespace Wl
         ClampToBorder
     };
 
-    enum class RHITextureLayout : uint8_t
+    enum class RHITextureLayout : uint8
     {
         Undefined,
         TransferDst,
@@ -75,7 +75,7 @@ namespace Wl
         General
     };
 
-    enum class RHIShaderResourceType : uint8_t
+    enum class RHIShaderResourceType : uint8
     {
         Uniform,
         Sampler,
@@ -85,7 +85,7 @@ namespace Wl
         Unknown,
     };
 
-    enum class RHIQueueType : uint8_t
+    enum class RHIQueueType : uint8
     {
         Unknown = 0,
         Graphics = 1 << 0,
@@ -100,7 +100,7 @@ namespace Wl
         Instance,
     };
 
-    enum class RHIShaderStage : uint8_t
+    enum class RHIShaderStage : uint8
     {
         None = 0,
         Vertex = 1 << 0,
@@ -112,7 +112,7 @@ namespace Wl
     };
     WL_ENUM_FLAGS(RHIShaderStage)
 
-    enum class RHICullModeFlags : uint8_t
+    enum class RHICullModeFlags : uint8
     {
         None = 0,
         Front = 1 << 0,
@@ -120,7 +120,7 @@ namespace Wl
     };
     WL_ENUM_FLAGS(RHICullModeFlags)
 
-    enum class RHICommandBufferUsageFlags : uint8_t
+    enum class RHICommandBufferUsageFlags : uint8
     {
         None = 0,
         OneTimeSubmit = 1 << 0,
@@ -129,7 +129,7 @@ namespace Wl
     };
     WL_ENUM_FLAGS(RHICommandBufferUsageFlags)
 
-    enum class RHIBufferUsageFlags : uint32_t
+    enum class RHIBufferUsageFlags : uint32
     {
         None = 0,
         Vertex = 1 << 0,
@@ -142,7 +142,7 @@ namespace Wl
     };
     WL_ENUM_FLAGS(RHIBufferUsageFlags)
 
-    enum class RHITextureUsageFlags : uint8_t
+    enum class RHITextureUsageFlags : uint8
     {
         None = 0,
         InputAttachment = 1 << 0,
@@ -180,7 +180,7 @@ namespace Wl
         Shared
     };
 
-    enum class RHIFormat : uint32_t
+    enum class RHIFormat : uint32
     {
         Undefined,
 
@@ -283,7 +283,7 @@ namespace Wl
 
     inline bool RHIBufferUsageAny(RHIBufferUsageFlags usage)
     {
-        return static_cast<uint8_t>(usage) != 0;
+        return static_cast<uint8>(usage) != 0;
     }
 
 }// namespace Wl

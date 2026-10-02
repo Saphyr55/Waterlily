@@ -12,7 +12,7 @@ namespace Wl
 	class WL_RENDERER_API Shader : public Asset
 	{
     public:
-        enum class Stage : uint8_t
+        enum class Stage : uint8
         {
             None = 0,
             Vertex,

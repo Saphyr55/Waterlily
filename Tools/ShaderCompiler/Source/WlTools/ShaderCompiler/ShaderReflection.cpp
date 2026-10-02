@@ -27,8 +27,8 @@ namespace Wl
 
     struct CumulativeOffset
     {
-        uint32_t value = 0;
-        uint32_t space = 0;
+        uint32 value = 0;
+        uint32 space = 0;
     };
 
     static Array<ShaderBinding> g_bindings;
@@ -43,13 +43,13 @@ namespace Wl
             TypeLayoutReflection* typeLayout,
             const String& path,
             const AccessPath& accessPath,
-            size_t elementCount = 1);
+            usize elementCount = 1);
 
     static void CollectVarLayout(
             VariableLayoutReflection* varLayout,
             const String& path,
             const AccessPath& outerAccessPath,
-            size_t elementCount = 1);
+            usize elementCount = 1);
 
     static CumulativeOffset ComputeCumulativeOffset(
             ParameterCategory layoutUnit,
@@ -109,7 +109,7 @@ namespace Wl
             VariableLayoutReflection* varLayout,
             const String& path,
             const AccessPath& outerAccessPath,
-            size_t elementCount)
+            usize elementCount)
     {
         AccessPathNode node {varLayout, outerAccessPath.leaf};
         AccessPath accessPath = outerAccessPath;
@@ -123,7 +123,7 @@ namespace Wl
             case TypeReflection::Kind::Resource:
             case TypeReflection::Kind::SamplerState:
             {
-                for (uint32_t i = 0; i < varLayout->getCategoryCount(); i++)
+                for (uint32 i = 0; i < varLayout->getCategoryCount(); i++)
                 {
                     ParameterCategory category = varLayout->getCategoryByIndex(i);
                     
@@ -157,7 +157,7 @@ namespace Wl
             TypeLayoutReflection* typeLayout,
             const String& path,
             const AccessPath& accessPath,
-            size_t elementCount)
+            usize elementCount)
     {
         TypeReflection::Kind kind = typeLayout->getKind();
 
@@ -165,14 +165,14 @@ namespace Wl
         {
             case TypeReflection::Kind::Array:
             {
-                size_t arraySize = typeLayout->getElementCount();
-                size_t nextElementCount = elementCount * arraySize;
+                usize arraySize = typeLayout->getElementCount();
+                usize nextElementCount = elementCount * arraySize;
                 CollectVarLayout(typeLayout->getElementVarLayout(), path, accessPath, nextElementCount);
                 break;
             }
             case TypeReflection::Kind::Struct:
             {
-                for (uint32_t i = 0; i < typeLayout->getFieldCount(); i++)
+                for (uint32 i = 0; i < typeLayout->getFieldCount(); i++)
                 {
                     VariableLayoutReflection* field = typeLayout->getFieldByIndex(i);
                     String fieldName = field->getName();
@@ -211,7 +211,7 @@ namespace Wl
                     innerAccessPath.deepestParameterBlock = &containerNode;
                 }
 
-                for (uint32_t i = 0; i < containerVarLayout->getCategoryCount(); i++)
+                for (uint32 i = 0; i < containerVarLayout->getCategoryCount(); i++)
                 {
                     ParameterCategory category = containerVarLayout->getCategoryByIndex(i);
                     switch (category)
@@ -272,7 +272,7 @@ namespace Wl
         printf("%-65s %-12s %-12s %-12s %-12s\n", "[Path]", "[Count]", "[Group]", "[Binding]", "[BindingType]");
         for (const ShaderBinding& b: g_bindings)
         {
-            printf("%-65s %-12u %-12u %-12u %-12u\n", b.Name.data(), b.Count, b.Group, b.Binding, uint32_t(b.Type));
+            printf("%-65s %-12u %-12u %-12u %-12u\n", b.Name.data(), b.Count, b.Group, b.Binding, uint32(b.Type));
         }
 
         g_bindings.Clear();

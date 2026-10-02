@@ -8,7 +8,7 @@ namespace Wl
 
     Array<VkExtensionProperties> VulkanRHI::GetInstanceExtensionProperties()
     {
-        uint32_t count = 0;
+        uint32 count = 0;
         WL_VULKAN_CHECK(VulkanAPI::vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr));
 
         Array<VkExtensionProperties> extensions;

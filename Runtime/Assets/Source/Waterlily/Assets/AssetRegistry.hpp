@@ -18,17 +18,17 @@ namespace Wl
 
     inline constexpr StringRef WLAR_EXTENSION = ".wlar";
     inline constexpr StringRef WLAR_FILENAME = "Registry.wlar";
-    inline constexpr uint64_t WLAR_FILETYPE = Wl::CStringPack64("WLAR    ");
-    inline constexpr uint32_t WLAR_VERSION = 1;
+    inline constexpr uint64 WLAR_FILETYPE = Wl::CStringPack64("WLAR    ");
+    inline constexpr uint32 WLAR_VERSION = 1;
 
     inline const StringID AssetRegistryURI = "Assets/Registry.wlar";
 
     struct WLARHeader
     {
-        uint64_t Filetype = WLAR_FILETYPE;
-        uint32_t Version = WLAR_VERSION;
-        uint64_t AssetCount = 0;
-        uint64_t AssetOffset = sizeof(WLARHeader);
+        uint64 Filetype = WLAR_FILETYPE;
+        uint32 Version = WLAR_VERSION;
+        uint64 AssetCount = 0;
+        uint64 AssetOffset = sizeof(WLARHeader);
     };
 
     inline void operator<<(OutputStream& stream, const WLARHeader& header)
@@ -81,8 +81,8 @@ namespace Wl
         ~AssetRegistry() = default;
 
     private:
-        HashMap<StringID, size_t> m_uriToIndex;
-        HashMap<AssetUUID, size_t> m_uuidToTndex;
+        HashMap<StringID, usize> m_uriToIndex;
+        HashMap<AssetUUID, usize> m_uuidToTndex;
         Array<AssetMetadata> m_registry;
     };
 

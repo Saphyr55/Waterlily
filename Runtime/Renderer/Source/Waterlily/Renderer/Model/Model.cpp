@@ -5,7 +5,7 @@ namespace Wl
 
     void operator<<(OutputStream& stream, const Model& asset)
     {
-        stream << static_cast<uint64_t>(asset.Meshes.GetSize());
+        stream << static_cast<uint64>(asset.Meshes.GetSize());
         for (const AssetHandle& handle: asset.Meshes)
         {
             stream << handle;
@@ -14,7 +14,7 @@ namespace Wl
 
     void operator>>(InputStream& stream, Model& asset)
     {
-        uint64_t size = 0;
+        uint64 size = 0;
         stream >> size;
         asset.Meshes.Resize(size);
         for (AssetHandle& handle: asset.Meshes)

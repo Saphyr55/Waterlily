@@ -4,7 +4,7 @@
 namespace Wl
 {
 
-    bool MemoryStream::Read(uint8_t* destination, size_t nbytes)
+    bool MemoryStream::Read(uint8* destination, usize nbytes)
     {
         if (m_head + nbytes > m_size)
         {
@@ -18,7 +18,7 @@ namespace Wl
         return true;
     }
 
-    bool MemoryStream::Write(const uint8_t* source, size_t nbytes)
+    bool MemoryStream::Write(const uint8* source, usize nbytes)
     {
         if (m_head + nbytes > m_size)
         {
@@ -37,23 +37,23 @@ namespace Wl
         return true;
     }
 
-    int64_t MemoryStream::Tell()
+    int64 MemoryStream::Tell()
     {
         return m_head;
     }
 
-    bool MemoryStream::Seek(int64_t position)
+    bool MemoryStream::Seek(int64 position)
     {
         m_head = position;
         return true;
     }
 
-    size_t MemoryStream::GetSize()
+    usize MemoryStream::GetSize()
     {
         return m_size;
     }
 
-    MemoryStream::MemoryStream(uint8_t* buffer, size_t size)
+    MemoryStream::MemoryStream(uint8* buffer, usize size)
         : m_buffer(buffer)
         , m_size(size)
         , m_head(0)

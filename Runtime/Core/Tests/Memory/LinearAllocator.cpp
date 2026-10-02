@@ -16,9 +16,9 @@ TEST_CASE("LinearAllocator basic allocation", "[LinearAllocator]")
 
     SECTION("Allocate returns non-null and respects alignment.")
     {
-        void* ptr1 = allocator.Allocate(16, alignof(int32_t));
+        void* ptr1 = allocator.Allocate(16, alignof(int32));
         REQUIRE(ptr1 != nullptr);
-        REQUIRE(reinterpret_cast<std::uintptr_t>(ptr1) % alignof(int32_t) == 0);
+        REQUIRE(reinterpret_cast<std::uintptr_t>(ptr1) % alignof(int32) == 0);
 
         void* ptr2 = allocator.Allocate(32, alignof(double));
         REQUIRE(ptr2 != nullptr);
@@ -49,14 +49,14 @@ TEST_CASE("TypedLinearAllocator usage.", "[TypedLinearAllocator]")
 
     SECTION("Allocate array of ints.")
     {
-        int32_t* arr = static_cast<int32_t*>(allocator.Allocate(10 * sizeof(int32_t)));
+        int32* arr = static_cast<int32*>(allocator.Allocate(10 * sizeof(int32)));
         REQUIRE(arr != nullptr);
 
-        for (int32_t i = 0; i < 10; i++)
+        for (int32 i = 0; i < 10; i++)
         {
             arr[i] = i * 2;
         }
-        for (int32_t i = 0; i < 10; i++)
+        for (int32 i = 0; i < 10; i++)
         {
             REQUIRE(arr[i] == i * 2);
         }
@@ -64,7 +64,7 @@ TEST_CASE("TypedLinearAllocator usage.", "[TypedLinearAllocator]")
 
     SECTION("Allocate multiple different types with same pool.")
     {
-        int32_t* ints = static_cast<int32_t*>(allocator.Allocate(4 * sizeof(int32_t)));
+        int32* ints = static_cast<int32*>(allocator.Allocate(4 * sizeof(int32)));
         REQUIRE(ints != nullptr);
 
         double* doubles = static_cast<double*>(allocator.Allocate(4 * sizeof(double)));

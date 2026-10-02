@@ -11,12 +11,12 @@ namespace Wl
     class SPIRVShader
     {
     public:
-        inline const Array<uint8_t>& GetByteCode() const
+        inline const Array<uint8>& GetByteCode() const
         {
             return m_byteCode;
         }
 
-        inline Array<uint8_t>& GetByteCode()
+        inline Array<uint8>& GetByteCode()
         {
             return m_byteCode;
         }
@@ -28,7 +28,7 @@ namespace Wl
 
     public:
         SPIRVShader() = default;
-        SPIRVShader(RHIShaderStage stage, const Array<uint8_t>& code)
+        SPIRVShader(RHIShaderStage stage, const Array<uint8>& code)
             : m_stage(stage)
             , m_byteCode(code)
         {
@@ -40,7 +40,7 @@ namespace Wl
 
     private:
         RHIShaderStage m_stage = RHIShaderStage::None;
-        Array<uint8_t> m_byteCode;
+        Array<uint8> m_byteCode;
     };
 
 }// namespace Wl

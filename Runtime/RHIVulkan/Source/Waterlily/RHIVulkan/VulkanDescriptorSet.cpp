@@ -18,7 +18,7 @@ namespace Wl
         bool isStorageBuffer = (vulkanBuffer->GetUsage() & RHIBufferUsageFlags::Storage) == RHIBufferUsageFlags::Storage;
 
         PendingBufferWrite pendingWrite = {};
-        pendingWrite.ArrayElement = static_cast<uint32_t>(resource.ArrayIndex);
+        pendingWrite.ArrayElement = static_cast<uint32>(resource.ArrayIndex);
         pendingWrite.Binding = resource.Binding;
         pendingWrite.Buffer = vulkanBuffer->GetHandle();
         pendingWrite.Offset = resource.Offset;
@@ -47,7 +47,7 @@ namespace Wl
         WL_CHECK_MSG(isSampled, "Only sampled textures can be bound with a sampler.");
 
         PendingImageWrite pendingWrite = {};
-        pendingWrite.ArrayElement = static_cast<uint32_t>(resource.ArrayIndex);
+        pendingWrite.ArrayElement = static_cast<uint32>(resource.ArrayIndex);
         pendingWrite.Binding = resource.Binding;
         pendingWrite.View = vulkanTextureView->GetHandle();
         pendingWrite.Sampler = vulkanSampler->GetHandle();
@@ -71,7 +71,7 @@ namespace Wl
         WL_CHECK_MSG(isStorage, "Only storage textures or read-only texture views can be bound without a sampler.");
 
         PendingImageWrite pendingWrite = {};
-        pendingWrite.ArrayElement = static_cast<uint32_t>(resource.ArrayIndex);
+        pendingWrite.ArrayElement = static_cast<uint32>(resource.ArrayIndex);
         pendingWrite.Binding = resource.Binding;
         pendingWrite.View = vulkanTextureView->GetHandle();
         pendingWrite.Sampler = VK_NULL_HANDLE;
@@ -83,8 +83,8 @@ namespace Wl
 
     void VulkanShaderResourceGroup::Update()
     {
-        const size_t bufferCount = m_pendingBufferWrites.GetSize();
-        const size_t imageCount = m_pendingImageWrites.GetSize();
+        const usize bufferCount = m_pendingBufferWrites.GetSize();
+        const usize imageCount = m_pendingImageWrites.GetSize();
 
         if (bufferCount + imageCount == 0)
         {
@@ -100,7 +100,7 @@ namespace Wl
         Array<VkWriteDescriptorSet> writes;
         writes.Reserve(bufferCount + imageCount);
 
-        for (uint32_t i = 0; i < bufferCount; i++)
+        for (uint32 i = 0; i < bufferCount; i++)
         {
             PendingBufferWrite& pending = m_pendingBufferWrites[i];
 
@@ -121,7 +121,7 @@ namespace Wl
             });
         }
 
-        for (uint32_t i = 0; i < imageCount; i++)
+        for (uint32 i = 0; i < imageCount; i++)
         {
             PendingImageWrite& pending = m_pendingImageWrites[i];
 
@@ -145,7 +145,7 @@ namespace Wl
         VulkanContext& context = VulkanContextGet();
 
         VulkanAPI::vkUpdateDescriptorSets(context.Device,
-                                          static_cast<uint32_t>(writes.GetSize()),
+                                          static_cast<uint32>(writes.GetSize()),
                                           writes.GetData(),
                                           0,
                                           nullptr);

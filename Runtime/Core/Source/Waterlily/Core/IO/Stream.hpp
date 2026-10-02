@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstdint>
+#include "Waterlily/Core/Defines.hpp"
+
 #include <type_traits>
 
 namespace Wl
@@ -9,7 +10,7 @@ namespace Wl
     class InputStream
     {
     public:
-        virtual bool Read(uint8_t* destination, size_t nbytes) = 0;
+        virtual bool Read(uint8* destination, usize nbytes) = 0;
 
         virtual ~InputStream() = default;
     };
@@ -17,7 +18,7 @@ namespace Wl
     class OutputStream
     {
     public:
-        virtual bool Write(const uint8_t* source, size_t nbytes) = 0;
+        virtual bool Write(const uint8* source, usize nbytes) = 0;
 
         virtual bool Flush() = 0;
 
@@ -29,17 +30,17 @@ namespace Wl
         , public OutputStream
     {
     public:
-        virtual bool Read(uint8_t* destination, size_t nbytes) = 0;
+        virtual bool Read(uint8* destination, usize nbytes) = 0;
 
-        virtual bool Write(const uint8_t* source, size_t nbytes) = 0;
+        virtual bool Write(const uint8* source, usize nbytes) = 0;
 
         virtual bool Flush() = 0;
 
-        virtual int64_t Tell() = 0;
+        virtual int64 Tell() = 0;
 
-        virtual bool Seek(int64_t position) = 0;
+        virtual bool Seek(int64 position) = 0;
 
-        virtual size_t GetSize() = 0;
+        virtual usize GetSize() = 0;
 
         virtual ~Stream() = default;
     };
@@ -54,14 +55,14 @@ namespace Wl
         requires(std::is_arithmetic_v<Type>)
     inline void operator<<(OutputStream& stream, const Type& type)
     {
-        stream.Write(reinterpret_cast<const uint8_t*>(&type), sizeof(Type));
+        stream.Write(reinterpret_cast<const uint8*>(&type), sizeof(Type));
     }
 
     template<typename Type>
         requires(std::is_arithmetic_v<Type>)
     inline void operator>>(InputStream& stream, Type& type)
     {
-        stream.Read(reinterpret_cast<uint8_t*>(&type), sizeof(Type));
+        stream.Read(reinterpret_cast<uint8*>(&type), sizeof(Type));
     }
 
 }// namespace Wl

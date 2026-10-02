@@ -9,7 +9,7 @@ namespace Wl
         DisplaySignals::OnWindowClose.Emit(window);
     }
 
-    void DefaultDisplayEventHandler::OnWindowResized(const WindowHandle window, const uint32_t width, const uint32_t height)
+    void DefaultDisplayEventHandler::OnWindowResized(const WindowHandle window, const uint32 width, const uint32 height)
     {
         DisplaySignals::OnWindowResized.Emit(window, width, height);
     }

@@ -5,7 +5,7 @@
 namespace Wl
 {
 
-    void FrameGraphPhysicalTexturePool::GarbageCollect(uint64_t maxFrameLifetime)
+    void FrameGraphPhysicalTexturePool::GarbageCollect(uint64 maxFrameLifetime)
     {
         if (maxFrameLifetime < m_frameContext->GetMaxFrameInFlight())
         {
@@ -60,12 +60,12 @@ namespace Wl
         m_allocator.Reset();
     }
 
-    void FrameGraphPhysicalTexturePool::InternalGarbageCollect(uint64_t maxFrameLifetime)
+    void FrameGraphPhysicalTexturePool::InternalGarbageCollect(uint64 maxFrameLifetime)
     {
         // TODO:
     }
 
-    PooledPhysicalTexture& FrameGraphPhysicalTexturePool::Allocate(const FrameGraphPhysicalTextureKey& key, uint64_t currentFrame)
+    PooledPhysicalTexture& FrameGraphPhysicalTexturePool::Allocate(const FrameGraphPhysicalTextureKey& key, uint64 currentFrame)
     {
         return m_resources.Emplace(Create(key), currentFrame);
     }

@@ -17,8 +17,8 @@ namespace Wl
     struct RHIShaderConstantRange
     {
         RHIShaderStage Stage = RHIShaderStage::AllGraphics;
-        uint32_t Offset = 0;
-        uint32_t Size = 128;
+        uint32 Offset = 0;
+        uint32 Size = 128;
     };
 
     struct RHIPipelineViewportStateInformation

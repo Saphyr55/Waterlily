@@ -11,14 +11,14 @@
 namespace Wl
 {
 
-    using PooledPhysicalTextureHandle = size_t;
+    using PooledPhysicalTextureHandle = usize;
 
     struct PooledPhysicalTexture
     {
         FrameGraphPhysicalTexture PhysicalTexture;
-        uint64_t LastUsedFrame = 0;
+        uint64 LastUsedFrame = 0;
 
-        PooledPhysicalTexture(const FrameGraphPhysicalTexture& physicalTexture, uint64_t lastUsedFrame)
+        PooledPhysicalTexture(const FrameGraphPhysicalTexture& physicalTexture, uint64 lastUsedFrame)
             : PhysicalTexture(physicalTexture)
             , LastUsedFrame(lastUsedFrame)
         {
@@ -28,9 +28,9 @@ namespace Wl
     class FrameGraphPhysicalTexturePool
     {
     public:
-        using Handle = size_t;
+        using Handle = usize;
 
-        void GarbageCollect(uint64_t maxFrameLifetime);
+        void GarbageCollect(uint64 maxFrameLifetime);
 
         inline PooledPhysicalTexture& GetResource(PooledPhysicalTextureHandle handle)
         {
@@ -54,11 +54,11 @@ namespace Wl
         }
 
     private:
-        PooledPhysicalTexture& Allocate(const FrameGraphPhysicalTextureKey& key, uint64_t currentFrame);
+        PooledPhysicalTexture& Allocate(const FrameGraphPhysicalTextureKey& key, uint64 currentFrame);
         FrameGraphPhysicalTexture Create(const FrameGraphPhysicalTextureKey& key);
         void Destroy(PooledPhysicalTexture& handle);
 
-        void InternalGarbageCollect(uint64_t maxFrameLifetime);
+        void InternalGarbageCollect(uint64 maxFrameLifetime);
 
     private:
         struct PendingRelease
@@ -76,7 +76,7 @@ namespace Wl
         Array<PendingRelease> m_pendingReleases;
         Array<PooledPhysicalTexture> m_resources;
 
-        uint64_t m_frameCount = 0;
+        uint64 m_frameCount = 0;
     };
 
 }// namespace Wl

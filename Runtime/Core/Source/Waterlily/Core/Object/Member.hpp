@@ -15,14 +15,14 @@ namespace Wl
             return m_type;
         }
 
-        inline uint32_t GetOffset() const
+        inline uint32 GetOffset() const
         {
             return m_offset;
         }
 
     public:
         constexpr Member() = default;
-        constexpr explicit Member(Type type, uint32_t offset)
+        constexpr explicit Member(Type type, uint32 offset)
             : m_type(type)
             , m_offset(offset)
         {
@@ -31,19 +31,19 @@ namespace Wl
 
     private:
         Type m_type;
-        uint32_t m_offset = 0;
+        uint32 m_offset = 0;
     };
 
     template<class ObjectType, class MemberType>
-    inline size_t MemberOffset(MemberType ObjectType::* member)
+    inline usize MemberOffset(MemberType ObjectType::* member)
     {
         AlignedStorageType<ObjectType> buffer;
-        const uint8_t* base = reinterpret_cast<const uint8_t*>(&(buffer.GetPtr()->*member));
+        const uint8* base = reinterpret_cast<const uint8*>(&(buffer.GetPtr()->*member));
         return base - buffer.Storage;
     }
 
     template<typename T>
-    inline size_t MemberOffsetAlignUp(size_t offset, size_t alignment, size_t& outMemberOffset)
+    inline usize MemberOffsetAlignUp(usize offset, usize alignment, usize& outMemberOffset)
     {
         offset = Memory::AlignUp(offset, alignment);
         outMemberOffset = offset;

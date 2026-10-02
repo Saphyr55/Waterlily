@@ -11,7 +11,7 @@ namespace Wl
     class ObjectCache
     {
     public:
-        using IndexType = size_t;
+        using IndexType = usize;
         using EntryType = Entry<KeyType, IndexType>;
         using CacheType = HashMap<KeyType, IndexType, HashType>;
         using RegistryType = Array<ObjectType>;

@@ -123,7 +123,7 @@ namespace Wl
     {
         ModuleRegistry& moduleRegistry = ModuleRegistry::GetInstance();
 
-        for (size_t i = m_orderedModuleInformations.GetSize() - 1; i-- > 0;)
+        for (usize i = m_orderedModuleInformations.GetSize() - 1; i-- > 0;)
         {
             const ModuleInformation* info = m_orderedModuleInformations[i];
             Module* module = moduleRegistry.GetModuleInterface(info->Name);

@@ -13,28 +13,28 @@ namespace Wl
     template<typename CharType>
     class StringBase;
 
-    WL_CORE_API size_t StringLength(const char* str);
-    WL_CORE_API size_t StringLength(const wchar_t* str);
+    WL_CORE_API usize StringLength(const char* str);
+    WL_CORE_API usize StringLength(const wchar_t* str);
 
-    WL_CORE_API errno_t StringCopy(char* dst, size_t sizeInBytes, const char* src);
-    WL_CORE_API errno_t StringCopy(wchar_t* dst, size_t sizeInBytes, const wchar_t* src);
+    WL_CORE_API errno_t StringCopy(char* dst, usize sizeInBytes, const char* src);
+    WL_CORE_API errno_t StringCopy(wchar_t* dst, usize sizeInBytes, const wchar_t* src);
 
-    WL_CORE_API errno_t StringCat(char* dst, size_t sizeInBytes, const char* src);
-    WL_CORE_API errno_t StringCat(wchar_t* dst, size_t sizeInBytes, const wchar_t* src);
+    WL_CORE_API errno_t StringCat(char* dst, usize sizeInBytes, const char* src);
+    WL_CORE_API errno_t StringCat(wchar_t* dst, usize sizeInBytes, const wchar_t* src);
 
-    WL_CORE_API int32_t StringCompare(const char* str1, const char* str2);
-    WL_CORE_API int32_t StringCompare(const wchar_t* str1, const wchar_t* str2);
+    WL_CORE_API int32 StringCompare(const char* str1, const char* str2);
+    WL_CORE_API int32 StringCompare(const wchar_t* str1, const wchar_t* str2);
 
-    WL_CORE_API constexpr size_t StringHash(const char* str, size_t length);
-    WL_CORE_API constexpr size_t StringHash(const wchar_t* str, size_t length);
+    WL_CORE_API constexpr usize StringHash(const char* str, usize length);
+    WL_CORE_API constexpr usize StringHash(const wchar_t* str, usize length);
 
-    consteval uint64_t CStringPack64(const char str[9])
+    consteval uint64 CStringPack64(const char str[9])
     {
-        uint64_t result = 0;
-        for (size_t i = 0; i < 8; i++)
+        uint64 result = 0;
+        for (usize i = 0; i < 8; i++)
         {
-            uint8_t character = static_cast<uint8_t>(str[i]);
-            result |= static_cast<uint64_t>(character) << (i * 8);
+            uint8 character = static_cast<uint8>(str[i]);
+            result |= static_cast<uint64>(character) << (i * 8);
         }
         return result;
     }
@@ -52,7 +52,7 @@ namespace Wl
     class StringBase
     {
     public:
-        size_t GetSize() const
+        usize GetSize() const
         {
             if (m_buffer.IsEmpty())
             {
@@ -62,7 +62,7 @@ namespace Wl
             return m_buffer.GetSize() - 1;
         }
 
-        size_t GetCapacity() const
+        usize GetCapacity() const
         {
             return m_buffer.GetCapacity();
         }
@@ -71,12 +71,12 @@ namespace Wl
         {
             WL_CHECK(str);
 
-            size_t len = StringLength(str);
+            usize len = StringLength(str);
             if (!m_buffer.IsEmpty())
             {
                 m_buffer.Pop();// Remove null terminator.
             }
-            for (size_t i = 0; i < len; i++)
+            for (usize i = 0; i < len; i++)
             {
                 m_buffer.Append(str[i]);
             }
@@ -117,13 +117,13 @@ namespace Wl
             m_buffer.Append(CharType('\0'));
         }
 
-        void Resize(size_t size)
+        void Resize(usize size)
         {
             m_buffer.Resize(size + 1);
             m_buffer[size] = CharType('\0');
         }
 
-        void Reserve(size_t capacity)
+        void Reserve(usize capacity)
         {
             m_buffer.Reserve(capacity + 1);
         }
@@ -140,7 +140,7 @@ namespace Wl
             m_buffer.Append(CharType('\0'));
         }
 
-        explicit StringBase(size_t capacity)
+        explicit StringBase(usize capacity)
             : m_buffer()
         {
             Reserve(capacity);
@@ -202,12 +202,12 @@ namespace Wl
             return StringCompare(m_buffer.GetData(), str.GetData()) == 0;
         }
 
-        const CharType& operator[](size_t i) const
+        const CharType& operator[](usize i) const
         {
             return m_buffer[i];
         }
 
-        CharType& operator[](size_t i)
+        CharType& operator[](usize i)
         {
             return m_buffer[i];
         }
@@ -253,7 +253,7 @@ namespace Wl
         }
 
     private:
-        void EnsureCapacity(size_t requiredCapacity)
+        void EnsureCapacity(usize requiredCapacity)
         {
             if (requiredCapacity + 1 > m_buffer.GetCapacity())
             {
@@ -275,8 +275,8 @@ namespace Wl
     inline void operator<<(OutputStream& stream, const StringBase<CharType>& str)
     {
         const CharType* data = str.GetData();
-        const uint8_t* buffer = reinterpret_cast<const uint8_t*>(data);
-        stream << static_cast<uint64_t>(str.GetSize());
+        const uint8* buffer = reinterpret_cast<const uint8*>(data);
+        stream << static_cast<uint64>(str.GetSize());
         stream.Write(buffer, str.GetSize() * sizeof(CharType));
     }
 
@@ -293,17 +293,17 @@ namespace Wl
     template<typename CharType>
     inline bool ReadText(InputStream& stream, StringBase<CharType>& text)
     {
-        return stream.Read(reinterpret_cast<uint8_t*>(text.GetData()), text.GetSize() * sizeof(CharType));
+        return stream.Read(reinterpret_cast<uint8*>(text.GetData()), text.GetSize() * sizeof(CharType));
     }
 
     template<typename CharType>
     inline void operator>>(InputStream& stream, StringBase<CharType>& str)
     {
-        uint64_t size = 0;
+        uint64 size = 0;
         stream >> size;
         str.Resize(size);
 
-        uint8_t* buffer = reinterpret_cast<uint8_t*>(str.GetData());
+        uint8* buffer = reinterpret_cast<uint8*>(str.GetData());
         stream.Read(buffer, str.GetSize() * sizeof(CharType));
     }
 

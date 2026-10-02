@@ -11,7 +11,7 @@ namespace Wl
     struct WL_CORE_API DisplaySignals
     {
         WL_SIGNAL_STATIC(OnWindowClose, WindowHandle /* window*/);
-        WL_SIGNAL_STATIC(OnWindowResized, WindowHandle /* window */, uint32_t /* width*/, uint32_t /* height */);
+        WL_SIGNAL_STATIC(OnWindowResized, WindowHandle /* window */, uint32 /* width*/, uint32 /* height */);
         WL_SIGNAL_STATIC(OnWindowMinimized, WindowHandle /* window */);
         WL_SIGNAL_STATIC(OnWindowExposed, WindowHandle /* window */);
         WL_SIGNAL_STATIC(OnWindowShown, WindowHandle /* window */);
@@ -22,7 +22,7 @@ namespace Wl
     public:
         virtual void OnWindowClose(WindowHandle window) override;
 
-        virtual void OnWindowResized(WindowHandle window, uint32_t width, uint32_t height) override;
+        virtual void OnWindowResized(WindowHandle window, uint32 width, uint32 height) override;
         
         virtual void OnWindowExposed(WindowHandle window) override;
 

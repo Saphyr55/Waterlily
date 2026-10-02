@@ -30,7 +30,7 @@ namespace Wl
 
         virtual void BindSRG(RHIPipeline* pipeline,
                              const Array<RHIShaderResourceGroup*>& groups,
-                             size_t groupIndex) override;
+                             usize groupIndex) override;
 
         virtual void SetShaderConstants(RHIPipeline* pipeline, const RHIShaderConstants& shader_constants) override;
 
@@ -38,9 +38,9 @@ namespace Wl
 
         virtual void BindIndexBuffer(RHIBuffer* buffer) override;
 
-        virtual void SetScissors(const Rect2D* scissors, uint32_t count) override;
+        virtual void SetScissors(const Rect2D* scissors, uint32 count) override;
 
-        virtual void SetViewports(const Viewport* viewports, uint32_t count) override;
+        virtual void SetViewports(const Viewport* viewports, uint32 count) override;
 
         virtual void TextureGenerateMipmap(const RHITextureLayoutTransition& transition) override;
 
@@ -85,7 +85,7 @@ namespace Wl
     class VulkanCommandAllocator : public RHICommandAllocator
     {
     public:
-        virtual RHICommandBuffer* OpenCommandBuffer(uint32_t index = 0) override;
+        virtual RHICommandBuffer* OpenCommandBuffer(uint32 index = 0) override;
 
         virtual void ResetCommandBuffer(RHICommandBuffer* command_buffer) override;
 
@@ -109,8 +109,8 @@ namespace Wl
         Array<VulkanCommandBuffer*> m_upperCommandBuffers;
         Array<VkCommandBuffer> m_commandBuffers;
         RHIQueueType m_queueType;
-        uint32_t m_queueFamilyIndex = 0;
-        uint32_t m_count = 0;
+        uint32 m_queueFamilyIndex = 0;
+        uint32 m_count = 0;
         LinearAllocator m_upperCommandBufferAllocator;
 
         VulkanContext& m_context;

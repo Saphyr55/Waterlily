@@ -8,11 +8,11 @@
 namespace Wl
 {
 
-    Button ButtonFromSDL(int32_t buttonCode);
+    Button ButtonFromSDL(int32 buttonCode);
 
     VirtualKey KeyFromSDL(SDL_Keycode keyCode);
 
-    int32_t ButtonToSDL(Button button);
+    int32 ButtonToSDL(Button button);
 
     SDL_Keycode KeyToSDL(VirtualKey key);
 

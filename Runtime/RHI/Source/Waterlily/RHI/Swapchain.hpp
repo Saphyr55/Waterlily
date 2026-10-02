@@ -16,7 +16,7 @@ namespace Wl
 
     struct RHISwapchainAcquireResult
     {
-        uint32_t ImageIndex = 0;
+        uint32 ImageIndex = 0;
         bool IsSuccess = false;
         bool IsOutOfDate = false;
         bool IsSuboptimal = false;
@@ -30,9 +30,9 @@ namespace Wl
 
         virtual RHISwapchainAcquireResult& GetCurrentAcquireResult() = 0;
 
-        virtual uint32_t GetWidth() = 0;
+        virtual uint32 GetWidth() = 0;
 
-        virtual uint32_t GetHeight() = 0;
+        virtual uint32 GetHeight() = 0;
 
         virtual RHIFormat GetFormat() = 0;
 

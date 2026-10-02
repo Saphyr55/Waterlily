@@ -8,7 +8,7 @@ namespace Wl
                                     LogSeverity severity,
                                     const char* channel,
                                     const char* file,
-                                    uint32_t line,
+                                    uint32 line,
                                     const char* message)
     {
         const char* severitycstr = Logger::GetSeverity(severity);

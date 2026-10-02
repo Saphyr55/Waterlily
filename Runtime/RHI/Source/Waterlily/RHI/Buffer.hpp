@@ -16,7 +16,7 @@ namespace Wl
      */
     struct RHIBufferDescription
     {
-        size_t Size = 0;
+        usize Size = 0;
         RHIBufferUsageFlags Usage = RHIBufferUsageFlags::None;
         RHIMemoryUsage MemoryUsage = RHIMemoryUsage::Host;
         RHISharingMode SharingMode = RHISharingMode::Private;
@@ -47,7 +47,7 @@ namespace Wl
          * @brief Gets the size of the buffer in bytes.
          * @return The size of the buffer.
          */
-        virtual size_t GetSize() = 0;
+        virtual usize GetSize() = 0;
 
         /**
          * @brief Binds the buffer to the current context.
@@ -60,7 +60,7 @@ namespace Wl
          * @param size The size in bytes to map.
          * @return Pointer to the mapped memory region.
          */
-        virtual void* Map(size_t offset = 0, size_t size = 0) = 0;
+        virtual void* Map(usize offset = 0, usize size = 0) = 0;
 
         /**
          * @brief Unmaps the buffer from CPU access.
@@ -73,7 +73,7 @@ namespace Wl
          * @param size Size of the data in bytes.
          * @param offset Offset in bytes from the start of the buffer to update.
          */
-        virtual void Update(const void* data, size_t size, size_t offset = 0) = 0;
+        virtual void Update(const void* data, usize size, usize offset = 0) = 0;
 
         /**
          * @brief destructor.

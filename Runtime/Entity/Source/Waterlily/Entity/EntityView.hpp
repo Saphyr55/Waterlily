@@ -24,7 +24,7 @@ namespace Wl
             using difference_type = std::ptrdiff_t;
             using iterator_category = std::forward_iterator_tag;
 
-            Iterator(EntityView* view, size_t index)
+            Iterator(EntityView* view, usize index)
                 : m_view(view)
                 , m_index(index)
             {
@@ -68,7 +68,7 @@ namespace Wl
 
         private:
             EntityView* m_view;
-            size_t m_index;
+            usize m_index;
         };
 
         using iterator = Iterator;
@@ -121,7 +121,7 @@ namespace Wl
             }, m_pools);
         }
 
-        size_t GetSize() const
+        usize GetSize() const
         {
             return m_entities.GetSize();
         }

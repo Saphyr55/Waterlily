@@ -13,7 +13,7 @@ namespace Wl
         RHITexture* Texture = nullptr;
         RHIFormat Format = RHIFormat::RGBA8sRGB;
         RHITextureDimension Dimension = RHITextureDimension::Dim2D;
-        uint32_t MipLevels = 1;
+        uint32 MipLevels = 1;
     };
 
     class WL_RHI_API RHITextureView : public RHIResource

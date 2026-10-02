@@ -31,7 +31,7 @@ namespace Wl
 
         const Array<ModuleInformation>& GetModules() const;
 
-        size_t GetModuleCount() const
+        usize GetModuleCount() const
         {
             return m_manifestInformations.GetSize();
         }

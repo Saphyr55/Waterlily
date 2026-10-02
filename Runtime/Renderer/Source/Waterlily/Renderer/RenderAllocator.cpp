@@ -5,7 +5,7 @@
 namespace Wl
 {
 
-    RenderAllocation RenderAllocator::Allocate(size_t size)
+    RenderAllocation RenderAllocator::Allocate(usize size)
     {
         uintptr_t offset = Memory::AlignUp(m_head, m_minAlignment);
         uintptr_t newHead = offset + size;
@@ -19,7 +19,7 @@ namespace Wl
 
         m_head = newHead;
 
-        void* data = static_cast<uint8_t*>(m_mapped) + offset;
+        void* data = static_cast<uint8*>(m_mapped) + offset;
 
         return RenderAllocation{
                 .Buffer = m_buffer,
@@ -29,7 +29,7 @@ namespace Wl
         };
     }
 
-    RenderAllocation RenderAllocator::Write(const void* data, size_t size)
+    RenderAllocation RenderAllocator::Write(const void* data, usize size)
     {
         RenderAllocation allocation = Allocate(size);
         Update(allocation, data);

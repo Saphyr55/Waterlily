@@ -9,21 +9,21 @@ namespace Wl
     class WL_CORE_API MemoryTrace
     {
     public:
-        static void GlobalAddDeallocatedByte(uint64_t size);
+        static void GlobalAddDeallocatedByte(uint64 size);
 
-        static void GlobalAddAllocateByte(uint64_t size);
+        static void GlobalAddAllocateByte(uint64 size);
 
-        static uint64_t GlobalGetMemoryUsage();
+        static uint64 GlobalGetMemoryUsage();
 
     private:
         static MemoryTrace& GetDefault();
 
-        void AddDeallocatedByte(uint64_t size);
-        void AddAllocatedByte(uint64_t size);
-        uint64_t GetMemoryUsage() const;
+        void AddDeallocatedByte(uint64 size);
+        void AddAllocatedByte(uint64 size);
+        uint64 GetMemoryUsage() const;
 
     private:
-        uint64_t m_memoryUsage;
+        uint64 m_memoryUsage;
     };
 
 }// namespace Wl

@@ -11,7 +11,7 @@ namespace Wl
     {
     public:
         using value_type = ElementType;
-        using size_type = size_t;
+        using size_type = usize;
 
         using reference = ElementType&;
         using const_reference = const ElementType&;
@@ -269,7 +269,7 @@ namespace Wl
     public:
         constexpr ArrayView() noexcept = default;
 
-        template<size_t N>
+        template<usize N>
         constexpr ArrayView(value_type (&data)[N]) noexcept
             : m_data(data)
             , m_size(N)

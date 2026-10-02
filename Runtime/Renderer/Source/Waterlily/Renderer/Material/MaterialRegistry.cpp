@@ -9,7 +9,7 @@
 namespace Wl
 {
 
-    MaterialRegistry::MaterialRegistry(const SharedPtr<RHIDevice>& device, uint32_t binding)
+    MaterialRegistry::MaterialRegistry(const SharedPtr<RHIDevice>& device, uint32 binding)
         : m_device(device)
         , m_shaderBinding(binding)
     {
@@ -22,7 +22,7 @@ namespace Wl
         m_srgLayout = m_device->CreateSRGLayout({materialBinding});
         m_group = m_srgPool->AllocateSRG(m_srgLayout);
 
-        size_t minAlignment = m_device->GetDeviceProperties().MinStorageBufferOffsetAlignment;
+        usize minAlignment = m_device->GetDeviceProperties().MinStorageBufferOffsetAlignment;
         m_materialStride = Memory::AlignUp(sizeof(MaterialData), minAlignment);
 
         RHIBufferDescription bufferStorageDescription = {};
@@ -88,7 +88,7 @@ namespace Wl
 
     void MaterialRegistry::Upload(SharedPtr<RHICommandQueue> queue)
     {
-        size_t minAlignment = m_device->GetDeviceProperties().MinStorageBufferOffsetAlignment;
+        usize minAlignment = m_device->GetDeviceProperties().MinStorageBufferOffsetAlignment;
 
         UploadScheduler uploader;
         uploader.Init({

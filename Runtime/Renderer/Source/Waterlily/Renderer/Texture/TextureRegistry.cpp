@@ -49,7 +49,7 @@ namespace Wl
             textureDescription.MipLevels =
                     Math::Floor(Math::Log2(Math::Max(textureDescription.Width, textureDescription.Height))) + 1;
 
-            size_t sizeInBytes = image.GetSizeInBytes();
+            usize sizeInBytes = image.GetSizeInBytes();
 
             texture.Texture =
                     uploader.SendTexture(RHIStagingBufferContext(RHIBufferUsageFlags::Storage, sizeInBytes, image.Data.GetData()),
@@ -121,11 +121,11 @@ namespace Wl
         textureDescription.Height = 2;
         textureDescription.MipLevels = 1;
 
-        size_t textureSize = static_cast<size_t>(textureDescription.Width) * static_cast<size_t>(textureDescription.Height) * 4;
+        usize textureSize = static_cast<usize>(textureDescription.Width) * static_cast<usize>(textureDescription.Height) * 4;
 
-        Array<uint8_t> textureBuffer;
+        Array<uint8> textureBuffer;
         textureBuffer.Resize(textureSize);
-        for (size_t i = 0; i < textureSize; i++)
+        for (usize i = 0; i < textureSize; i++)
         {
             textureBuffer[i] = 255;
         }

@@ -14,7 +14,7 @@ namespace Wl
         static UUID_64 CreateInvalid();
 
         UUID_64();
-        explicit UUID_64(uint64_t value)
+        explicit UUID_64(uint64 value)
             : m_value(value)
         {
         }
@@ -40,7 +40,7 @@ namespace Wl
             return m_value != 0;
         }
 
-        uint64_t GetValue() const
+        uint64 GetValue() const
         {
             return m_value;
         }
@@ -48,7 +48,7 @@ namespace Wl
         String ToString() const;
 
     private:
-        uint64_t m_value = 0;
+        uint64 m_value = 0;
     };
 
     inline void operator<<(OutputStream& stream, const UUID_64& UUID)
@@ -58,7 +58,7 @@ namespace Wl
 
     inline void operator>>(InputStream& stream, UUID_64& UUID)
     {
-        uint64_t value = 0;
+        uint64 value = 0;
         stream >> value;
         UUID = UUID_64(value);
     }

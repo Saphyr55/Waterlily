@@ -61,8 +61,8 @@ namespace Wl
     using Vector3f = Vector3<float>;
     using Vector3f32 = Vector3<float>;
     using Vector3f64 = Vector3<double>;
-    using Vector3i = Vector3<int32_t>;
-    using Vector3u = Vector3<uint32_t>;
+    using Vector3i = Vector3<int32>;
+    using Vector3u = Vector3<uint32>;
 
     template<IsReal R>
     constexpr Vector3<R>::Vector3(Vector2<R> vec, R z)

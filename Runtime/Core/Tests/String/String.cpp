@@ -168,7 +168,7 @@ TEST_CASE("StringBase - Capacity management", "[string]")
     SECTION("Reserve operation")
     {
         String str;
-        size_t initialCapacity = str.GetCapacity();
+        usize initialCapacity = str.GetCapacity();
 
         str.Reserve(100);
 

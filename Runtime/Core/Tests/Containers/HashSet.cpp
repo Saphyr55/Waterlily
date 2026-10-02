@@ -10,7 +10,7 @@ TEST_CASE("HashSet - Constructors and Initial State", "[HashSet]")
 {
     SECTION("Default Constructor")
     {
-        HashSet<int32_t> set;
+        HashSet<int32> set;
         REQUIRE(set.IsEmpty());
         REQUIRE(set.GetSize() == 0);
         REQUIRE(set.GetCapacity() == 8);
@@ -24,7 +24,7 @@ TEST_CASE("HashSet - Constructors and Initial State", "[HashSet]")
 
     SECTION("Constructor with Initializer List")
     {
-        HashSet<int32_t> set = {10, 20, 30, 20, 40};
+        HashSet<int32> set = {10, 20, 30, 20, 40};
         REQUIRE_FALSE(set.IsEmpty());
         REQUIRE(set.GetSize() == 4);
         REQUIRE(set.Contains(10));
@@ -34,15 +34,15 @@ TEST_CASE("HashSet - Constructors and Initial State", "[HashSet]")
 
 TEST_CASE("HashSet - Insertion and Uniqueness", "[HashSet][Insert]")
 {
-    HashSet<int32_t> set;
+    HashSet<int32> set;
 
     SECTION("Inserting New Keys")
     {
-        HashSet<int32_t>::Iterator it1 = set.Insert(100);
+        HashSet<int32>::Iterator it1 = set.Insert(100);
         REQUIRE(*it1 == 100);
         REQUIRE(set.GetSize() == 1);
 
-        HashSet<int32_t>::Iterator it2 = set.Insert(200);
+        HashSet<int32>::Iterator it2 = set.Insert(200);
         REQUIRE(*it2 == 200);
         REQUIRE(set.GetSize() == 2);
     }
@@ -52,7 +52,7 @@ TEST_CASE("HashSet - Insertion and Uniqueness", "[HashSet][Insert]")
         set.Insert(50);
         REQUIRE(set.GetSize() == 1);
 
-        HashSet<int32_t>::Iterator it = set.Insert(50);
+        HashSet<int32>::Iterator it = set.Insert(50);
         REQUIRE(*it == 50);
         REQUIRE(set.GetSize() == 1);
     }
@@ -76,7 +76,7 @@ TEST_CASE("HashSet - Containment and Lookup", "[HashSet][Contains][Find]")
 
     SECTION("Lookup in an Empty Set")
     {
-        HashSet<int32_t> empty_set;
+        HashSet<int32> empty_set;
         REQUIRE_FALSE(empty_set.Contains(1));
         REQUIRE(empty_set.find(1) == empty_set.end());
     }
@@ -84,12 +84,12 @@ TEST_CASE("HashSet - Containment and Lookup", "[HashSet][Contains][Find]")
 
 TEST_CASE("HashSet - Removal", "[HashSet][Remove]")
 {
-    HashSet<int32_t> set = {1, 2, 3, 4};
+    HashSet<int32> set = {1, 2, 3, 4};
     REQUIRE(set.GetSize() == 4);
 
     SECTION("Remove Existing Key")
     {
-        size_t count = set.Remove(3);
+        usize count = set.Remove(3);
         REQUIRE(count == 1);
         REQUIRE(set.GetSize() == 3);
         REQUIRE_FALSE(set.Contains(3));
@@ -102,7 +102,7 @@ TEST_CASE("HashSet - Removal", "[HashSet][Remove]")
 
     SECTION("Remove Non-Existing Key")
     {
-        size_t count = set.Remove(99);
+        usize count = set.Remove(99);
         REQUIRE(count == 0);
         REQUIRE(set.GetSize() == 4);
     }
@@ -168,12 +168,12 @@ TEST_CASE("HashSet - Copy and Move Semantics", "[HashSet][Copy][Move]")
 
 TEST_CASE("HashSet - Iteration and Clear", "[HashSet][Iterators][Clear]")
 {
-    HashSet<int32_t> set = {10, 20, 30, 40};
+    HashSet<int32> set = {10, 20, 30, 40};
 
     SECTION("Basic Iteration (begin/end)")
     {
-        Array<int32_t> elements;
-        for (const int32_t& key: set)
+        Array<int32> elements;
+        for (const int32& key: set)
         {
             elements.push_back(key);
         }
@@ -183,8 +183,8 @@ TEST_CASE("HashSet - Iteration and Clear", "[HashSet][Iterators][Clear]")
 
     SECTION("Iteration on an Empty Set")
     {
-        HashSet<int32_t> empty_set;
-        int32_t count = 0;
+        HashSet<int32> empty_set;
+        int32 count = 0;
         for (auto it = empty_set.begin(); it != empty_set.end(); ++it)
         {
             count++;
@@ -195,7 +195,7 @@ TEST_CASE("HashSet - Iteration and Clear", "[HashSet][Iterators][Clear]")
     SECTION("Clear Method")
     {
         REQUIRE_FALSE(set.IsEmpty());
-        size_t cap = set.GetCapacity();
+        usize cap = set.GetCapacity();
         set.Clear();
 
         REQUIRE(set.IsEmpty());

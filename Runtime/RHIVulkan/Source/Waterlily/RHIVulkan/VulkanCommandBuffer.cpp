@@ -216,7 +216,7 @@ namespace Wl
 
     void VulkanCommandBuffer::BindSRG(RHIPipeline* pipeline,
                                       const Array<RHIShaderResourceGroup*>& groups,
-                                      size_t groupIndex)
+                                      usize groupIndex)
     {
         VulkanPipeline* vulkanPipeline = nullptr;
         VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -283,28 +283,28 @@ namespace Wl
         VulkanAPI::vkCmdBindIndexBuffer(m_handle, vulkanBuffer, 0, VK_INDEX_TYPE_UINT32);
     }
 
-    void VulkanCommandBuffer::SetScissors(const Rect2D* scissors, uint32_t count)
+    void VulkanCommandBuffer::SetScissors(const Rect2D* scissors, uint32 count)
     {
         Array<VkRect2D> vulkanScissors;
         vulkanScissors.Resize(count);
 
-        for (size_t i = 0; i < count; i++)
+        for (usize i = 0; i < count; i++)
         {
-            vulkanScissors[i].offset.x = static_cast<int32_t>(scissors[i].X);
-            vulkanScissors[i].offset.y = static_cast<int32_t>(scissors[i].Y);
-            vulkanScissors[i].extent.width = static_cast<uint32_t>(scissors[i].Width);
-            vulkanScissors[i].extent.height = static_cast<uint32_t>(scissors[i].Height);
+            vulkanScissors[i].offset.x = static_cast<int32>(scissors[i].X);
+            vulkanScissors[i].offset.y = static_cast<int32>(scissors[i].Y);
+            vulkanScissors[i].extent.width = static_cast<uint32>(scissors[i].Width);
+            vulkanScissors[i].extent.height = static_cast<uint32>(scissors[i].Height);
         }
 
         VulkanAPI::vkCmdSetScissor(m_handle, 0, count, vulkanScissors.GetData());
     }
 
-    void VulkanCommandBuffer::SetViewports(const Viewport* viewports, uint32_t count)
+    void VulkanCommandBuffer::SetViewports(const Viewport* viewports, uint32 count)
     {
         Array<VkViewport> vulkanViewports;
         vulkanViewports.Resize(count);
 
-        for (uint32_t i = 0; i < count; i++)
+        for (uint32 i = 0; i < count; i++)
         {
             vulkanViewports[i].x = viewports[i].X;
             vulkanViewports[i].y = viewports[i].Y;
@@ -323,7 +323,7 @@ namespace Wl
         VkFormat format = VulkanFormatGet(texture->GetDescription().Format);
 
         VulkanContext& context = VulkanContextGet();
-        uint32_t mipLevels = texture->GetDescription().MipLevels;
+        uint32 mipLevels = texture->GetDescription().MipLevels;
 
         VkFormatProperties formatProperties;
         VulkanAPI::vkGetPhysicalDeviceFormatProperties(context.PhysicalDevice, format, &formatProperties);
@@ -338,8 +338,8 @@ namespace Wl
         initialTransition.NewLayout = RHITextureLayout::TransferDst;
         TransitionTextureLayout(initialTransition);
 
-        int32_t mipWidth = static_cast<int32_t>(texture->GetDescription().Width);
-        int32_t mipHeight = static_cast<int32_t>(texture->GetDescription().Height);
+        int32 mipWidth = static_cast<int32>(texture->GetDescription().Width);
+        int32 mipHeight = static_cast<int32>(texture->GetDescription().Height);
 
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -351,7 +351,7 @@ namespace Wl
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
 
-        for (uint32_t i = 1; i < mipLevels; i++)
+        for (uint32 i = 1; i < mipLevels; i++)
         {
             barrier.subresourceRange.baseMipLevel = i - 1;
             barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -541,7 +541,7 @@ namespace Wl
                                         nullptr,
                                         0,
                                         nullptr,
-                                        (uint32_t)vulkanBarriers.GetSize(),
+                                        (uint32)vulkanBarriers.GetSize(),
                                         vulkanBarriers.GetData());
     }
 
@@ -586,7 +586,7 @@ namespace Wl
                                         0,
                                         0,
                                         nullptr,
-                                        static_cast<uint32_t>(vulkanBarriers.GetSize()),
+                                        static_cast<uint32>(vulkanBarriers.GetSize()),
                                         vulkanBarriers.GetData(),
                                         0,
                                         nullptr);
@@ -601,8 +601,8 @@ namespace Wl
 
         VkImageAspectFlags aspect = VulkanImageAspectGet(vulkanTexture->GetDescription().Format);
 
-        uint32_t width = vulkanTexture->GetDescription().Width;
-        uint32_t height = vulkanTexture->GetDescription().Height;
+        uint32 width = vulkanTexture->GetDescription().Width;
+        uint32 height = vulkanTexture->GetDescription().Height;
 
         VkBufferImageCopy region = {};
         region.bufferOffset = 0;
@@ -664,7 +664,7 @@ namespace Wl
             if (depthStencil)
             {
                 vkAttachmentInfo.clearValue.depthStencil.depth = attachmentInfo.ClearValue.x;
-                vkAttachmentInfo.clearValue.depthStencil.stencil = static_cast<uint32_t>(attachmentInfo.ClearValue.y);
+                vkAttachmentInfo.clearValue.depthStencil.stencil = static_cast<uint32>(attachmentInfo.ClearValue.y);
             }
             else
             {
@@ -702,8 +702,8 @@ namespace Wl
         vkRenderingInfo.pStencilAttachment = info.StencilAttachment.HasValue() ? &stencilAttachment : nullptr;
         vkRenderingInfo.layerCount = info.LayerCount;
         vkRenderingInfo.viewMask = 0;
-        vkRenderingInfo.renderArea.offset = {static_cast<int32_t>(info.RenderArea.X), static_cast<int32_t>(info.RenderArea.Y)};
-        vkRenderingInfo.renderArea.extent = {static_cast<uint32_t>(info.RenderArea.Width), static_cast<uint32_t>(info.RenderArea.Height)};
+        vkRenderingInfo.renderArea.offset = {static_cast<int32>(info.RenderArea.X), static_cast<int32>(info.RenderArea.Y)};
+        vkRenderingInfo.renderArea.extent = {static_cast<uint32>(info.RenderArea.Width), static_cast<uint32>(info.RenderArea.Height)};
 
         VulkanAPI::vkCmdBeginRendering(m_handle, &vkRenderingInfo);
     }
@@ -722,7 +722,7 @@ namespace Wl
         WL_CHECK(vulkanFramebuffer);
 
         const RHIRenderPassDescription& renderPassDescription = vulkanRenderPass->GetDescription();
-        uint32_t totalAttachmentCount = renderPassDescription.ColorAttachmentDecriptions.GetSize();
+        uint32 totalAttachmentCount = renderPassDescription.ColorAttachmentDecriptions.GetSize();
 
         if (totalAttachmentCount == 0)
         {
@@ -743,12 +743,12 @@ namespace Wl
         depthStencilValue.stencil = beginInfo.Stencil;
 
         bool hasDepthAttachment = renderPassDescription.DepthAttachmentDescription.HasValue();
-        size_t depthOneOrZero = hasDepthAttachment ? 1 : 0;
-        uint32_t colorAttachmentCount = totalAttachmentCount;
+        usize depthOneOrZero = hasDepthAttachment ? 1 : 0;
+        uint32 colorAttachmentCount = totalAttachmentCount;
 
         Array<VkClearValue> clearValues(totalAttachmentCount + depthOneOrZero);
 
-        for (uint32_t i = 0; i < colorAttachmentCount; i++)
+        for (uint32 i = 0; i < colorAttachmentCount; i++)
         {
             VkClearValue clearColorValue = {};
             clearColorValue.color = defaultClearColor;
@@ -766,10 +766,10 @@ namespace Wl
         vkBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         vkBeginInfo.renderPass = vulkanRenderPass->GetHandle();
         vkBeginInfo.framebuffer = vulkanFramebuffer->GetHandle();
-        vkBeginInfo.renderArea.offset = {static_cast<int32_t>(beginInfo.Area.X),
-                                         static_cast<int32_t>(beginInfo.Area.Y)};
-        vkBeginInfo.renderArea.extent = {static_cast<uint32_t>(beginInfo.Area.Width),
-                                         static_cast<uint32_t>(beginInfo.Area.Height)};
+        vkBeginInfo.renderArea.offset = {static_cast<int32>(beginInfo.Area.X),
+                                         static_cast<int32>(beginInfo.Area.Y)};
+        vkBeginInfo.renderArea.extent = {static_cast<uint32>(beginInfo.Area.Width),
+                                         static_cast<uint32>(beginInfo.Area.Height)};
 
         vkBeginInfo.clearValueCount = clearValues.GetSize();
         vkBeginInfo.pClearValues = clearValues.GetData();
@@ -828,8 +828,8 @@ namespace Wl
         blitRegion.srcSubresource.baseArrayLayer = 0;
         blitRegion.srcSubresource.layerCount = 1;
         blitRegion.srcOffsets[0] = {0, 0, 0};
-        blitRegion.srcOffsets[1].x = static_cast<int32_t>(command.Width);
-        blitRegion.srcOffsets[1].y = static_cast<int32_t>(command.Height);
+        blitRegion.srcOffsets[1].x = static_cast<int32>(command.Width);
+        blitRegion.srcOffsets[1].y = static_cast<int32>(command.Height);
         blitRegion.srcOffsets[1].z = 1;
 
         blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -837,8 +837,8 @@ namespace Wl
         blitRegion.dstSubresource.baseArrayLayer = 0;
         blitRegion.dstSubresource.layerCount = 1;
         blitRegion.dstOffsets[0] = {0, 0, 0};
-        blitRegion.dstOffsets[1].x = static_cast<int32_t>(command.Width);
-        blitRegion.dstOffsets[1].y = static_cast<int32_t>(command.Height);
+        blitRegion.dstOffsets[1].x = static_cast<int32>(command.Width);
+        blitRegion.dstOffsets[1].y = static_cast<int32>(command.Height);
         blitRegion.dstOffsets[1].z = 1;
 
         VulkanAPI::vkCmdBlitImage(
@@ -852,7 +852,7 @@ namespace Wl
                 VulkanFilterGet(command.Filter));
     }
 
-    RHICommandBuffer* VulkanCommandAllocator::OpenCommandBuffer(uint32_t index)
+    RHICommandBuffer* VulkanCommandAllocator::OpenCommandBuffer(uint32 index)
     {
         return m_upperCommandBuffers[index];
     }
@@ -903,7 +903,7 @@ namespace Wl
         WL_VULKAN_CHECK(
                 VulkanAPI::vkAllocateCommandBuffers(m_context.Device, &allocateInfo, m_commandBuffers.GetData()));
 
-        for (size_t i = 0; i < m_count; i++)
+        for (usize i = 0; i < m_count; i++)
         {
             m_upperCommandBuffers[i] =
                     Wl::New(&m_upperCommandBufferAllocator, VulkanCommandBuffer(m_commandBuffers[i], m_queueType));

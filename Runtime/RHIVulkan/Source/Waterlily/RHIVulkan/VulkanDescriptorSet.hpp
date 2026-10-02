@@ -21,7 +21,7 @@ namespace Wl
 
         virtual void Update() override;
 
-        inline uint32_t SetIndexPool() const override
+        inline uint32 SetIndexPool() const override
         {
             return m_indexPool;
         }
@@ -31,7 +31,7 @@ namespace Wl
             return m_handle;
         }
 
-        inline void SetIndexPool(size_t indexPool)
+        inline void SetIndexPool(usize indexPool)
         {
             m_indexPool = indexPool;
         }
@@ -48,8 +48,8 @@ namespace Wl
     private:
         struct PendingBufferWrite
         {
-            uint32_t Binding;
-            uint32_t ArrayElement;
+            uint32 Binding;
+            uint32 ArrayElement;
             VkBuffer Buffer;
             VkDeviceSize Offset;
             VkDeviceSize Range;
@@ -58,8 +58,8 @@ namespace Wl
 
         struct PendingImageWrite
         {
-            uint32_t Binding;
-            uint32_t ArrayElement;
+            uint32 Binding;
+            uint32 ArrayElement;
             VkSampler Sampler;
             VkImageView View;
             VkImageLayout Layout;
@@ -70,7 +70,7 @@ namespace Wl
         Array<PendingImageWrite> m_pendingImageWrites;
 
         VkDescriptorSet m_handle = VK_NULL_HANDLE;
-        size_t m_indexPool = 0;
+        usize m_indexPool = 0;
     };
 
 }// namespace Wl

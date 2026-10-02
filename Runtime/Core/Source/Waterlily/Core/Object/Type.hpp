@@ -6,7 +6,7 @@
 
 namespace Wl
 {
-
+    
     class WL_CORE_API Type
     {
     public:
@@ -15,12 +15,12 @@ namespace Wl
             return GetTypeInfo().name;
         }
 
-        inline size_t GetSize() const
+        inline usize GetSize() const
         {
             return GetTypeInfo().size;
         }
 
-        inline size_t GetAlign() const
+        inline usize GetAlign() const
         {
             return GetTypeInfo().align;
         }
@@ -31,7 +31,7 @@ namespace Wl
         }
 
         const TypeInfo& GetTypeInfo() const;
-        
+
         bool InheritFrom(Type parentType) const;
 
         Type GetParent() const;

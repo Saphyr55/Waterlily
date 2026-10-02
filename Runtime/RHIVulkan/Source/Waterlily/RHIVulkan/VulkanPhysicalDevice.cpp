@@ -38,7 +38,7 @@ namespace Wl
 
     bool VulkanPhysicalDeviceSelector::CheckExtensionSupport()
     {
-        uint32_t count = 0;
+        uint32 count = 0;
         WL_VULKAN_CHECK(VulkanAPI::vkEnumerateDeviceExtensionProperties(m_context.PhysicalDevice,
                                                                         nullptr,
                                                                         &count,
@@ -55,7 +55,7 @@ namespace Wl
         Array<String> copyExtensions;
         copyExtensions.Resize(m_requirements.RequiredExtensions.GetSize());
 
-        for (uint32_t i = 0; i < m_requirements.RequiredExtensions.GetSize(); i++)
+        for (uint32 i = 0; i < m_requirements.RequiredExtensions.GetSize(); i++)
         {
             copyExtensions[i] = m_requirements.RequiredExtensions[i];
         }
@@ -70,7 +70,7 @@ namespace Wl
 
     Array<VkQueueFamilyProperties> VulkanPhysicalDeviceSelector::QueryQueueFamilies()
     {
-        uint32_t queueFamilyCount = 0;
+        uint32 queueFamilyCount = 0;
         VulkanAPI::vkGetPhysicalDeviceQueueFamilyProperties(m_context.PhysicalDevice, &queueFamilyCount, nullptr);
         if (queueFamilyCount == 0)
         {
@@ -85,7 +85,7 @@ namespace Wl
         return m_info.QueueFamilies;
     }
 
-    bool VulkanPhysicalDeviceSelector::IsValidQueueFamily(const VkQueueFamilyProperties& queueFamilyProperties, int32_t queueFamilyIndex)
+    bool VulkanPhysicalDeviceSelector::IsValidQueueFamily(const VkQueueFamilyProperties& queueFamilyProperties, int32 queueFamilyIndex)
     {
         VkBool32 isPresentSupported = false;
         WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfaceSupportKHR(m_context.PhysicalDevice,
@@ -97,7 +97,7 @@ namespace Wl
 
     bool VulkanPhysicalDeviceSelector::SelectQueueFamilies()
     {
-        for (uint32_t queueFamilyIndex = 0; queueFamilyIndex < m_info.QueueFamilies.size(); queueFamilyIndex++)
+        for (uint32 queueFamilyIndex = 0; queueFamilyIndex < m_info.QueueFamilies.size(); queueFamilyIndex++)
         {
             const VkQueueFamilyProperties& props = m_info.QueueFamilies[queueFamilyIndex];
 
@@ -177,7 +177,7 @@ namespace Wl
     {
         VkInstance instance = m_context.Instance;
 
-        uint32_t deviceCount = 0;
+        uint32 deviceCount = 0;
         WL_VULKAN_CHECK(VulkanAPI::vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr));
         if (deviceCount == 0)
         {

@@ -10,10 +10,10 @@
 
 struct Object
 {
-    int32_t id;
+    int32 id;
     double value;
 
-    Object(int32_t p_id = 0, double p_value = 0.0)
+    Object(int32 p_id = 0, double p_value = 0.0)
         : id(p_id)
         , value(p_value)
     {
@@ -31,7 +31,7 @@ struct ArrayBenchmarkResult
 
 template<typename ArrayType, typename InsertFunc, typename AccessFunc, typename RemoveFunc, typename ClearFunc>
 ArrayBenchmarkResult RunArrayBenchmark(std::string_view name,
-                                         std::vector<int32_t>& keys,
+                                         std::vector<int32>& keys,
                                          ArrayType& arr,
                                          InsertFunc insert,
                                          AccessFunc access,
@@ -91,8 +91,8 @@ inline void RunArrayBenchmarks()
 {
     const auto [N, N_cstr] = NUMBER_AND_QUOTE(1000000);
 
-    std::vector<int32_t> keys(N);
-    for (size_t i = 0; i < N; i++)
+    std::vector<int32> keys(N);
+    for (usize i = 0; i < N; i++)
     {
         keys[i] = i;
     }
@@ -115,7 +115,7 @@ inline void RunArrayBenchmarks()
         {
             v.push_back(k);
         },
-                [](std::vector<Object>& v, size_t idx)
+                [](std::vector<Object>& v, usize idx)
         {
             return v[idx];
         },
@@ -141,7 +141,7 @@ inline void RunArrayBenchmarks()
         {
             a.Append(k);
         },
-                [](Wl::Array<Object>& a, size_t idx)
+                [](Wl::Array<Object>& a, usize idx)
         {
             return a[idx];
         },

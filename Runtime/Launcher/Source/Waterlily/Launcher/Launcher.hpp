@@ -1,17 +1,16 @@
 #pragma once
 
-#include "LauncherExports.hpp"
+#include "Waterlily/Launcher/LauncherExports.hpp"
+#include "Waterlily/Core/Defines.hpp"
 #include "Waterlily/Core/Function/Function.hpp"
-
-#include <cstdint>
 
 namespace Wl
 {
 
-    using MainConsoleCallback = Function<int32_t()>;
+    using MainConsoleCallback = Function<int32()>;
 
-    WL_LAUNCHER_API int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback callback);
+    WL_LAUNCHER_API int32 MainConsole(int32 argc, const char* argv[], MainConsoleCallback callback);
 
-    WL_LAUNCHER_API int32_t MainApplication(int32_t argc, const char* argv[]);
+    WL_LAUNCHER_API int32 MainApplication(int32 argc, const char* argv[]);
 
 }// namespace Wl

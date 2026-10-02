@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Defines.hpp"
-#include "Waterlily/Core/Function/Function.hpp"
 #include "Waterlily/Core/Hash/fnv-1a.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 
@@ -9,26 +8,100 @@
 #include <string>
 #include <string_view>
 
+#define WL_DEFINE_TYPE_ID(Type)             \
+    template<>                              \
+    consteval IdentifierType TypeID<Type>() \
+    {                                       \
+        return fnv1a_cstr(#Type);           \
+    }
+
+#define WL_DEFINE_TYPE_NAME(Type)               \
+    template<>                                  \
+    consteval std::string_view TypeName<Type>() \
+    {                                           \
+        return #Type;                           \
+    }
+
+
 namespace Wl
 {
-    using IdentifierType = uint64_t;
+    using IdentifierType = uint64;
+
+    enum class TypeKind : uint8
+    {
+        Void,
+        Primitive,
+        String,
+        Object,
+    };
 
     template<typename T>
     consteval std::string_view TypeName();
 
-    template<>
-    consteval std::string_view TypeName<void>()
-    {
-        return "void";
-    }
+    WL_DEFINE_TYPE_NAME(void)
+    WL_DEFINE_TYPE_NAME(bool)
+    WL_DEFINE_TYPE_NAME(char)
+
+    WL_DEFINE_TYPE_NAME(uint8)
+    WL_DEFINE_TYPE_NAME(uint16)
+    WL_DEFINE_TYPE_NAME(uint32)
+    WL_DEFINE_TYPE_NAME(uint64)
+
+    WL_DEFINE_TYPE_NAME(int8)
+    WL_DEFINE_TYPE_NAME(int16)
+    WL_DEFINE_TYPE_NAME(int32)
+    WL_DEFINE_TYPE_NAME(int64)
+
+    WL_DEFINE_TYPE_NAME(float)
+    WL_DEFINE_TYPE_NAME(double)
 
     template<typename T>
     consteval IdentifierType TypeID();
 
-    template<>
-    consteval IdentifierType TypeID<void>()
+    WL_DEFINE_TYPE_ID(void)
+    WL_DEFINE_TYPE_ID(bool)
+    WL_DEFINE_TYPE_ID(char)
+
+    WL_DEFINE_TYPE_ID(uint8)
+    WL_DEFINE_TYPE_ID(uint16)
+    WL_DEFINE_TYPE_ID(uint32)
+    WL_DEFINE_TYPE_ID(uint64)
+
+    WL_DEFINE_TYPE_ID(int8)
+    WL_DEFINE_TYPE_ID(int16)
+    WL_DEFINE_TYPE_ID(int32)
+    WL_DEFINE_TYPE_ID(int64)
+
+    WL_DEFINE_TYPE_ID(float32)
+    WL_DEFINE_TYPE_ID(float64)
+
+    template<typename Type>
+    consteval bool IsPrimitiveType()
     {
-        return fnv1a_cstr("void");
+        return std::is_same_v<Type, bool> ||
+               std::is_same_v<Type, char> ||
+
+               std::is_same_v<Type, uint8> ||
+               std::is_same_v<Type, uint16> ||
+               std::is_same_v<Type, uint32> ||
+               std::is_same_v<Type, uint64> ||
+
+               std::is_same_v<Type, int8> ||
+               std::is_same_v<Type, int16> ||
+               std::is_same_v<Type, int32> ||
+               std::is_same_v<Type, int64> ||
+
+               std::is_same_v<Type, float> ||
+               std::is_same_v<Type, double>;
+    }
+
+    template<typename Type>
+    consteval bool IsStringType()
+    {
+        return std::is_same_v<Type, String> ||
+               std::is_same_v<Type, StringRef> ||
+               std::is_same_v<Type, std::string> ||
+               std::is_same_v<Type, std::string_view>;
     }
 
     namespace Internal
@@ -42,12 +115,12 @@ namespace Wl
             return WL_PRETTY_FUNCTION();
         }
 
-        consteval size_t WrappedTypeNamePrefixLength()
+        consteval usize WrappedTypeNamePrefixLength()
         {
             return WrappedTypeName<ProberType>().find(TypeName<ProberType>());
         }
 
-        consteval size_t WrappedTypeNameSuffixLength()
+        consteval usize WrappedTypeNameSuffixLength()
         {
             return WrappedTypeName<ProberType>().length() - WrappedTypeNamePrefixLength() - TypeName<ProberType>().length();
         }
@@ -58,9 +131,9 @@ namespace Wl
     consteval std::string_view TypeName()
     {
         constexpr std::string_view wrappedName = Internal::WrappedTypeName<T>();
-        constexpr size_t prefixLength = Internal::WrappedTypeNamePrefixLength();
-        constexpr size_t suffixLength = Internal::WrappedTypeNameSuffixLength();
-        constexpr size_t nameLength = wrappedName.length() - prefixLength - suffixLength;
+        constexpr usize prefixLength = Internal::WrappedTypeNamePrefixLength();
+        constexpr usize suffixLength = Internal::WrappedTypeNameSuffixLength();
+        constexpr usize nameLength = wrappedName.length() - prefixLength - suffixLength;
         return wrappedName.substr(prefixLength, nameLength);
     }
 
@@ -84,20 +157,34 @@ namespace Wl
     {
         StringID name;
         StringID inherit;
-        uint32_t size;
-        uint32_t align;
+        uint32 size;
+        uint32 align;
+        TypeKind kind;
 
-        template<typename T, typename InheritType = void>
+        template<typename Type, typename InheritType = void>
         inline static TypeInfo Of() noexcept
         {
-            std::string name(TypeName<T>());
+            std::string name(TypeName<Type>());
             std::string inherit(TypeName<InheritType>());
 
             TypeInfo info = {};
-            info.name = StringID(TypeID<T>(), name.c_str());
+            info.name = StringID(TypeID<Type>(), name.c_str());
             info.inherit = StringID(TypeID<InheritType>(), inherit.c_str());
-            info.size = sizeof(T);
-            info.align = alignof(T);
+            info.size = sizeof(Type);
+            info.align = alignof(Type);
+
+            if constexpr (IsPrimitiveType<Type>())
+            {
+                info.kind = TypeKind::Primitive;
+            }
+            else if constexpr (IsStringType<Type>())
+            {
+                info.kind = TypeKind::String;
+            }
+            else
+            {
+                info.kind = TypeKind::Object;
+            }
 
             return info;
         }
@@ -113,6 +200,8 @@ namespace Wl
             info.inherit = StringID(TypeID<void>(), inherit.c_str());
             info.size = 0;
             info.align = 0;
+            info.kind = TypeKind::Void;
+
             return info;
         }
     };

@@ -32,7 +32,7 @@ namespace Wl
         using SlotArray = Array<SlotType>;
 
     public:
-        using size_type = size_t;
+        using size_type = usize;
         using value_type = EntryType;
         using pointer = EntryType*;
         using reference = EntryType&;
@@ -63,7 +63,7 @@ namespace Wl
                 return *this;
             }
 
-            EntryIterator operator++(int32_t)
+            EntryIterator operator++(int32)
             {
                 EntryIterator tmp = *this;
                 ++(*this);
@@ -132,7 +132,7 @@ namespace Wl
                 return *this;
             }
 
-            ImmutableEntryIterator operator++(int32_t)
+            ImmutableEntryIterator operator++(int32)
             {
                 ImmutableEntryIterator tmp = *this;
                 ++(*this);
@@ -625,7 +625,7 @@ namespace Wl
         {
             if ((m_size + 1) > GetCapacity() * s_LoadFactor)
             {
-                size_t newCapacity = GetCapacity() == 0 ? 16 : GetCapacity() * 2;
+                usize newCapacity = GetCapacity() == 0 ? 16 : GetCapacity() * 2;
                 Rehash(newCapacity);
             }
         }

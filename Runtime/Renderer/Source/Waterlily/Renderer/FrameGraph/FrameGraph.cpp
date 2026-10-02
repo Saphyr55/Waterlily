@@ -65,7 +65,7 @@ namespace Wl
         return index;
     }
 
-    FrameGraphBufferHandle FrameGraph::ImportBuffer(RHIBuffer* buffer, size_t range, size_t offset)
+    FrameGraphBufferHandle FrameGraph::ImportBuffer(RHIBuffer* buffer, usize range, usize offset)
     {
         FrameGraphBufferHandle index = m_textures.GetSize();
         m_buffers.Append(FrameGraphResource::CreatePersistantResource(buffer, range, offset));
@@ -78,7 +78,7 @@ namespace Wl
         m_textures[handle.GetIndex()] = resource;
     }
 
-    void FrameGraph::UpdateImportedBuffer(FrameGraphBufferHandle handle, RHIBuffer* buffer, size_t size, size_t offset)
+    void FrameGraph::UpdateImportedBuffer(FrameGraphBufferHandle handle, RHIBuffer* buffer, usize size, usize offset)
     {
         FrameGraphBufferResource resource = FrameGraphResource::CreatePersistantResource(buffer, size, offset);
         m_buffers[handle.GetIndex()] = resource;
@@ -103,7 +103,7 @@ namespace Wl
     FrameGraphPass& FrameGraph::GetPass(const StringID& name)
     {
         WL_CHECK_MSG(m_passNames.Contains(name), "No pass named %s found in FrameGraph.", name.GetText().data());
-        size_t index = m_passNames[name];
+        usize index = m_passNames[name];
         return m_passes[index];
     }
 
@@ -120,7 +120,7 @@ namespace Wl
         m_passRenderingInfos.Clear();
 
         // TODO: Make it configurable
-        uint64_t textureMaxFrameLifetime = 8;
+        uint64 textureMaxFrameLifetime = 8;
         m_texturePool.GarbageCollect(textureMaxFrameLifetime);
     }
 
@@ -134,7 +134,7 @@ namespace Wl
     {
         WL_CHECK_MSG(m_outputs.GetSize() > 0, "FrameGraph must have at least one output.");
 
-        for (size_t i = 0; i < m_passes.GetSize(); i++)
+        for (usize i = 0; i < m_passes.GetSize(); i++)
         {
             FrameGraphPass& pass = m_passes[i];
 
@@ -167,7 +167,7 @@ namespace Wl
 
         commandBuffer->TransitionTextureLayout(swapchainTransition);
 
-        for (size_t orderedPassIndex: m_sortedPasses)
+        for (usize orderedPassIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[orderedPassIndex];
 
@@ -268,10 +268,10 @@ namespace Wl
 
     void FrameGraph::BuildDependencies()
     {
-        HashMap<uint32_t, FrameGraphPass*> lastTextureProducer;
-        HashMap<uint32_t, FrameGraphPass*> lastBufferProducer;
+        HashMap<uint32, FrameGraphPass*> lastTextureProducer;
+        HashMap<uint32, FrameGraphPass*> lastBufferProducer;
 
-        using LastProducerIterator = HashMap<uint32_t, FrameGraphPass*>::iterator;
+        using LastProducerIterator = HashMap<uint32, FrameGraphPass*>::iterator;
 
         auto addEdge = [](FrameGraphPass* parent, FrameGraphPass* child)
         {
@@ -325,14 +325,14 @@ namespace Wl
 
     void FrameGraph::TopoligicalSort()
     {
-        HashMap<FrameGraphPass*, size_t> parentsCount(m_passes.GetSize());
+        HashMap<FrameGraphPass*, usize> parentsCount(m_passes.GetSize());
 
-        std::deque<size_t> deque;
+        std::deque<usize> deque;
 
-        for (size_t i = 0; i < m_passes.GetSize(); i++)
+        for (usize i = 0; i < m_passes.GetSize(); i++)
         {
             FrameGraphPass& pass = m_passes[i];
-            size_t count = pass.m_parents.GetSize();
+            usize count = pass.m_parents.GetSize();
 
             parentsCount[&pass] = count;
             if (count == 0)
@@ -343,7 +343,7 @@ namespace Wl
 
         while (!deque.empty())
         {
-            size_t passIndex = deque.front();
+            usize passIndex = deque.front();
             FrameGraphPass& pass = m_passes[passIndex];
             deque.pop_front();
 
@@ -362,14 +362,14 @@ namespace Wl
 
     void FrameGraph::ComputeResourceLifetimes()
     {
-        auto touch = [&](const FrameGraphTextureHandle& handle, size_t order)
+        auto touch = [&](const FrameGraphTextureHandle& handle, usize order)
         {
             FrameGraphTextureResource& resource = m_textures[handle.GetIndex()];
             resource.Lifetime.FirstUse = Math::Min(resource.Lifetime.FirstUse, order);
             resource.Lifetime.LastUse = Math::Max(resource.Lifetime.LastUse, order);
         };
 
-        for (size_t orderPassIndex: m_sortedPasses)
+        for (usize orderPassIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[orderPassIndex];
             pass.m_order = orderPassIndex;
@@ -393,7 +393,7 @@ namespace Wl
 
     void FrameGraph::ComputeRenderingInfoPasses()
     {
-        for (size_t passIndex: m_sortedPasses)
+        for (usize passIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[passIndex];
             if (pass.IsGraphicsStage())
@@ -452,8 +452,8 @@ namespace Wl
         RHIBeginRenderingInfo info = {};
         info.ColorAttachments.Reserve(pass.m_textureWrites.GetSize());
 
-        uint32_t width = 0;
-        uint32_t height = 0;
+        uint32 width = 0;
+        uint32 height = 0;
 
         auto updateSize = [&](const FrameGraphTextureResource& resource)
         {
@@ -544,7 +544,7 @@ namespace Wl
 
     void FrameGraph::BuildBarriers()
     {
-        for (size_t passIndex: m_sortedPasses)
+        for (usize passIndex: m_sortedPasses)
         {
             FrameGraphPass& pass = m_passes[passIndex];
 
@@ -573,14 +573,14 @@ namespace Wl
                 AddBarrier(handle, layoutNeeded);
             }
             
-            for (size_t i = 0; i < pass.m_textureReads.GetSize(); i++)
+            for (usize i = 0; i < pass.m_textureReads.GetSize(); i++)
             {
                 FrameGraphTextureHandle handle = pass.m_textureReads[i];
                 RHITextureLayout layoutNeeded = pass.m_textureReadStates[handle];
                 AddBarrier(handle, layoutNeeded);
             }
 
-            for (size_t i = 0; i < pass.m_textureWrites.GetSize(); i++)
+            for (usize i = 0; i < pass.m_textureWrites.GetSize(); i++)
             {
                 FrameGraphTextureHandle handle = pass.m_textureWrites[i];
                 RHITextureLayout layoutNeeded = pass.m_textureWriteStates[handle];

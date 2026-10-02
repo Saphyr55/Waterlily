@@ -7,11 +7,11 @@ using namespace Wl;
 
 struct ArrayCounterTest
 {
-    static int32_t Constructions;
-    static int32_t Destructions;
-    int32_t Value;
+    static int32 Constructions;
+    static int32 Destructions;
+    int32 Value;
 
-    ArrayCounterTest(int32_t v = 0)
+    ArrayCounterTest(int32 v = 0)
         : Value(v)
     {
         Constructions++;
@@ -40,12 +40,12 @@ struct ArrayCounterTest
     }
 };
 
-int32_t ArrayCounterTest::Constructions = 0;
-int32_t ArrayCounterTest::Destructions = 0;
+int32 ArrayCounterTest::Constructions = 0;
+int32 ArrayCounterTest::Destructions = 0;
 
 TEST_CASE("Check Append, emplace, pop and indexing behaviours.", "[Array::Append]")
 {
-    Array<int32_t> a;
+    Array<int32> a;
     REQUIRE(a.IsEmpty());
     REQUIRE(a.GetCapacity() >= 1);
 
@@ -71,18 +71,18 @@ TEST_CASE("Check Append, emplace, pop and indexing behaviours.", "[Array::Append
 
 TEST_CASE("AppendRange copies contiguous ranges correctly.", "[Array::AppendRange]")
 {
-    Array<int32_t> a;
-    for (int32_t i = 0; i < 10; i++)
+    Array<int32> a;
+    for (int32 i = 0; i < 10; i++)
     {
         a.Append(i);
     }
 
-    Array<int32_t> b;
+    Array<int32> b;
     b.AppendRange(a.begin(), a.end());
 
     REQUIRE(b.GetSize() == a.GetSize());
 
-    for (size_t i = 0; i < a.GetSize(); i++)
+    for (usize i = 0; i < a.GetSize(); i++)
     {
         REQUIRE(b[i] == a[i]);
     }
@@ -132,7 +132,7 @@ TEST_CASE("AppendRange does not leak or double destroy.", "[Array::AppendRange]"
 
 TEST_CASE("Reserve, Resize and Shrink behaviour.", "[Array::reserve]")
 {
-    Array<int32_t> a;
+    Array<int32> a;
     a.Reserve(50);
     REQUIRE(a.GetCapacity() >= 50);
 
@@ -146,14 +146,14 @@ TEST_CASE("Reserve, Resize and Shrink behaviour.", "[Array::reserve]")
 
 TEST_CASE("Remove, Contains and getIf.", "[Array::Remove]")
 {
-    Array<int32_t> a = {1, 2, 3, 4, 5, 3, 6};
+    Array<int32> a = {1, 2, 3, 4, 5, 3, 6};
 
     REQUIRE(a.Contains(3));
     a.Remove(3);
     REQUIRE_FALSE(a.Contains(3));
     REQUIRE(a.GetSize() == 5);
 
-    auto p = a.GetIf([](int32_t v)
+    auto p = a.GetIf([](int32 v)
     {
         return v % 2 == 0;
     });// first even
@@ -169,53 +169,53 @@ TEST_CASE("Remove, Contains and getIf.", "[Array::Remove]")
 
 TEST_CASE("Copy, move, appendRange and initializer list.", "[Array::Array]")
 {
-    Array<int32_t> a = {5, 6, 7};
-    Array<int32_t> b(a);
+    Array<int32> a = {5, 6, 7};
+    Array<int32> b(a);
     REQUIRE(a == b);
 
-    Array<int32_t> c;
+    Array<int32> c;
     c.AppendRange(a);
     REQUIRE(c == a);
 
-    Array<int32_t> d(std::move(a));
+    Array<int32> d(std::move(a));
     REQUIRE(d.GetSize() == 3);
 
-    Array<int32_t> e;
+    Array<int32> e;
     e = b;
     REQUIRE(e == b);
 
-    Array<int32_t> f;
+    Array<int32> f;
     f = std::move(b);
     REQUIRE(f.GetSize() == 3);
 }
 
 TEST_CASE("Transform behaviour.", "[transform]")
 {
-    Array<int32_t> a = {1, 2, 3, 4};
+    Array<int32> a = {1, 2, 3, 4};
 
     Array<double> mapped;
     mapped.Resize(a.GetSize());
 
-    Wl::Transform(a.begin(), a.end(), mapped.begin(), [](int32_t v) -> double
+    Wl::Transform(a.begin(), a.end(), mapped.begin(), [](int32 v) -> double
     {
         return static_cast<double>(v) / 2.0;
     });
 
     REQUIRE(mapped.GetSize() == a.GetSize());
-    for (size_t i = 0; i < mapped.GetSize(); i++)
+    for (usize i = 0; i < mapped.GetSize(); i++)
     {
         REQUIRE(mapped[i] == Catch::Approx(static_cast<double>(a[i]) / 2.0));
     }
 
     Array<ArrayCounterTest> mapped2;
     mapped2.Resize(a.GetSize());
-    Wl::Transform(a.begin(), a.end(), mapped2.begin(), [](int32_t v) -> ArrayCounterTest
+    Wl::Transform(a.begin(), a.end(), mapped2.begin(), [](int32 v) -> ArrayCounterTest
     {
         return ArrayCounterTest(v * 10);
     });
 
     REQUIRE(mapped2.GetSize() == a.GetSize());
-    for (size_t i = 0; i < mapped2.GetSize(); i++)
+    for (usize i = 0; i < mapped2.GetSize(); i++)
     {
         REQUIRE(mapped2[i].Value == a[i] * 10);
     }
@@ -223,14 +223,14 @@ TEST_CASE("Transform behaviour.", "[transform]")
 
 TEST_CASE("Iterators and range.", "[Array::iterators]")
 {
-    Array<int32_t> a;
-    for (int32_t i = 0; i < 10; i++)
+    Array<int32> a;
+    for (int32 i = 0; i < 10; i++)
     {
         a.Append(i);
     }
 
-    int32_t sum = 0;
-    for (int32_t v: a)
+    int32 sum = 0;
+    for (int32 v: a)
     {
         sum += v;
     }
@@ -239,9 +239,9 @@ TEST_CASE("Iterators and range.", "[Array::iterators]")
 
 TEST_CASE("Equality, inequality and swap.", "[Array::operators]")
 {
-    Array<int32_t> a = {1, 2, 3};
-    Array<int32_t> b = {1, 2, 3};
-    Array<int32_t> c = {3, 2, 1};
+    Array<int32> a = {1, 2, 3};
+    Array<int32> b = {1, 2, 3};
+    Array<int32> c = {3, 2, 1};
 
     REQUIRE(a == b);
     REQUIRE(a != c);
@@ -270,7 +270,7 @@ TEST_CASE("Allocator, destruction check via ArrayCounterTest.", "[Array::destruc
 TEST_CASE("reallocate moves elements and preserves values", "[Array::reallocate]")
 {
     Array<std::string> a;
-    for (int32_t i = 0; i < 8; i++)
+    for (int32 i = 0; i < 8; i++)
     {
         a.Append(std::string("s") + std::to_string(i));
     }
@@ -334,12 +334,12 @@ TEST_CASE("Nested Array<Array<T>> behavior", "[Array::Array]")
 
 TEST_CASE("move_data and move assignment corner cases", "[Array::move]")
 {
-    Array<int32_t> src = {9, 8, 7};
-    Array<int32_t> target(0);
+    Array<int32> src = {9, 8, 7};
+    Array<int32> target(0);
     target = src;
     REQUIRE(target.GetSize() == src.GetSize());
     REQUIRE(target == src);
 
-    Array<int32_t> m = std::move(target);
+    Array<int32> m = std::move(target);
     REQUIRE(m.GetSize() == 3);
 }

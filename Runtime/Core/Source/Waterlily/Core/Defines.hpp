@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-#include <iostream>
 
 /**
  * Defines WL_DEBUG on debugging.
@@ -71,7 +70,7 @@
         return static_cast<EnumClassName>(~static_cast<IntType>(a));                          \
     }
 
-#define WL_ENUM_FLAGS(EnumClassName) WL_ENUM_FLAGS_CUSTOM_DERIVED(EnumClassName, uint32_t)
+#define WL_ENUM_FLAGS(EnumClassName) WL_ENUM_FLAGS_CUSTOM_DERIVED(EnumClassName, uint32)
 
 #define WL_ENCAPULSE_BEGIN \
     do                     \
@@ -111,3 +110,19 @@
 #else
     #error "Unsupported Compiler"
 #endif
+
+using int8   = std::int8_t;
+using int16  = std::int16_t;
+using int32  = std::int32_t;
+using int64  = std::int64_t;
+
+using uint8  = std::uint8_t;
+using uint16 = std::uint16_t;
+using uint32 = std::uint32_t;
+using uint64 = std::uint64_t;
+
+using usize = std::size_t;
+using isize = std::ptrdiff_t;
+
+using float32 = float;
+using float64 = double;

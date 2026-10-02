@@ -44,7 +44,7 @@ namespace Wl
                 break;
         }
 
-        Array<uint32_t> queueFamillies = VulkanQueryQueueFamilyIndices(context);
+        Array<uint32> queueFamillies = VulkanQueryQueueFamilyIndices(context);
 
         VkImageCreateInfo imageCreateInfo = {};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -70,7 +70,7 @@ namespace Wl
         else if (RHISharingMode::Shared == desc.SharingMode)
         {
             imageCreateInfo.pQueueFamilyIndices = queueFamillies.data();
-            imageCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamillies.size());
+            imageCreateInfo.queueFamilyIndexCount = static_cast<uint32>(queueFamillies.size());
         }
 
         VmaAllocationCreateInfo vmaAllocationCreateInfo = {};

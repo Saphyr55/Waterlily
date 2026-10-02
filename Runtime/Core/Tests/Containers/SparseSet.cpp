@@ -7,11 +7,11 @@ using namespace Wl;
 
 struct SparseSetCounterTest
 {
-    static int32_t constructions;
-    static int32_t destructions;
-    int32_t value;
+    static int32 constructions;
+    static int32 destructions;
+    int32 value;
 
-    SparseSetCounterTest(int32_t v = 0)
+    SparseSetCounterTest(int32 v = 0)
         : value(v)
     {
         ++constructions;
@@ -40,12 +40,12 @@ struct SparseSetCounterTest
     }
 };
 
-int32_t SparseSetCounterTest::constructions = 0;
-int32_t SparseSetCounterTest::destructions = 0;
+int32 SparseSetCounterTest::constructions = 0;
+int32 SparseSetCounterTest::destructions = 0;
 
 TEST_CASE("Basic Put, get, and Remove.", "[SparseSet]")
 {
-    SparseSet<int32_t, uint32_t> set;
+    SparseSet<int32, uint32> set;
 
     REQUIRE(set.IsEmpty());
 
@@ -76,7 +76,7 @@ TEST_CASE("Basic Put, get, and Remove.", "[SparseSet]")
 
 TEST_CASE("Reserve, Resize, and Clear.", "[SparseSet]")
 {
-    SparseSet<int32_t, uint32_t> set(0);
+    SparseSet<int32, uint32> set(0);
 
     set.Reserve(100);
     REQUIRE(set.IsEmpty());
@@ -95,7 +95,7 @@ TEST_CASE("Reserve, Resize, and Clear.", "[SparseSet]")
 
 TEST_CASE("Contains and get pointer interface", "[SparseSet]")
 {
-    SparseSet<String, uint32_t> set;
+    SparseSet<String, uint32> set;
 
     set.Put(5, "apple");
     set.Put(8, "banana");
@@ -112,7 +112,7 @@ TEST_CASE("Contains and get pointer interface", "[SparseSet]")
 
 TEST_CASE("Dense array integrity and stable iteration", "[SparseSet::elements]")
 {
-    SparseSet<int32_t, uint32_t> set;
+    SparseSet<int32, uint32> set;
     for (int i = 0; i < 10; i++)
     {
         set.Put(i, i * 10);
@@ -140,7 +140,7 @@ TEST_CASE("Destruction and lifecycle tracking.", "[SparseSet::destruction]")
     SparseSetCounterTest::destructions = 0;
 
     {
-        SparseSet<SparseSetCounterTest, uint32_t> set;
+        SparseSet<SparseSetCounterTest, uint32> set;
         set.Put(1, SparseSetCounterTest(10));
         set.Put(2, SparseSetCounterTest(20));
         set.Put(3, SparseSetCounterTest(30));
@@ -155,7 +155,7 @@ TEST_CASE("Destruction and lifecycle tracking.", "[SparseSet::destruction]")
 
 TEST_CASE("Paged indexing and large sparse indices.", "[SparseSet::paging]")
 {
-    SparseSet<int32_t, uint32_t> set(8);
+    SparseSet<int32, uint32> set(8);
 
     set.Put(0, 10);
     set.Put(15, 150);
@@ -174,7 +174,7 @@ TEST_CASE("Paged indexing and large sparse indices.", "[SparseSet::paging]")
 
 TEST_CASE("Clear resets all sparse pages and dense data.", "[SparseSet::Clear]")
 {
-    SparseSet<int32_t, uint32_t> set;
+    SparseSet<int32, uint32> set;
     for (int i = 0; i < 20; i++)
     {
         set.Put(i, i);

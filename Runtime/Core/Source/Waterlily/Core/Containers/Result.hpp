@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Waterlily/Core/CoreExports.hpp"
+#include "Waterlily/Core/Defines.hpp"
+
 #include <functional>
 #include <type_traits>
 #include <utility>
@@ -277,8 +278,8 @@ namespace Wl
     class Result
     {
     public:
-        static inline constexpr size_t s_ValIdx = 1;
-        static inline constexpr size_t s_ErrIdx = 2;
+        static inline constexpr usize s_ValIdx = 1;
+        static inline constexpr usize s_ErrIdx = 2;
         static inline constexpr std::in_place_index_t<1> s_ValTag{};
         static inline constexpr std::in_place_index_t<2> s_ErrTag{};
 
@@ -535,7 +536,7 @@ namespace Wl
         }
 
     private:
-        static constexpr size_t kNulIdx = 0;
+        static constexpr usize kNulIdx = 0;
         static_assert(kNulIdx != s_ValIdx);
         static_assert(kNulIdx != s_ErrIdx);
 

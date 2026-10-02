@@ -14,11 +14,11 @@ namespace Wl
 
         virtual void Reset() = 0;
 
-        virtual RHIShaderResourceGroup* GetSRG(size_t groupIndex) = 0;
+        virtual RHIShaderResourceGroup* GetSRG(usize groupIndex) = 0;
 
-        virtual size_t GetCount() = 0;
+        virtual usize GetCount() = 0;
 
-        virtual uint32_t GetMaxCount() = 0;
+        virtual uint32 GetMaxCount() = 0;
 
         virtual ~RHIShaderResourceGroupPool() = default;
     };

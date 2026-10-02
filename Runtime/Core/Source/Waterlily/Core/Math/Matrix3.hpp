@@ -14,8 +14,8 @@ namespace Wl
 
         Mat operator*(Mat m);
         Vec operator*(Vec v);
-        Vec& operator[](size_t i);
-        Vec col(uint32_t index) const;
+        Vec& operator[](usize i);
+        Vec col(uint32 index) const;
 
         Matrix3() = default;
         Matrix3(R r);
@@ -102,7 +102,7 @@ namespace Wl
     }
 
     template<IsReal R>
-    Matrix3<R>::Vec Matrix3<R>::col(uint32_t index) const
+    Matrix3<R>::Vec Matrix3<R>::col(uint32 index) const
     {
         return (*this)[index];
     }
@@ -131,12 +131,12 @@ namespace Wl
     auto Matrix3<R>::operator*(Mat m) -> Mat
     {
         Mat result(0);
-        for (int8_t i = 0; i < 3; i++)
+        for (int8 i = 0; i < 3; i++)
         {
-            for (int8_t j = 0; j < 3; j++)
+            for (int8 j = 0; j < 3; j++)
             {
                 R rji{};
-                for (int8_t k = 0; k < 3; k++)
+                for (int8 k = 0; k < 3; k++)
                 {
                     rji += m[j][k] * m_value[k][i];
                 }
@@ -155,7 +155,7 @@ namespace Wl
     }
 
     template<IsReal R>
-    Vector3<R>& Matrix3<R>::operator[](size_t i)
+    Vector3<R>& Matrix3<R>::operator[](usize i)
     {
         return m_value[i];
     }

@@ -30,7 +30,7 @@ namespace Wl
 
     void Window::SetupEventOnResized()
     {
-        m_eventHandler.OnResized.Connect([&](uint32_t width, uint32_t height)
+        m_eventHandler.OnResized.Connect([&](uint32 width, uint32 height)
         {
             while (width == 0 || height == 0)
             {
@@ -75,7 +75,7 @@ namespace Wl
             }
         });
 
-        DisplaySignals::OnWindowResized.Connect([&](WindowHandle handle, uint32_t width, uint32_t height)
+        DisplaySignals::OnWindowResized.Connect([&](WindowHandle handle, uint32 width, uint32 height)
         {
             if (m_handle == handle)
             {

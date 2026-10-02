@@ -20,7 +20,7 @@ struct HashMapBenchmarkResult
 
 template<typename MapType, typename PutFunc, typename GetFunc, typename RemoveFunc, typename ClearFunc>
 HashMapBenchmarkResult RunBenchmark(std::string_view name,
-                                    std::vector<int32_t>& keys,
+                                    std::vector<int32>& keys,
                                     MapType& map,
                                     PutFunc put,
                                     GetFunc get,
@@ -42,7 +42,7 @@ HashMapBenchmarkResult RunBenchmark(std::string_view name,
     {
         for (auto k: keys)
         {
-            volatile int32_t v = get(map, k);
+            volatile int32 v = get(map, k);
         }
     });
 
@@ -79,8 +79,8 @@ inline void PrintResultsTable(const std::vector<HashMapBenchmarkResult>& results
 inline void RunHashMapBenchmarks()
 {
     const auto [N, N_cstr] = NUMBER_AND_QUOTE(10'000'000);
-    std::vector<int32_t> keys(N);
-    for (size_t i = 0; i < N; i++)
+    std::vector<int32> keys(N);
+    for (usize i = 0; i < N; i++)
     {
         keys[i] = i;
     }
@@ -91,20 +91,20 @@ inline void RunHashMapBenchmarks()
     std::vector<HashMapBenchmarkResult> results;
     // STL unordered_map
     {
-        std::unordered_map<int32_t, int32_t> stl_unordered_map;
+        std::unordered_map<int32, int32> stl_unordered_map;
         results.push_back(RunBenchmark(
                 "std::unordered_map",
                 keys,
                 stl_unordered_map,
-                [](auto& m, int32_t k, int32_t v)
+                [](auto& m, int32 k, int32 v)
         {
             m[k] = v;
         },
-                [](auto& m, int32_t k)
+                [](auto& m, int32 k)
         {
             return m[k];
         },
-                [](auto& m, int32_t k)
+                [](auto& m, int32 k)
         {
             m.erase(k);
         },
@@ -116,20 +116,20 @@ inline void RunHashMapBenchmarks()
 
     // Linear Probing HashMap
     {
-        Wl::HashMap<int32_t, int32_t> robin_map;
+        Wl::HashMap<int32, int32> robin_map;
         results.push_back(RunBenchmark(
                 "Wl::HashMap",
                 keys,
                 robin_map,
-                [](auto& m, int32_t k, int32_t v)
+                [](auto& m, int32 k, int32 v)
         {
             m.Put(k, v);
         },
-                [](auto& m, int32_t k)
+                [](auto& m, int32 k)
         {
             return m.Get(k);
         },
-                [](auto& m, int32_t k)
+                [](auto& m, int32 k)
         {
             m.Remove(k);
         },

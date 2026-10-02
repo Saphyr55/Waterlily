@@ -5,7 +5,7 @@
 namespace Wl
 {
 
-    enum class SlotState : uint8_t
+    enum class SlotState : uint8
     {
         Occupied = 0,
         Empty = 1,

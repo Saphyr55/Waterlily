@@ -33,8 +33,8 @@
 namespace Wl
 {
 
-    static HashSet<size_t> s_bufferIdentifiers;
-    static size_t bufferAllocationCount = 0;
+    static HashSet<usize> s_bufferIdentifiers;
+    static usize bufferAllocationCount = 0;
 
     static RHIDeviceProperties InitializeDeviceProperties()
     {
@@ -137,7 +137,7 @@ namespace Wl
         Wl::Delete(m_allocator, vulkanSRGLayout);
     }
 
-    RHIShaderResourceGroupPool* VulkanDevice::CreateSRGPool(size_t maxGroupsCount, const Array<RHIShaderResourceBinding>& totalBindings)
+    RHIShaderResourceGroupPool* VulkanDevice::CreateSRGPool(usize maxGroupsCount, const Array<RHIShaderResourceBinding>& totalBindings)
     {
         VulkanShaderResourceGroupPool* vulkanSRGPool = Wl::New(m_allocator, VulkanShaderResourceGroupPool());
         vulkanSRGPool->Create(maxGroupsCount, totalBindings);
@@ -176,7 +176,7 @@ namespace Wl
         Wl::Delete(m_allocator, vulkanCommandAllocator);
     }
 
-    RHIBindlessShaderResources* VulkanDevice::CreateBindlessShaderResources(uint32_t maxResources, const Array<RHIShaderResourceBinding>& bindings)
+    RHIBindlessShaderResources* VulkanDevice::CreateBindlessShaderResources(uint32 maxResources, const Array<RHIShaderResourceBinding>& bindings)
     {
         VulkanBindlessShaderResources* vulkanBindlessShaderResources = Wl::New(m_allocator, VulkanBindlessShaderResources());
         vulkanBindlessShaderResources->Create(maxResources, bindings);
@@ -215,7 +215,7 @@ namespace Wl
         vulkanBuffer->Create(description);
         vulkanBuffer->SetID(bufferAllocationCount++);
 
-        size_t id = vulkanBuffer->GetID();
+        usize id = vulkanBuffer->GetID();
 
         s_bufferIdentifiers.Add(vulkanBuffer->GetID());
 
@@ -312,14 +312,14 @@ namespace Wl
         Wl::Delete(m_allocator, vulkanPipeline);
     }
 
-    RHISwapchain* VulkanDevice::CreateSwapchain(uint32_t width, uint32_t height, uint32_t imageCount)
+    RHISwapchain* VulkanDevice::CreateSwapchain(uint32 width, uint32 height, uint32 imageCount)
     {
         VulkanSwapchain* vulkanSwapchain = Wl::New(m_allocator, VulkanSwapchain(m_context, width, height, imageCount));
         vulkanSwapchain->Create();
         return vulkanSwapchain;
     }
 
-    void VulkanDevice::RecreateSwapchain(RHISwapchain* swapchain, uint32_t width, uint32_t height)
+    void VulkanDevice::RecreateSwapchain(RHISwapchain* swapchain, uint32 width, uint32 height)
     {
         VulkanSwapchain* vulkanSwapchain = static_cast<VulkanSwapchain*>(swapchain);
         vulkanSwapchain->SetExtent({width, height});

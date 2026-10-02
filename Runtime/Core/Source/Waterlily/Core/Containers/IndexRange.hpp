@@ -9,7 +9,7 @@
 namespace Wl
 {
 
-    template<std::integral IndexType = size_t>
+    template<std::integral IndexType = usize>
     class IndexRange
     {
     public:

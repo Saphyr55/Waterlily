@@ -29,7 +29,7 @@ namespace Wl
         return resource;
     }
 
-    FrameGraphBufferResource FrameGraphResource::CreatePersistantResource(RHIBuffer* buffer, size_t size, size_t offset)
+    FrameGraphBufferResource FrameGraphResource::CreatePersistantResource(RHIBuffer* buffer, usize size, usize offset)
     {
         FrameGraphBufferResource resource = {};
         resource.Info.Size = size;

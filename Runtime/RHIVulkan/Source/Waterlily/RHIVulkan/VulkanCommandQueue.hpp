@@ -32,7 +32,7 @@ namespace Wl
 
         virtual bool IsPresentMode() const override;
 
-        inline uint32_t GetQueueFamilyIndex()
+        inline uint32 GetQueueFamilyIndex()
         {
             return m_queueFamilyIndex;
         }
@@ -41,14 +41,14 @@ namespace Wl
         VulkanCommandQueue(VulkanContext& context,
                            VkQueue queue,
                            RHIQueueType type,
-                           uint32_t queueFamilyIndex,
+                           uint32 queueFamilyIndex,
                            bool isPresentModeSupported);
 
     private:
         VulkanContext& m_context;
         VkQueue m_handle;
         RHIQueueType m_type;
-        uint32_t m_queueFamilyIndex;
+        uint32 m_queueFamilyIndex;
         bool m_isPresentModeSupported;
     };
 

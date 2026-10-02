@@ -32,9 +32,9 @@ namespace Wl
             Type type,
             const TypeDescriptor& typeDesc,
             const StringID& name,
-            uint32_t offset,
-            uint32_t size,
-            uint32_t align)
+            uint32 offset,
+            uint32 size,
+            uint32 align)
     {
         MetaTable& table = MetaTable::Get();
 

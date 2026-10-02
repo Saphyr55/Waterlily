@@ -30,7 +30,7 @@ namespace Wl
         {
             m_registry.Append(metadata);
 
-            size_t index = m_registry.GetSize() - 1;
+            usize index = m_registry.GetSize() - 1;
             m_uuidToTndex.Put(metadata.GetUUID(), index);
             m_uriToIndex.Put(metadata.GetURI(), index);
         }
@@ -107,7 +107,7 @@ namespace Wl
         }
 
         file->Seek(header.AssetOffset);
-        for (uint64_t i = 0; i < header.AssetCount; i++)
+        for (uint64 i = 0; i < header.AssetCount; i++)
         {
             AssetMetadata metadata;
             *file >> metadata;

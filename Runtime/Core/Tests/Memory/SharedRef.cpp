@@ -7,7 +7,7 @@ using namespace Wl;
 
 struct Base
 {
-    uint32_t Value = 0;
+    uint32 Value = 0;
 };
 
 struct Derived : Base
@@ -16,26 +16,26 @@ struct Derived : Base
 
 TEST_CASE("Construct correctely.", "[SharedPtr::SharedPtr]")
 {
-    SharedPtr<uint32_t> ptr = MakeShared<uint32_t>(9);
+    SharedPtr<uint32> ptr = MakeShared<uint32>(9);
     REQUIRE(ptr.IsValid());
     REQUIRE(ptr);
     REQUIRE(ptr.GetSharedReferenceCount() == 1);
     REQUIRE(*ptr == 9);
 
-    ptr = MakeShared<uint32_t>(2);
+    ptr = MakeShared<uint32>(2);
     REQUIRE(ptr.IsValid());
     REQUIRE(ptr);
     REQUIRE(ptr.GetSharedReferenceCount() == 1);
     REQUIRE(*ptr == 2);
 
-    SharedPtr<uint32_t> ptr2 = ptr;
+    SharedPtr<uint32> ptr2 = ptr;
     REQUIRE(ptr2.IsValid());
     REQUIRE(ptr2);
     REQUIRE(ptr2.GetSharedReferenceCount() == 2);// X
     REQUIRE(*ptr2 == 2);
 
     {
-        SharedPtr<uint32_t> ptr3 = ptr;
+        SharedPtr<uint32> ptr3 = ptr;
         REQUIRE(ptr3.IsValid());
         REQUIRE(ptr3);
         REQUIRE(ptr.GetSharedReferenceCount() == 3);

@@ -12,19 +12,19 @@ namespace Wl
     struct BufferUploadRequest
     {
         RHIBuffer* StagingBuffer;
-        size_t StagingOffset;
+        usize StagingOffset;
 
         RHIBuffer* DstBuffer;
-        size_t DstOffset;
+        usize DstOffset;
 
-        size_t Size;
+        usize Size;
     };
 
     struct UploadSchedulerInitInfo
     {
         SharedPtr<RHIDevice> Device;
-        size_t StagingSize;
-        size_t MinAlignment;
+        usize StagingSize;
+        usize MinAlignment;
     };
 
     class WL_RENDERER_API UploadScheduler
@@ -35,16 +35,16 @@ namespace Wl
 
         void Reset();
 
-        RenderAllocation Upload(void* data, size_t size, RHIBuffer* dstBuffer, size_t dstOffset = 0);
+        RenderAllocation Upload(void* data, usize size, RHIBuffer* dstBuffer, usize dstOffset = 0);
 
         template<typename DataType>
-        RenderAllocation Upload(ArrayView<DataType> data, RHIBuffer* dstBuffer, size_t dstOffset = 0);
+        RenderAllocation Upload(ArrayView<DataType> data, RHIBuffer* dstBuffer, usize dstOffset = 0);
 
         void Flush(RHICommandBuffer* cmd);
 
         inline bool HasPending() const;
 
-        inline size_t GetTotalPendingBytes() const;
+        inline usize GetTotalPendingBytes() const;
 
     public:
         UploadScheduler() = default;
@@ -56,7 +56,7 @@ namespace Wl
         Array<BufferUploadRequest> m_pendings;
     };
 
-    inline size_t UploadScheduler::GetTotalPendingBytes() const
+    inline usize UploadScheduler::GetTotalPendingBytes() const
     {
         return m_stagingAllocator.GetHead();
     }
@@ -67,7 +67,7 @@ namespace Wl
     }
 
     template<typename DataType>
-    RenderAllocation UploadScheduler::Upload(ArrayView<DataType> data, RHIBuffer* dstBuffer, size_t dstOffset)
+    RenderAllocation UploadScheduler::Upload(ArrayView<DataType> data, RHIBuffer* dstBuffer, usize dstOffset)
     {
         return Upload(data.GetData(), data.GetSizeInBytes(), dstBuffer, dstOffset);
     }

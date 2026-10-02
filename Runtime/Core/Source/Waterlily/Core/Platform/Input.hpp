@@ -21,7 +21,7 @@ namespace Wl
         float Delta;
     };
 
-    enum class Button : uint8_t
+    enum class Button : uint8
     {
         Left = 1,
         Middle = 2,
@@ -30,7 +30,7 @@ namespace Wl
         XButton2 = 5
     };
 
-    enum class VirtualKey : uint8_t
+    enum class VirtualKey : uint8
     {
         None = 0,
 
@@ -74,32 +74,32 @@ namespace Wl
         Eight = 0x38,
         Nine = 0x39,
 
-        A = int32_t('A'),
-        B = int32_t('B'),
-        C = int32_t('C'),
-        D = int32_t('D'),
-        E = int32_t('E'),
-        F = int32_t('F'),
-        G = int32_t('G'),
-        H = int32_t('H'),
-        I = int32_t('I'),
-        J = int32_t('J'),
-        K = int32_t('K'),
-        L = int32_t('L'),
-        M = int32_t('M'),
-        N = int32_t('N'),
-        O = int32_t('O'),
-        P = int32_t('P'),
-        Q = int32_t('Q'),
-        R = int32_t('R'),
-        S = int32_t('S'),
-        T = int32_t('T'),
-        U = int32_t('U'),
-        V = int32_t('V'),
-        W = int32_t('W'),
-        X = int32_t('X'),
-        Y = int32_t('Y'),
-        Z = int32_t('Z'),
+        A = int32('A'),
+        B = int32('B'),
+        C = int32('C'),
+        D = int32('D'),
+        E = int32('E'),
+        F = int32('F'),
+        G = int32('G'),
+        H = int32('H'),
+        I = int32('I'),
+        J = int32('J'),
+        K = int32('K'),
+        L = int32('L'),
+        M = int32('M'),
+        N = int32('N'),
+        O = int32('O'),
+        P = int32('P'),
+        Q = int32('Q'),
+        R = int32('R'),
+        S = int32('S'),
+        T = int32('T'),
+        U = int32('U'),
+        V = int32('V'),
+        W = int32('W'),
+        X = int32('X'),
+        Y = int32('Y'),
+        Z = int32('Z'),
 
         F1 = 0x70,
         F2 = 0x71,

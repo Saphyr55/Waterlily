@@ -11,7 +11,7 @@ namespace Wl
     struct WL_CORE_API WindowEventHandler
     {
         WL_SIGNAL(OnClose);
-        WL_SIGNAL(OnResized, uint32_t /* width */, uint32_t /* height */);
+        WL_SIGNAL(OnResized, uint32 /* width */, uint32 /* height */);
         WL_SIGNAL(OnMinimized);
         WL_SIGNAL(OnExposed);
         WL_SIGNAL(OnShown);

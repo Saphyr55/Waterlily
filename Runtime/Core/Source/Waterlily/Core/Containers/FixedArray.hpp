@@ -6,12 +6,12 @@
 namespace Wl
 {
 
-    template<typename ElementType, size_t Capacity>
+    template<typename ElementType, usize Capacity>
     class FixedArray
     {
     public:
         using value_type = ElementType;
-        using size_type = size_t;
+        using size_type = usize;
         using reference = ElementType&;
         using const_reference = const ElementType&;
         using iterator = ElementType*;
@@ -48,17 +48,17 @@ namespace Wl
             return m_data + Capacity;
         }
 
-        inline constexpr size_t GetSizeInBytes() const
+        inline constexpr usize GetSizeInBytes() const
         {
             return GetSize() * sizeof(value_type);
         }
 
-        inline constexpr size_t GetSize() const
+        inline constexpr usize GetSize() const
         {
             return Capacity;
         }
 
-        inline constexpr size_t GetCapacity() const
+        inline constexpr usize GetCapacity() const
         {
             return Capacity;
         }
@@ -68,13 +68,13 @@ namespace Wl
             return GetSize() == 0;
         }
 
-        inline constexpr const_reference operator[](size_t index) const
+        inline constexpr const_reference operator[](usize index) const
         {
             WL_CHECK_MSG(index < Capacity, "Index out of bounds.");
             return m_data[index];
         }
 
-        inline reference operator[](size_t index)
+        inline reference operator[](usize index)
         {
             WL_CHECK_MSG(index < Capacity, "Index out of bounds.");
             return m_data[index];
@@ -116,7 +116,7 @@ namespace Wl
         constexpr FixedArray(std::initializer_list<ElementType> init)
         {
             WL_CHECK_MSG(init.size() <= Capacity, "Initializer list size exceeds static array capacity.");
-            size_t i = 0;
+            usize i = 0;
             for (const ElementType& item: init)
             {
                 WL_PLACEMENT_NEW(m_data + i++, ElementType(item));
@@ -125,7 +125,7 @@ namespace Wl
 
         constexpr FixedArray(const FixedArray& other)
         {
-            for (size_t i = 0; i < Capacity; i++)
+            for (usize i = 0; i < Capacity; i++)
             {
                 WL_PLACEMENT_NEW(m_data + i, ElementType(other.m_data[i]));
             }
@@ -133,7 +133,7 @@ namespace Wl
 
         constexpr FixedArray(FixedArray&& other) noexcept
         {
-            for (size_t i = 0; i < Capacity; i++)
+            for (usize i = 0; i < Capacity; i++)
             {
                 WL_PLACEMENT_NEW(m_data + i, ElementType(std::move(other.m_data[i])));
             }
@@ -143,7 +143,7 @@ namespace Wl
         {
             if (this != &other)
             {
-                for (size_t i = 0; i < Capacity; i++)
+                for (usize i = 0; i < Capacity; i++)
                 {
                     SafeDestruct(&m_data[i]);
                     WL_PLACEMENT_NEW(m_data + i, ElementType(other.m_data[i]));
@@ -156,7 +156,7 @@ namespace Wl
         {
             if (this != &other)
             {
-                for (size_t i = 0; i < Capacity; i++)
+                for (usize i = 0; i < Capacity; i++)
                 {
                     SafeDestruct(&m_data[i]);
                     WL_PLACEMENT_NEW(m_data + i, ElementType(std::move(other.m_data[i])));

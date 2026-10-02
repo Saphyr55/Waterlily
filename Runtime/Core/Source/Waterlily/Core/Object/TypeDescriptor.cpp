@@ -20,7 +20,7 @@ namespace Wl
             fullTypeName = "const " + fullTypeName;
         }
 
-        for (uint32_t i = 0; i < GetPointerCount(); i++)
+        for (uint32 i = 0; i < GetPointerCount(); i++)
         {
             fullTypeName += "*";
         }

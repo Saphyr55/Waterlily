@@ -4,17 +4,17 @@
 
 #include "Waterlily/Core/Defines.hpp"
 
-#define NUMBER_AND_QUOTE(x) std::make_tuple<size_t, const char*>(x, #x)
+#define NUMBER_AND_QUOTE(x) std::make_tuple<usize, const char*>(x, #x)
 
 namespace Wl::Benchmark
 {
 
     template<typename Func>
-    inline double Start(Func func, size_t repeat = 3)
+    inline double Start(Func func, usize repeat = 3)
     {
         using namespace std::chrono;
         double total = 0.0;
-        for (size_t i = 0; i < repeat; i++)
+        for (usize i = 0; i < repeat; i++)
         {
             auto start = high_resolution_clock::now();
             func();

@@ -34,7 +34,7 @@ namespace Wl
 
             RHISampler* pointSampler = passContext.TextureRegistry->GetDefaultSampler();
 
-            constexpr uint32_t globalSRGIndex = 0;
+            constexpr uint32 globalSRGIndex = 0;
             RHIShaderResourceGroupLayout* globalSRGLayout = pipelineState.SRGLayouts[globalSRGIndex];
             RHIShaderResourceGroup* globalSRG = frame.SRGPool->AllocateSRG(globalSRGLayout);
             {
@@ -65,7 +65,7 @@ namespace Wl
                 globalSRG->Update();
             }
 
-            constexpr uint32_t gBuffersSRGIndex = 1;
+            constexpr uint32 gBuffersSRGIndex = 1;
             RHIShaderResourceGroupLayout* gBufferTexturesSRGLayout = pipelineState.SRGLayouts[gBuffersSRGIndex];
             RHIShaderResourceGroup* gBufferTexturesSRG = frame.SRGPool->AllocateSRG(gBufferTexturesSRGLayout);
             {
@@ -91,7 +91,7 @@ namespace Wl
                 gBufferTexturesSRG->Update();
             }
 
-            constexpr uint32_t shadowMapSRGIndex = 2;
+            constexpr uint32 shadowMapSRGIndex = 2;
             RHIShaderResourceGroupLayout* shadowMapSRGLayout = pipelineState.SRGLayouts[shadowMapSRGIndex];
             RHIShaderResourceGroup* shadowMapSRG = frame.SRGPool->AllocateSRG(shadowMapSRGLayout);
             {
