@@ -5,7 +5,7 @@ local XMakePackages = {
     "spirv-reflect",
 }
 
-add_requires(unpack(XMakePackages))
+add_requires("spirv-reflect 1.4.335")
 
 RendererModule.Name = "Waterlily.Renderer"
 RendererModule.Kind = "shared"

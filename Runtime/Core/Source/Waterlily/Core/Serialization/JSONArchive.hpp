@@ -15,14 +15,14 @@ namespace Wl
         using OutputArchive::Write;
 
     public:
-        virtual void BeginObject(const StringID& name) override;
+        virtual void BeginObject(StringRef name) override;
         virtual void EndObject() override;
 
-        virtual void BeginArray(const StringID& name) override;
+        virtual void BeginArray(StringRef name) override;
         virtual void EndArray() override;
 
-        virtual void Write(const StringID& name, const void* value, Type type) override;
-        
+        virtual void Write(StringRef name, const void* value, Type type) override;
+
         const Json& GetJson() const;
         String Dump(int indent = 2) const;
 
@@ -36,6 +36,7 @@ namespace Wl
     private:
         Json* Current();
         void Pop();
+        Json* AddChild(StringRef name, const Json& value);
 
     private:
         Json m_root;
@@ -49,39 +50,34 @@ namespace Wl
         using InputArchive::Read;
 
     public:
-        virtual bool BeginObject(const StringID& name) override;
+        virtual bool BeginObject(StringRef name) override;
         virtual void EndObject() override;
 
-        virtual size_t BeginArray(const StringID& name) override;
+        virtual size_t BeginArray(StringRef name) override;
         virtual void EndArray() override;
 
-        virtual bool Read(const StringID& name, void* value, Type type) override;
+        virtual bool Read(StringRef name, void* value, Type type) override;
 
     public:
         explicit JSONInputArchive(const Json& json)
             : m_root(json)
         {
-            m_stack.push_back(&m_root);
+            m_stack.Emplace(&m_root, 0);
         }
 
         explicit JSONInputArchive(StringRef json)
             : JSONInputArchive(Json::parse(json.GetData()))
         {
-            m_stack.push_back(&m_root);
+            m_stack.Emplace(&m_root, 0);
         }
 
     private:
-        const Json* Current() const;
-
-        Json* Find(const StringID& name);
-
         void Pop();
 
         template<typename T>
-        bool ReadValue(const StringID& name, T& value)
+        bool ReadValue(StringRef name, T& value)
         {
-            const Json* json = Find(name);
-
+            Json* json = Find(name);
             if (!json)
             {
                 return false;
@@ -92,15 +88,26 @@ namespace Wl
                 value = json->get<T>();
                 return true;
             }
-            catch (const Json::exception&)
+            catch (const Json::exception& e)
             {
+                WL_LOG_ERROR("JSONArchive", "ReadValue with name: '%s'.", name.GetData());
+                WL_LOG_ERROR("JSONArchive", "%s", e.what());
                 return false;
             }
         }
 
     private:
+        struct Frame
+        {
+            Json* value;
+            size_t index;
+        };
+
+        Frame* Current();
+        Json* Find(StringRef name);
+
         Json m_root;
-        Array<const Json*> m_stack;
+        Array<Frame> m_stack;
     };
 
 }// namespace Wl

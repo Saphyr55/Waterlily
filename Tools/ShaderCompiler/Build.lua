@@ -6,7 +6,7 @@ local XMakePackages = {
     "slang",
 }
 
-add_requires(unpack(XMakePackages))
+add_requires("slang v2026.16")
 
 ShaderCompilerModule.Name = "WlTools.ShaderCompiler"
 ShaderCompilerModule.Kind = "shared"

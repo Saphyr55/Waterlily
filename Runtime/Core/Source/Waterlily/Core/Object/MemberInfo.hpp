@@ -40,7 +40,10 @@ namespace Wl
         StringID getterMethodName;
         StringID setterMethodName;
 
-        bool IsReadOnly()
+        PropertyInfo() = default;
+        ~PropertyInfo() = default;
+
+        inline bool IsReadOnly() const
         {
             return setterMethodName == "";
         }

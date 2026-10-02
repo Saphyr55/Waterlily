@@ -34,6 +34,11 @@ namespace Wl
 #endif
         }
 
+        const char* GetData() const
+        {
+            return GetText().GetData();
+        }
+
     public:
         StringID() noexcept = default;
         StringID(uint64_t hash, StringRef text) noexcept;
@@ -54,14 +59,18 @@ namespace Wl
         StringID(StringID&& other) noexcept
         {
             m_hash = other.m_hash;
+#if WL_DEBUG
             m_text = Resolve(m_hash).GetData();
+#endif
         }
 
         StringID& operator=(const StringID& other) noexcept = default;
         StringID& operator=(StringID&& other) noexcept
         {
             m_hash = other.m_hash;
+#if WL_DEBUG
             m_text = Resolve(m_hash).GetData();
+#endif
             return *this;
         }
 

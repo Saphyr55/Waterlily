@@ -10,7 +10,7 @@ ACP.XMakePackages = {
     "tinygltf"
 }
 
-add_requires(unpack(ACP.XMakePackages))
+add_requires("tinygltf v3.0.0")
 
 ACP.Deps = {
     "Waterlily.Core",

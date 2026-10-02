@@ -1,8 +1,8 @@
-#include "Common/Types.hpp"
 #include "Waterlily/Core/Object/Object.hpp"
 #include "Waterlily/Core/Serialization/JSONArchive.hpp"
+#include "Common/Types.hpp"
 
-#include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace Wl;
 
@@ -39,10 +39,12 @@ private:
     void* m_data = nullptr;
 };
 
-void Serialize(OutputArchive& archive, Object& object)
+static void Serialize(OutputArchive& archive, Object& object)
 {
-    const auto& properties = MetaTable::GetProperties(object.GetObjectType());
-    for (const auto [typeName, property]: properties)
+    MetaTable& meta = MetaTable::Get();
+    HashMap<StringID, PropertyInfo> properties = MetaTable::GetProperties(object.GetObjectType());
+
+    for (auto [typeName, property]: properties)
     {
         const MethodInfo& methodInfo = MetaTable::GetMethodInfo(object.GetObjectType(), property.getterMethodName);
         Type returnType = methodInfo.returnVar.GetUnderlyingType();
@@ -51,15 +53,15 @@ void Serialize(OutputArchive& archive, Object& object)
         Value value(returnType);
         methodInfo.handle.InvokeRaw(&object, nullptr, value.GetData());
         
-        archive.Write(property.name, value.GetData(), returnType);
+        archive.Write(property.name.GetText(), value.GetData(), returnType);
     }
 }
 
-void Deserialize(InputArchive& archive, Object& object)
+static void Deserialize(InputArchive& archive, Object& object)
 {
-    const auto& properties = MetaTable::GetProperties(object.GetObjectType());
+    HashMap<StringID, PropertyInfo> properties = MetaTable::GetProperties(object.GetObjectType());
 
-    for (const auto [typeName, property]: properties)
+    for (auto [typeName, property]: properties)
     {
         const MethodInfo& methodInfo = MetaTable::GetMethodInfo(object.GetObjectType(), property.setterMethodName);
         
@@ -69,14 +71,15 @@ void Deserialize(InputArchive& archive, Object& object)
         TypeInfo paramTypeInfo = paramType.GetTypeInfo();
         
         Value value(paramType);
-        if (!archive.Read(property.name, value.GetData(), paramType))
+        if (!archive.Read(property.name.GetText(), value.GetData(), paramType))
         {
-            WL_LOG_WARN("Serializer", "Deserialize: failed to read property '%s'", property.name.GetText().GetData());
+            WL_LOG_WARN("Serializer", "Deserialize: failed to read property '%s'", property.name.GetData());
         }
      
         methodInfo.handle.InvokeRaw(&object, &value.GetData(), nullptr);
     }
 }
+
 
 TEST_CASE("Serialize and Deserialize Object", "[Serializer]")
 {

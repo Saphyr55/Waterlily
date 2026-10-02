@@ -4,12 +4,12 @@
 namespace Wl
 {
     
-    void OutputArchive::Write(const StringID& name, const Object& value)
+    void OutputArchive::Write(StringRef name, const Object& value)
     {
         Write(name, &value, value.GetObjectType());
     }
     
-    bool InputArchive::Read(const StringID& name, Object& value)
+    bool InputArchive::Read(StringRef name, Object& value)
     {
         return Read(name, &value, value.GetObjectType());
     }

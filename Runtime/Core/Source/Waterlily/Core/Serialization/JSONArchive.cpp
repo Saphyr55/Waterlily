@@ -12,26 +12,25 @@ namespace Wl
 
     String JSONOutputArchive::Dump(int indent) const
     {
-        return String(m_root.dump(indent).data());
+        return String(m_root.dump(indent).c_str());
     }
 
-    void JSONOutputArchive::BeginObject(const StringID& name)
+    void JSONOutputArchive::BeginObject(StringRef name)
     {
-        std::string stdName = name.GetText().GetData();
+        Json* current = Current();
+        WL_CHECK(current);
 
-        Json object = Json::object();
-        Json* parent = Current();
+        Json& parent = *current;
 
-        if (parent->is_array())
+        if (parent.is_array())
         {
-            parent->push_back(std::move(object));
-            m_stack.Append(&parent->back());
+            parent.push_back(Json::object());
+            m_stack.Append(&parent.back());
+            return;
         }
-        else
-        {
-            (*parent)[stdName] = std::move(object);
-            m_stack.Append(&(*parent)[stdName]);
-        }
+
+        parent[name.GetData()] = Json::object();
+        m_stack.Append(&parent[name.GetData()]);
     }
 
     void JSONOutputArchive::EndObject()
@@ -39,22 +38,22 @@ namespace Wl
         Pop();
     }
 
-    void JSONOutputArchive::BeginArray(const StringID& name)
+    void JSONOutputArchive::BeginArray(StringRef name)
     {
-        std::string stdName = name.GetText().GetData();
-        Json array = Json::array();
-        Json* parent = Current();
+        Json* current = Current();
+        WL_CHECK(current);
 
-        if (parent->is_array())
+        Json& parent = *current;
+
+        if (parent.is_array())
         {
-            parent->push_back(std::move(array));
-            m_stack.Append(&parent->back());
+            parent.push_back(Json::array());
+            m_stack.Append(&parent.back());
+            return;
         }
-        else
-        {
-            (*parent)[stdName] = std::move(array);
-            m_stack.Append(&(*parent)[stdName]);
-        }
+
+        parent[name.GetData()] = Json::array();
+        m_stack.Append(&parent[name.GetData()]);
     }
 
     void JSONOutputArchive::EndArray()
@@ -62,7 +61,7 @@ namespace Wl
         Pop();
     }
 
-    void JSONOutputArchive::Write(const StringID& name, const void* value, Type type)
+    void JSONOutputArchive::Write(StringRef name, const void* value, Type type)
     {
         WL_CHECK(value);
 
@@ -71,44 +70,85 @@ namespace Wl
             return;
         }
 
-        Json* parentPtr = Current();
-        if (!parentPtr)
+        if (!Current())
         {
             return;
         }
 
-        Json& parent = *parentPtr;
-        const char* nameStr = name.GetText().GetData();
-
         if (type == MetaTable::TypeOf<bool>())
         {
-            parent[nameStr] = *reinterpret_cast<const bool*>(value);
+            AddChild(name, Json(*static_cast<const bool*>(value)));
         }
-        else if (type == MetaTable::TypeOf<int64_t>() || type == MetaTable::TypeOf<int32_t>())
+        else if (type == MetaTable::TypeOf<int32_t>())
         {
-            int64_t v = *reinterpret_cast<const int64_t*>(value);
-            parent[nameStr] = v;
+            AddChild(name, Json(*static_cast<const int32_t*>(value)));
         }
-        else if (type == MetaTable::TypeOf<uint32_t>() || type == MetaTable::TypeOf<uint64_t>())
+        else if (type == MetaTable::TypeOf<int64_t>())
         {
-            parent[nameStr] = *reinterpret_cast<const uint64_t*>(value);
+            AddChild(name, Json(*static_cast<const int64_t*>(value)));
         }
-        else if (type == MetaTable::TypeOf<double>() || type == MetaTable::TypeOf<float>())
+        else if (type == MetaTable::TypeOf<uint32_t>())
         {
-            parent[nameStr] = *reinterpret_cast<const double*>(value);
+            AddChild(name, Json(*static_cast<const uint32_t*>(value)));
+        }
+        else if (type == MetaTable::TypeOf<uint64_t>())
+        {
+            AddChild(name, Json(*static_cast<const uint64_t*>(value)));
+        }
+        else if (type == MetaTable::TypeOf<float>())
+        {
+            AddChild(name, Json(*static_cast<const float*>(value)));
+        }
+        else if (type == MetaTable::TypeOf<double>())
+        {
+            AddChild(name, Json(*static_cast<const double*>(value)));
         }
         else if (type == MetaTable::TypeOf<String>())
         {
-            parent[nameStr] = reinterpret_cast<const String*>(value)->GetData();
+            AddChild(name, Json(
+                                   static_cast<const String*>(value)->GetData()));
         }
         else if (type == MetaTable::TypeOf<StringRef>())
         {
-            parent[nameStr] = reinterpret_cast<const StringRef*>(value)->GetData();
+            AddChild(name, Json(
+                                   static_cast<const StringRef*>(value)->GetData()));
         }
+        else
+        {
+            WL_LOG_ERROR(
+                    "JSONArchive",
+                    "Impossible to write '%s' type '%s' not supported.",
+                    name.GetData(),
+                    type.GetName().GetData());
+        }
+    }
+
+    JSONOutputArchive::Json* JSONOutputArchive::AddChild(
+            StringRef name,
+            const Json& value)
+    {
+        Json* current = Current();
+        WL_CHECK(current);
+
+        Json& parent = *current;
+
+        if (parent.is_array())
+        {
+            parent.push_back(value);
+            return &parent.back();
+        }
+
+        parent[name.GetData()] = value;
+        return &parent[name.GetData()];
     }
 
     JSONOutputArchive::Json* JSONOutputArchive::Current()
     {
+        if (m_stack.IsEmpty())
+        {
+            return nullptr;
+        }
+
         return m_stack.Back();
     }
 
@@ -118,14 +158,17 @@ namespace Wl
         m_stack.PopBack();
     }
 
-    bool JSONInputArchive::BeginObject(const StringID& name)
+
+    bool JSONInputArchive::BeginObject(StringRef name)
     {
         Json* value = Find(name);
 
-        if (value == nullptr || !value->is_object())
+        if (!value || !value->is_object())
+        {
             return false;
+        }
 
-        m_stack.push_back(value);
+        m_stack.Emplace(value, 0);
         return true;
     }
 
@@ -134,14 +177,16 @@ namespace Wl
         Pop();
     }
 
-    size_t JSONInputArchive::BeginArray(const StringID& name)
+    size_t JSONInputArchive::BeginArray(StringRef name)
     {
         Json* value = Find(name);
 
-        if (value == nullptr || !value->is_array())
+        if (!value || !value->is_array())
+        {
             return 0;
+        }
 
-        m_stack.push_back(value);
+        m_stack.Emplace(value, 0);
         return value->size();
     }
 
@@ -150,70 +195,143 @@ namespace Wl
         Pop();
     }
 
-    bool JSONInputArchive::Read(const StringID& name, void* value, Type type)
+    bool JSONInputArchive::Read(
+            StringRef name,
+            void* value,
+            Type type)
     {
+        WL_CHECK(value);
+
         if (type == MetaTable::TypeOf<void>())
+        {
+            return false;
+        }
+
+        if (!Current())
         {
             return false;
         }
 
         if (type == MetaTable::TypeOf<bool>())
         {
-            return ReadValue(name, *reinterpret_cast<bool*>(value));
+            return ReadValue(name, *static_cast<bool*>(value));
         }
-        else if (type == MetaTable::TypeOf<int64_t>() || type == MetaTable::TypeOf<int32_t>())
+
+        if (type == MetaTable::TypeOf<int32_t>())
         {
-            return ReadValue(name, *reinterpret_cast<int64_t*>(value));
+            return ReadValue(name, *static_cast<int32_t*>(value));
         }
-        else if (type == MetaTable::TypeOf<uint32_t>() || type == MetaTable::TypeOf<uint64_t>())
+
+        if (type == MetaTable::TypeOf<int64_t>())
         {
-            return ReadValue(name, *reinterpret_cast<uint64_t*>(value));
+            return ReadValue(name, *static_cast<int64_t*>(value));
         }
-        else if (type == MetaTable::TypeOf<double>() || type == MetaTable::TypeOf<float>())
+
+        if (type == MetaTable::TypeOf<uint32_t>())
         {
-            return ReadValue(name, *reinterpret_cast<double*>(value));
+            return ReadValue(name, *static_cast<uint32_t*>(value));
         }
-        else if (type == MetaTable::TypeOf<String>())
+
+        if (type == MetaTable::TypeOf<uint64_t>())
         {
-            String& str = *reinterpret_cast<String*>(value);
-            const Json* json = Find(name);
+            return ReadValue(name, *static_cast<uint64_t*>(value));
+        }
+
+        if (type == MetaTable::TypeOf<float>())
+        {
+            return ReadValue(name, *static_cast<float*>(value));
+        }
+
+        if (type == MetaTable::TypeOf<double>())
+        {
+            return ReadValue(name, *static_cast<double*>(value));
+        }
+
+        if (type == MetaTable::TypeOf<String>())
+        {
+            Json* json = Find(name);
 
             if (!json || !json->is_string())
             {
                 return false;
             }
 
-            str = String(json->get<std::string>().data());
+            const std::string jsonValue = json->get<std::string>();
+
+            *static_cast<String*>(value) = String(jsonValue.c_str());
             return true;
         }
+
+        if (type == MetaTable::TypeOf<StringRef>())
+        {
+            Json* json = Find(name);
+
+            if (!json || !json->is_string())
+            {
+                return false;
+            }
+
+            const std::string jsonValue = json->get<std::string>();
+
+            *static_cast<StringRef*>(value) = StringRef(jsonValue.c_str());
+            return true;
+        }
+
+        WL_LOG_ERROR(
+                "JSONArchive",
+                "Impossible to read '%s' type '%s' not supported.",
+                name.GetData(),
+                type.GetName().GetData());
 
         return false;
     }
 
-    const JSONInputArchive::Json* JSONInputArchive::Current() const
+    JSONInputArchive::Frame* JSONInputArchive::Current()
     {
-        return m_stack.Back();
+        if (m_stack.IsEmpty())
+        {
+            return nullptr;
+        }
+
+        return &m_stack.Back();
     }
 
-    JSONInputArchive::Json* JSONInputArchive::Find(const StringID& name)
+    JSONInputArchive::Json* JSONInputArchive::Find(StringRef name)
     {
-        const Json* current = Current();
-
-        if (!current->is_object())
+        Frame* current = Current();
+        if (!current)
         {
             return nullptr;
         }
 
-        std::string key = name.GetText().GetData();
-
-        auto it = current->find(key);
-
-        if (it == current->end())
+        Json* json = current->value;
+        if (!json)
         {
             return nullptr;
         }
 
-        return const_cast<Json*>(&(*it));
+        if (json->is_array())
+        {
+            if (current->index >= json->size())
+            {
+                return nullptr;
+            }
+
+            return &(*json)[current->index++];
+        }
+
+        if (!json->is_object())
+        {
+            return nullptr;
+        }
+
+        auto it = json->find(name.GetData());
+        if (it == json->end())
+        {
+            return nullptr;
+        }
+
+        return &(*it);
     }
 
     void JSONInputArchive::Pop()

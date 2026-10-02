@@ -303,9 +303,19 @@ namespace Wl
             return Insert(ImmutableEntryType {key, value});
         }
 
+        EntryType Put(const KeyType& key, ValueType&& value)
+        {
+            return Insert(ImmutableEntryType {key, std::move(value)});
+        }
+
         EntryType Emplace(const KeyType& key, const ValueType& value)
         {
             return Insert(ImmutableEntryType {key, value});
+        }
+
+        EntryType Emplace(const KeyType& key, ValueType&& value)
+        {
+            return Insert(ImmutableEntryType {key, std::move(value)});
         }
 
         EntryType Insert(const ImmutableEntryType& entry)

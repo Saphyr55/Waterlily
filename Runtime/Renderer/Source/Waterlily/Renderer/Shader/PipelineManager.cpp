@@ -82,7 +82,7 @@ namespace Wl
     void PipelineManager::DestroyGraphicsPipeline(const StringID& name)
     {
         RHIGraphicsPipeline* pipeline = GetGraphicsPipeline(name);
-        WL_CHECK_MSG(pipeline, "Pipeline \"%s\" not found.", name.GetText().GetData());
+        WL_CHECK_MSG(pipeline, "Pipeline \"%s\" not found.", name.GetData());
         m_cache.Remove(name);
         DestroyInternalGraphicsPipeline(pipeline);
     }
@@ -124,7 +124,7 @@ namespace Wl
     void PipelineManager::DestroyComputePipeline(const StringID& name)
     {
         RHIComputePipeline* pipeline = GetComputePipeline(name);
-        WL_CHECK_MSG(pipeline, "Pipeline \"%s\" not found.", name.GetText().GetData());
+        WL_CHECK_MSG(pipeline, "Pipeline \"%s\" not found.", name.GetData());
         m_cache.Remove(name);
         DestroyInternalComputePipeline(pipeline);
     }

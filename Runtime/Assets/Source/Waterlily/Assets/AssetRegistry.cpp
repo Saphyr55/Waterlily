@@ -122,7 +122,7 @@ namespace Wl
     SharedPtr<AssetRegistry> AssetRegistry::LoadDefault(FileSystem& fs)
     {
         FileResult assetRegistryFileResult = fs.Open(AssetRegistryURI.GetText(), FileAccess::ReadWrite, FileMode::OpenOrCreate);
-        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", AssetRegistryURI.GetText().GetData());
+        WL_CHECK_MSG(assetRegistryFileResult.HasValue(), "Impossible to read \"%s\"", AssetRegistryURI.GetData());
 
         SharedPtr<File> fileAssetRegistry = assetRegistryFileResult.GetValue();
         SharedPtr<AssetRegistry> registry = LoadFromFile(fileAssetRegistry);

@@ -56,7 +56,7 @@ namespace Ludo
         shaderBundle->LoadAssets();
 
         Model* sponzaModelAsset = m_assetManager->GetAsset<Model>(SponzaModelAssetURI);
-        WL_CHECK_MSG(sponzaModelAsset, "Failed to load \"%s\" asset.", SponzaModelAssetURI.GetText().GetData());
+        WL_CHECK_MSG(sponzaModelAsset, "Failed to load \"%s\" asset.", SponzaModelAssetURI.GetData());
 
         Array<StaticMesh*> modelStaticMeshesAsset = Model::GetMeshes(sponzaModelAsset, m_assetManager);
 

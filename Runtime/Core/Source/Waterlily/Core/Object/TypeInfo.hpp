@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Waterlily/Core/Defines.hpp"
+#include "Waterlily/Core/Function/Function.hpp"
 #include "Waterlily/Core/Hash/fnv-1a.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 
@@ -68,6 +69,15 @@ namespace Wl
     {
         constexpr std::string_view typeName = TypeName<T>();
         return fnv1a_cstr(typeName.data(), typeName.size());
+    }
+
+    inline IdentifierType TypeID(const StringID& name)
+    {
+        if (name == "void")
+        {
+            return TypeID<void>();
+        }
+        return name.GetHash();
     }
 
     struct TypeInfo

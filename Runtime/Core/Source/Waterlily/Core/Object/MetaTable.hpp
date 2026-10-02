@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TypeInfo.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/Set.hpp"
@@ -20,6 +21,10 @@ namespace Wl
         HashMap<StringID, uint32_t> nameToOffsetMap;
         HashMap<StringID, MethodInfo> methodMap;
         HashMap<StringID, PropertyInfo> propertyMap;
+        Function<void()> registerBindings;
+
+        TypeTable() = default;
+        ~TypeTable() = default;
     };
 
     class WL_CORE_API MetaTable
@@ -35,13 +40,15 @@ namespace Wl
         }
 
     public:
+        static void Init();
+        static void Shutdown();
+
         template<typename T, typename InheritType = void>
         inline static Type TypeOf();
-    
+
         inline static Type GetType(const StringID& name)
         {
-            WL_CHECK(ContainsType(name));
-            return Type(name.GetHash());
+            return Type(TypeID(name));
         }
 
         template<typename T>
@@ -50,14 +57,19 @@ namespace Wl
             return ContainsType(TypeID<T>());
         }
 
-        inline static bool ContainsType(const StringID& name)
+        static bool ContainsType(const StringID& name)
         {
-            return ContainsType(name.GetHash());
+            return ContainsType(TypeID(name));
         }
 
-        inline static bool ContainsType(IdentifierType id)
+        static bool ContainsType(Type type)
         {
-            return Get().types.Contains(id);
+            return ContainsType(type.GetID());
+        }
+
+        static bool ContainsType(IdentifierType id)
+        {
+            return GetTypes().Contains(id);
         }
 
         template<typename T>
@@ -66,14 +78,14 @@ namespace Wl
             return GetTypeInfo(TypeID<T>());
         }
 
-        inline static const TypeInfo& GetTypeInfo(const StringID& name)
+        static const TypeInfo& GetTypeInfo(const StringID& name)
         {
             return GetTypeInfo(name.GetHash());
         }
 
-        inline static const TypeInfo& GetTypeInfo(IdentifierType id)
+        static const TypeInfo& GetTypeInfo(IdentifierType id)
         {
-            return Get().types.Get(id);
+            return GetTypes().Get(id);
         }
 
     public:
@@ -114,27 +126,16 @@ namespace Wl
         template<typename ObjectType, typename PropertyType>
         static void WriteProperty(ObjectType& object, const StringID& name, const PropertyType& value);
 
-        inline static const OrderedSet<MemberInfo>& GetMembers(Type type)
-        {
-            return Get().typeTableMap.Get(type).memberInfoMap;
-        }
-
-        inline static const HashMap<StringID, PropertyInfo>& GetProperties(Type type)
-        {
-            return Get().typeTableMap.Get(type).propertyMap;
-        }
-
-        inline static const HashMap<StringID, MethodInfo>& GetMethods(Type type)
-        {
-            return Get().typeTableMap.Get(type).methodMap;
-        }
+        static const OrderedSet<MemberInfo>& GetMembers(Type type);
+        static const HashMap<StringID, PropertyInfo>& GetProperties(Type type);
+        static const HashMap<StringID, MethodInfo>& GetMethods(Type type);
 
     private:
         template<typename MethodType>
         inline static void RegisterMethodImpl(const StringID& name, MethodType method);
 
         template<typename T, typename InheritType>
-        inline static void RegisterTypeImpl();
+        inline static Type RegisterTypeImpl();
 
         static void RegisterMemberImpl(
                 Type objectType,
@@ -144,13 +145,26 @@ namespace Wl
                 uint32_t size,
                 uint32_t align);
 
+        static HashMap<IdentifierType, TypeInfo>& GetTypes();
+        static TypeTable& GetTypeTable(Type type);
+
+    public:
+        MetaTable() = default;
+        ~MetaTable() = default;
+
+        MetaTable(const MetaTable&) = delete;
+        MetaTable(MetaTable&&) = delete;
+
+        MetaTable& operator=(const MetaTable&) = delete;
+        MetaTable& operator=(MetaTable&&) = delete;
+
     public:
         static MetaTable& Get();
 
         HashMap<IdentifierType, TypeInfo> types;
         HashMap<Type, TypeTable> typeTableMap;
     };
-    
+
     template<typename T, typename ObjectType>
     T& MetaTable::ReadMember(ObjectType& object, const StringID& name)
     {
@@ -194,27 +208,39 @@ namespace Wl
     }
 
     template<typename T, typename InheritType>
-    inline void MetaTable::RegisterTypeImpl()
+    inline Type MetaTable::RegisterTypeImpl()
     {
+        Type type(TypeID<T>());
+        if (ContainsType(type))
+        {
+            return type;
+        }
+
         MetaTable& table = Get();
         TypeInfo info = TypeInfo::Of<T, InheritType>();
         table.types.Put(info.name.GetHash(), info);
-        table.typeTableMap.Put(Type(TypeID<T>()), TypeTable());
-
-        if constexpr (requires { T::_RegisterBindings(); })
+        TypeTable typeTable = {};
+        typeTable.registerBindings = []()
         {
-            T::_RegisterBindings();
-        }
+            const TypeInfo& info = MetaTable::GetTypeInfo<T>();
+            const char* typeName = info.name.GetData();
+
+            WL_LOG_DEBUG("MetaTable", "Registering type: %s", typeName);
+
+            if constexpr (requires { T::_RegisterBindings(); })
+            {
+                T::_RegisterBindings();
+            }
+        };
+        table.typeTableMap.Put(type, std::move(typeTable));
+
+        return type;
     }
 
     template<typename T, typename InheritType>
     inline Type MetaTable::TypeOf()
     {
-        if (!ContainsType<T>())
-        {
-            RegisterTypeImpl<T, InheritType>();
-        }
-        return Type(TypeID<T>());
+        return RegisterTypeImpl<T, InheritType>();
     }
 
     template<typename ObjectType, typename MemberType>
@@ -272,7 +298,7 @@ namespace Wl
         WL_CHECK_MSG(
                 typeTable.methodMap.Contains(property.getterMethodName),
                 "'%s' method has been not registered.",
-                property.getterMethodName.GetText().GetData());
+                property.getterMethodName.GetData());
 
         const MethodInfo& getter = MetaTable::GetMethodInfo(objectType, property.getterMethodName);
 
@@ -292,7 +318,7 @@ namespace Wl
         WL_CHECK_MSG(
                 typeTable.methodMap.Contains(property.setterMethodName),
                 "'%s' method has been not registered.",
-                property.setterMethodName.GetText().GetData());
+                property.setterMethodName.GetData());
 
         const MethodInfo& setter = MetaTable::GetMethodInfo(objectType, property.setterMethodName);
 
