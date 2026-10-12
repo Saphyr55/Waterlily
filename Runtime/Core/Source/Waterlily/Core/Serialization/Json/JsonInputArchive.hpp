@@ -22,6 +22,8 @@ namespace Wl
         virtual void EndArray() override;
 
         virtual bool Read(StringRef name, void* value, Type type) override;
+        
+        String Dump(int indent = 2) const;
 
     public:
         explicit JsonInputArchive(const Json& json)

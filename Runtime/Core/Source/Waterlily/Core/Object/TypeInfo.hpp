@@ -4,9 +4,9 @@
 #include "Waterlily/Core/Hash/fnv-1a.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 
-#include <cstdint>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #define WL_DEFINE_TYPE_ID(Type)             \
     template<>                              \
@@ -27,14 +27,7 @@ namespace Wl
 {
     using IdentifierType = uint64;
 
-    enum class TypeKind : uint8
-    {
-        Void,
-        Primitive,
-        String,
-        Object,
-    };
-
+    // TODO: Use StringRef but for now std::string_view offers a lot functions for handling string.
     template<typename T>
     consteval std::string_view TypeName();
 
@@ -72,8 +65,8 @@ namespace Wl
     WL_DEFINE_TYPE_ID(int32)
     WL_DEFINE_TYPE_ID(int64)
 
-    WL_DEFINE_TYPE_ID(float32)
-    WL_DEFINE_TYPE_ID(float64)
+    WL_DEFINE_TYPE_ID(float)
+    WL_DEFINE_TYPE_ID(double)
 
     template<typename Type>
     consteval bool IsPrimitiveType()
@@ -108,7 +101,6 @@ namespace Wl
     {
         using ProberType = void;
 
-        // TODO: Use StringRef but for now std::string_view offers a lot functions for handling string.
         template<typename T>
         consteval std::string_view WrappedTypeName()
         {
@@ -146,64 +138,102 @@ namespace Wl
 
     inline IdentifierType TypeID(const StringID& name)
     {
-        if (name == "void")
-        {
-            return TypeID<void>();
-        }
         return name.GetHash();
     }
 
-    struct TypeInfo
+    class TypeInfo
     {
+    public:
+        enum class Kind : uint8
+        {
+            Void,
+            Primitive,
+            String,
+            Array,
+            Map,
+            Object,
+        };
+
+        using DefaultConstructDelegate = void(void*);
+        using DestructDelegate = void(void*);
+        using CopyDelegate = void(void*);
+        using MoveDelegate = void(void*);
+
+    public:
         StringID name;
         StringID inherit;
         uint32 size;
         uint32 align;
-        TypeKind kind;
+        Kind kind;
 
+        DefaultConstructDelegate* DefaultConstruct = nullptr;
+        DestructDelegate* Destruct = nullptr;
+        CopyDelegate* Copy = nullptr;
+        MoveDelegate* Move = nullptr;
+
+    public:
         template<typename Type, typename InheritType = void>
-        inline static TypeInfo Of() noexcept
-        {
-            std::string name(TypeName<Type>());
-            std::string inherit(TypeName<InheritType>());
-
-            TypeInfo info = {};
-            info.name = StringID(TypeID<Type>(), name.c_str());
-            info.inherit = StringID(TypeID<InheritType>(), inherit.c_str());
-            info.size = sizeof(Type);
-            info.align = alignof(Type);
-
-            if constexpr (IsPrimitiveType<Type>())
-            {
-                info.kind = TypeKind::Primitive;
-            }
-            else if constexpr (IsStringType<Type>())
-            {
-                info.kind = TypeKind::String;
-            }
-            else
-            {
-                info.kind = TypeKind::Object;
-            }
-
-            return info;
-        }
-
-        template<>
-        inline TypeInfo Of<void, void>() noexcept
-        {
-            std::string name(TypeName<void>());
-            std::string inherit(TypeName<void>());
-
-            TypeInfo info = {};
-            info.name = StringID(TypeID<void>(), name.c_str());
-            info.inherit = StringID(TypeID<void>(), inherit.c_str());
-            info.size = 0;
-            info.align = 0;
-            info.kind = TypeKind::Void;
-
-            return info;
-        }
+        inline static TypeInfo Of() noexcept;
     };
+
+    template<typename Type, typename InheritType>
+    inline TypeInfo TypeInfo::Of() noexcept
+    {
+        std::string name(TypeName<Type>());
+        std::string inherit(TypeName<InheritType>());
+
+        TypeInfo info = {};
+        info.name = StringID(TypeID<Type>(), name.c_str());
+        info.inherit = StringID(TypeID<InheritType>(), inherit.c_str());
+        info.size = sizeof(Type);
+        info.align = alignof(Type);
+
+        if constexpr (IsPrimitiveType<Type>())
+        {
+            info.kind = Kind::Primitive;
+        }
+        else if constexpr (IsStringType<Type>())
+        {
+            info.kind = Kind::String;
+        }
+        else
+        {
+            info.kind = Kind::Object;
+        }
+
+        if constexpr (std::is_default_constructible_v<Type>)
+        {
+            info.DefaultConstruct = [](void* data)
+            {
+                new (data) Type();
+            };
+        }
+
+        if constexpr (std::is_destructible_v<Type>)
+        {
+            info.Destruct = [](void* data)
+            {
+                static_cast<Type*>(data)->~Type();
+            };
+        }
+
+        return info;
+    }
+
+    template<>
+    inline TypeInfo TypeInfo::Of<void, void>() noexcept
+    {
+        std::string name(TypeName<void>());
+        std::string inherit(TypeName<void>());
+
+        TypeInfo info = {};
+        info.name = StringID(TypeID<void>(), name.c_str());
+        info.inherit = StringID(TypeID<void>(), inherit.c_str());
+        info.size = 0;
+        info.align = 0;
+        info.kind = Kind::Void;
+
+        return info;
+    }
 
 }// namespace Wl

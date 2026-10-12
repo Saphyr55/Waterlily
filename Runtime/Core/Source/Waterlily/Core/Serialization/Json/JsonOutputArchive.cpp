@@ -105,13 +105,11 @@ namespace Wl
         }
         else if (type == MetaTable::TypeOf<String>())
         {
-            AddChild(name, Json(
-                                   static_cast<const String*>(value)->GetData()));
+            AddChild(name, Json(static_cast<const String*>(value)->GetData()));
         }
         else if (type == MetaTable::TypeOf<StringRef>())
         {
-            AddChild(name, Json(
-                                   static_cast<const StringRef*>(value)->GetData()));
+            AddChild(name, Json(static_cast<const StringRef*>(value)->GetData()));
         }
         else
         {

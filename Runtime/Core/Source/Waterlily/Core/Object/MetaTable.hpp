@@ -1,6 +1,5 @@
 #pragma once
 
-#include "TypeInfo.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/Set.hpp"
@@ -10,7 +9,6 @@
 #include "Waterlily/Core/Object/MemberInfo.hpp"
 #include "Waterlily/Core/Object/Type.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
-
 
 namespace Wl
 {
@@ -222,11 +220,6 @@ namespace Wl
         TypeTable typeTable = {};
         typeTable.registerBindings = []()
         {
-            const TypeInfo& info = MetaTable::GetTypeInfo<T>();
-            const char* typeName = info.name.GetData();
-
-            WL_LOG_DEBUG("MetaTable", "Registering type: %s", typeName);
-
             if constexpr (requires { T::_RegisterBindings(); })
             {
                 T::_RegisterBindings();

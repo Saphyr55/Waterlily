@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Waterlily/Core/Object/MetaTable.hpp"
-#include "Waterlily/Core/Object/Object.hpp"
 #include "Waterlily/Core/Object/Type.hpp"
 #include "Waterlily/Core/String/StringRef.hpp"
 
@@ -18,11 +17,6 @@ namespace Wl
         virtual void EndArray() = 0;
 
         virtual bool Read(StringRef name, void* value, Type type) = 0;
-
-        virtual bool Read(StringRef name, Object& value)
-        {
-            return Read(name, &value, value.GetObjectType());
-        }
 
         template<typename T>
         inline bool Read(StringRef name, T& value)

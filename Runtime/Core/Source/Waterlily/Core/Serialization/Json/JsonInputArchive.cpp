@@ -5,6 +5,11 @@
 namespace Wl
 {
 
+    String JsonInputArchive::Dump(int indent) const
+    {
+        return String(m_root.dump(indent).c_str());
+    }
+
     bool JsonInputArchive::BeginObject(StringRef name)
     {
         Json* value = Find(name);
