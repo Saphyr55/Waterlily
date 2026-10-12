@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Waterlily/Core/Function/Function.hpp"
+
 namespace Wl
 {
 
@@ -47,6 +49,33 @@ namespace Wl
             begin++;
         }
         return false;
+    }
+
+    template<typename ObjectType, typename ReturnType, typename... Args>
+    Function<ReturnType(Args...)> Bind(ObjectType& object, Function<ReturnType(ObjectType&, Args...)>&& func)
+    {
+        return [object, func = std::move(func)](Args&&... args) -> ReturnType
+        {
+            return func(object, std::forward<Args>(args)...);
+        };
+    }
+
+    template<typename ObjectType, typename ReturnType, typename... Args>
+    Function<ReturnType(Args...)> Bind(ObjectType* self, ReturnType (ObjectType::*func)(Args...))
+    {
+        return [self, func](Args&&... args) -> ReturnType
+        {
+            return (self->*func)(std::forward<Args>(args)...);
+        };
+    }
+
+    template<typename ObjectType, typename ReturnType, typename... Args>
+    Function<ReturnType(Args...)> Bind(const ObjectType* self, ReturnType (ObjectType::*func)(Args...) const)
+    {
+        return [self, func](Args&&... args) -> ReturnType
+        {
+            return (self->*func)(std::forward<Args>(args)...);
+        };
     }
 
 }// namespace Wl

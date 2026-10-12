@@ -27,10 +27,10 @@ namespace Wl
         * @param alignment The alignment boundary, in bytes.
         * @return The aligned memory address.
         */
-        WL_CORE_API static uintptr_t AlignUp(uintptr_t address, size_t alignment);
+        WL_CORE_API static uintptr_t AlignUp(uintptr_t address, usize alignment);
 
         template<typename ResourceType>
-        static ResourceType* Align(ResourceType* memory, size_t alignment)
+        static ResourceType* Align(ResourceType* memory, usize alignment)
         {
             return reinterpret_cast<ResourceType*>(AlignUp(reinterpret_cast<uintptr_t>(memory), alignment));
         }
@@ -42,7 +42,7 @@ namespace Wl
         * @param alignment The alignment boundary, in bytes.
         * @return The number of bytes needed for alignment adjustment.
         */
-        WL_CORE_API static size_t AlignAdjustment(const uintptr_t address, size_t alignment);
+        WL_CORE_API static usize AlignAdjustment(const uintptr_t address, usize alignment);
 
         /**
         * @brief Calculates the next aligned size based on the given the memory address size and alignment.
@@ -51,7 +51,7 @@ namespace Wl
         * @param alignment The alignment boundary, in bytes.
         * @return The next aligned size.
         */
-        WL_CORE_API static size_t AlignedSize(size_t size, size_t alignment);
+        WL_CORE_API static usize AlignedSize(usize size, usize alignment);
 
         /**
         * @brief Checks if a memory block address is aligned to the specified alignment.
@@ -60,7 +60,7 @@ namespace Wl
         * @param alignment The alignment boundary, in bytes.
         * @return `true` if the block is aligned, `false` otherwise.
         */
-        WL_CORE_API static bool IsAligned(uintptr_t address, size_t alignment);
+        WL_CORE_API static bool IsAligned(uintptr_t address, usize alignment);
 
         /**
         * @brief Allocates a block of memory of the specified size.
@@ -68,8 +68,8 @@ namespace Wl
         * @param size The size of the memory block to allocate, in bytes.
         * @return A pointer to the allocated memory block.
         */
-        WL_CORE_API static uint8_t* Allocate(size_t size) noexcept;
-        WL_CORE_API static uint8_t* Allocate(size_t size, size_t alignment) noexcept;
+        WL_CORE_API static uint8* Allocate(usize size) noexcept;
+        WL_CORE_API static uint8* Allocate(usize size, usize alignment) noexcept;
 
         /**
         * @brief Frees a previously allocated block of memory.
@@ -77,8 +77,8 @@ namespace Wl
         * @param block A pointer to the memory block to free.
         * @param size The size of the memory block, in bytes.
         */
-        WL_CORE_API static void Deallocate(void* block, size_t size) noexcept;
-        WL_CORE_API static void Deallocate(void* block, size_t size, size_t alignment) noexcept;
+        WL_CORE_API static void Deallocate(void* block, usize size) noexcept;
+        WL_CORE_API static void Deallocate(void* block, usize size, usize alignment) noexcept;
 
         /**
         * @brief Writes a specified value into a memory block.
@@ -88,7 +88,7 @@ namespace Wl
         * @param size The number of bytes to write.
         * @return A pointer to the destination memory block.
         */
-        WL_CORE_API static void* Write(void* destination, int32_t value, size_t size);
+        WL_CORE_API static void* Write(void* destination, int32 value, usize size);
 
         /**
         * @brief Copies a block of memory from the source to the destination.
@@ -98,11 +98,11 @@ namespace Wl
         * @param size The number of bytes to copy.
         * @return A pointer to the destination memory block.
         */
-        WL_CORE_API static void* Copy(void* destination, const void* source, size_t size);
+        WL_CORE_API static void* Copy(void* destination, const void* source, usize size);
 
-        WL_CORE_API static void* Move(void* destination, const void* source, size_t size);
+        WL_CORE_API static void* Move(void* destination, const void* source, usize size);
 
-        WL_CORE_API static int Compare(const void* buffer1, const void* buffer2, size_t size);
+        WL_CORE_API static int Compare(const void* buffer1, const void* buffer2, usize size);
 
     public:
         Memory() = delete;

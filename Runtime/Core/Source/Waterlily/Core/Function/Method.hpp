@@ -22,7 +22,7 @@ namespace Wl
         {
             ObjectType* obj = static_cast<ObjectType*>(self);
 
-            [&]<size_t... I>(std::index_sequence<I...>)
+            [&]<usize... I>(std::index_sequence<I...>)
             {
                 auto InvokeImpl = [&]() -> ReturnType
                 {

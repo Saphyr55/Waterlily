@@ -33,9 +33,9 @@ namespace Wl
             return m_currentResult;
         }
 
-        virtual uint32_t GetWidth() override;
+        virtual uint32 GetWidth() override;
 
-        virtual uint32_t GetHeight() override;
+        virtual uint32 GetHeight() override;
 
         virtual RHIFormat GetFormat() override;
 
@@ -75,7 +75,7 @@ namespace Wl
         }
 
     public:
-        VulkanSwapchain(VulkanContext& context, uint32_t width, uint32_t height, uint32_t imageCount);
+        VulkanSwapchain(VulkanContext& context, uint32 width, uint32 height, uint32 imageCount);
 
     private:
         VulkanSwapchainSupportDetails QuerySupportDetails();
@@ -89,7 +89,7 @@ namespace Wl
         Array<VkImage> m_images;
         Array<RHISwapchainBuffer> m_buffers;
         VkSwapchainKHR m_handle = VK_NULL_HANDLE;
-        uint32_t m_imageCount = 3;
+        uint32 m_imageCount = 3;
     };
 
 }// namespace Wl

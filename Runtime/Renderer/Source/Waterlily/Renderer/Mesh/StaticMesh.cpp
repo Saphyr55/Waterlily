@@ -7,7 +7,7 @@ namespace Wl
 
     void operator<<(OutputStream& stream, const StaticMesh& mesh)
     {
-        stream << static_cast<uint32_t>(mesh.SubMeshes.GetSize());
+        stream << static_cast<uint32>(mesh.SubMeshes.GetSize());
 
         for (const StaticMesh::SubMesh& submesh: mesh.SubMeshes)
         {
@@ -19,30 +19,30 @@ namespace Wl
         }
 
         // Positions
-        stream << static_cast<uint64_t>(mesh.Positions.GetSizeInBytes());
+        stream << static_cast<uint64>(mesh.Positions.GetSizeInBytes());
         stream.Write(mesh.Positions.GetData(), mesh.Positions.GetSizeInBytes());
 
         // Normals
-        stream << static_cast<uint64_t>(mesh.Normals.GetSizeInBytes());
+        stream << static_cast<uint64>(mesh.Normals.GetSizeInBytes());
         stream.Write(mesh.Normals.GetData(), mesh.Normals.GetSizeInBytes());
 
         // UVs
-        stream << static_cast<uint64_t>(mesh.UVTextures.GetSizeInBytes());
+        stream << static_cast<uint64>(mesh.UVTextures.GetSizeInBytes());
         stream.Write(mesh.UVTextures.GetData(), mesh.UVTextures.GetSizeInBytes());
 
         // Tangents
-        stream << static_cast<uint64_t>(mesh.Tangents.GetSizeInBytes());
+        stream << static_cast<uint64>(mesh.Tangents.GetSizeInBytes());
         stream.Write(mesh.Tangents.GetData(), mesh.Tangents.GetSizeInBytes());
 
         // Indices
-        stream << static_cast<uint64_t>(mesh.Indices.GetSizeInBytes());
-        stream.Write(reinterpret_cast<const uint8_t*>(mesh.Indices.GetData()), mesh.Indices.GetSizeInBytes());
+        stream << static_cast<uint64>(mesh.Indices.GetSizeInBytes());
+        stream.Write(reinterpret_cast<const uint8*>(mesh.Indices.GetData()), mesh.Indices.GetSizeInBytes());
     }
 
     void operator>>(InputStream& stream, StaticMesh& mesh)
     {
         // Submeshes
-        uint32_t subMeshCount = 0;
+        uint32 subMeshCount = 0;
         stream >> subMeshCount;
 
         mesh.SubMeshes.Resize(subMeshCount);
@@ -56,51 +56,51 @@ namespace Wl
         }
 
         // Positions
-        uint64_t positionsByteCount = 0;
+        uint64 positionsByteCount = 0;
         stream >> positionsByteCount;
         mesh.Positions.Resize(positionsByteCount);
         stream.Read(mesh.Positions.GetData(), mesh.Positions.GetSizeInBytes());
 
         // Normals
-        uint64_t normalsByteCount = 0;
+        uint64 normalsByteCount = 0;
         stream >> normalsByteCount;
         mesh.Normals.Resize(normalsByteCount);
         stream.Read(mesh.Normals.GetData(), mesh.Normals.GetSizeInBytes());
 
         // UVs
-        uint64_t uvTexturesByteCount = 0;
+        uint64 uvTexturesByteCount = 0;
         stream >> uvTexturesByteCount;
         mesh.UVTextures.Resize(uvTexturesByteCount);
         stream.Read(mesh.UVTextures.GetData(), mesh.UVTextures.GetSizeInBytes());
 
         // Tangents
-        uint64_t tangentsByteCount = 0;
+        uint64 tangentsByteCount = 0;
         stream >> tangentsByteCount;
         mesh.Tangents.Resize(tangentsByteCount);
         stream.Read(mesh.Tangents.GetData(), mesh.Tangents.GetSizeInBytes());
 
         // Indices
-        uint64_t indicesByteCount = 0;
+        uint64 indicesByteCount = 0;
         stream >> indicesByteCount;
-        mesh.Indices.Resize(indicesByteCount / sizeof(uint32_t));
-        stream.Read(reinterpret_cast<uint8_t*>(mesh.Indices.GetData()), mesh.Indices.GetSizeInBytes());
+        mesh.Indices.Resize(indicesByteCount / sizeof(uint32));
+        stream.Read(reinterpret_cast<uint8*>(mesh.Indices.GetData()), mesh.Indices.GetSizeInBytes());
     }
 
     void StaticMesh::GenerateNormals()
     {
-        size_t vertexCount = Positions.GetSize() / sizeof(Vector3f);
-        size_t indexCount = Indices.GetSize();
+        usize vertexCount = Positions.GetSize() / sizeof(Vector3f);
+        usize indexCount = Indices.GetSize();
 
         const Vector3f* vPositions = reinterpret_cast<const Vector3f*>(Positions.GetData());
 
         Array<Vector3f> tempNormals;
         tempNormals.Resize(vertexCount, Vector3f(0.0));
 
-        for (size_t i = 0; i < indexCount; i += 3)
+        for (usize i = 0; i < indexCount; i += 3)
         {
-            uint32_t i0 = Indices[i];
-            uint32_t i1 = Indices[i + 1];
-            uint32_t i2 = Indices[i + 2];
+            uint32 i0 = Indices[i];
+            uint32 i1 = Indices[i + 1];
+            uint32 i2 = Indices[i + 2];
 
             Vector3f v0 = vPositions[i0];
             Vector3f v1 = vPositions[i1];
@@ -121,13 +121,13 @@ namespace Wl
             n = Vector3f::Normalize(n);
         }
 
-        Normals = StaticMesh::Buffer(reinterpret_cast<uint8_t*>(tempNormals.GetData()), vertexCount * sizeof(Vector3f));
+        Normals = StaticMesh::Buffer(reinterpret_cast<uint8*>(tempNormals.GetData()), vertexCount * sizeof(Vector3f));
     }
 
     void StaticMesh::GenerateTangents()
     {
-        size_t vertexCount = Positions.GetSize() / sizeof(Vector3f);
-        size_t indexCount = Indices.GetSize();
+        usize vertexCount = Positions.GetSize() / sizeof(Vector3f);
+        usize indexCount = Indices.GetSize();
 
         const Vector3f* vpositions = reinterpret_cast<const Vector3f*>(Positions.GetData());
         const Vector3f* vnormals = reinterpret_cast<const Vector3f*>(Normals.GetData());
@@ -142,11 +142,11 @@ namespace Wl
         Array<Vector4f> tempTangents;
         tempTangents.Resize(vertexCount, Vector4f(0.0));
 
-        for (size_t i = 0; i < indexCount; i += 3)
+        for (usize i = 0; i < indexCount; i += 3)
         {
-            uint32_t i0 = Indices[i];
-            uint32_t i1 = Indices[i + 1];
-            uint32_t i2 = Indices[i + 2];
+            uint32 i0 = Indices[i];
+            uint32 i1 = Indices[i + 1];
+            uint32 i2 = Indices[i + 2];
 
             const Vector3f& v0 = vpositions[i0];
             const Vector3f& v1 = vpositions[i1];
@@ -185,7 +185,7 @@ namespace Wl
             tan2[i2] += tdir;
         }
 
-        for (size_t i = 0; i < vertexCount; i++)
+        for (usize i = 0; i < vertexCount; i++)
         {
             const Vector3f& n = vnormals[i];
             const Vector3f& t = tan1[i];
@@ -197,7 +197,7 @@ namespace Wl
             tempTangents[i] = Vector4f(tangent.x, tangent.y, tangent.z, w);
         }
 
-        Tangents = StaticMesh::Buffer(reinterpret_cast<uint8_t*>(tempTangents.GetData()), vertexCount * sizeof(Vector4f));
+        Tangents = StaticMesh::Buffer(reinterpret_cast<uint8*>(tempTangents.GetData()), vertexCount * sizeof(Vector4f));
     }
 
 }// namespace Wl

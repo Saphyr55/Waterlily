@@ -39,16 +39,16 @@ namespace Wl
             return nullptr;
         }
 
-        Array<uint8_t> buffer;
+        Array<uint8> buffer;
         buffer.Resize(stream->GetSize());
         stream->Read(buffer.GetData(), buffer.GetSize());
 
-        int32_t width = 0;
-        int32_t height = 0;
-        int32_t channels = 0;
-        int32_t reqComp = STBI_rgb_alpha;
+        int32 width = 0;
+        int32 height = 0;
+        int32 channels = 0;
+        int32 reqComp = STBI_rgb_alpha;
         SharedPtr<stbi_uc> data_guard(
-                stbi_load_from_memory(buffer.GetData(), static_cast<int32_t>(buffer.GetSize()), &width, &height, &channels, reqComp),
+                stbi_load_from_memory(buffer.GetData(), static_cast<int32>(buffer.GetSize()), &width, &height, &channels, reqComp),
                 stbi_uc_Deleter());
 
         if (width <= 0 || height <= 0)
@@ -61,10 +61,10 @@ namespace Wl
             return nullptr;
         }
 
-        uint32_t dataByteCount = static_cast<uint32_t>(width * height * reqComp);
-        uint32_t textureChannels = static_cast<uint32_t>(reqComp);
-        uint32_t textureWidth = static_cast<uint32_t>(width);
-        uint32_t textureHeight = static_cast<uint32_t>(height);
+        uint32 dataByteCount = static_cast<uint32>(width * height * reqComp);
+        uint32 textureChannels = static_cast<uint32>(reqComp);
+        uint32 textureWidth = static_cast<uint32>(width);
+        uint32 textureHeight = static_cast<uint32>(height);
 
         SharedPtr<TextureAsset> assetData = MakeShared<TextureAsset>();
         assetData->Image.Channels = textureChannels;

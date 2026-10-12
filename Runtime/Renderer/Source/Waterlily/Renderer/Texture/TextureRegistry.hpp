@@ -14,13 +14,13 @@
 namespace Wl
 {
 
-    using TextureHandle = uint32_t;
+    using TextureHandle = uint32;
 
     class WL_RENDERER_API TextureRegistry
     {
     public:
         static constexpr TextureHandle InvalidTexture = UINT32_MAX;
-        static constexpr const uint32_t MaxResources = 2048u;
+        static constexpr const uint32 MaxResources = 2048u;
 
     public:
         TextureHandle ObtainTexture(AssetHandle asset, bool normalize = false);
@@ -62,7 +62,7 @@ namespace Wl
         }
 
     public:
-        TextureRegistry(const SharedPtr<RHIDevice>& device, AssetManager& assets, uint32_t binding = 0)
+        TextureRegistry(const SharedPtr<RHIDevice>& device, AssetManager& assets, uint32 binding = 0)
             : m_device(device)
             , m_assetManager(assets)
             , m_registry(16)
@@ -90,7 +90,7 @@ namespace Wl
         SharedPtr<RHIDevice> m_device;
         AssetManager& m_assetManager;
 
-        uint32_t m_binding;
+        uint32 m_binding;
 
         RHIBindlessShaderResources* m_bindlessResources;
         RHIShaderResourceGroupLayout* m_srgLayout;

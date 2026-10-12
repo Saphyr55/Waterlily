@@ -13,8 +13,8 @@ namespace Wl
     {
         RHIBuffer* Buffer;
         void* Data = nullptr;
-        size_t Offset = 0;
-        size_t Size = 0;
+        usize Offset = 0;
+        usize Size = 0;
 
         template<typename MappedType>
         MappedType* Get()
@@ -32,7 +32,7 @@ namespace Wl
     class WL_RENDERER_API RenderAllocator
     {
     public:
-        inline void Initialize(RHIBuffer* buffer, uint32_t minAlignment);
+        inline void Initialize(RHIBuffer* buffer, uint32 minAlignment);
 
         inline void Reset();
 
@@ -40,15 +40,15 @@ namespace Wl
 
         inline RHIBuffer* GetBuffer();
 
-        RenderAllocation Allocate(size_t size);
+        RenderAllocation Allocate(usize size);
 
         template<typename DataType>
         inline RenderAllocation Allocate();
 
         template<typename DataType>
-        inline RenderAllocation AllocateArray(size_t count);
+        inline RenderAllocation AllocateArray(usize count);
 
-        RenderAllocation Write(const void* data, size_t size);
+        RenderAllocation Write(const void* data, usize size);
 
         template<typename DataType>
         inline RenderAllocation Write(DataType& data);
@@ -58,20 +58,20 @@ namespace Wl
         template<typename DataType>
         inline void UpdateData(RenderAllocation& allocation, DataType& data);
 
-        inline uint32_t GetMinAligment() const;
+        inline uint32 GetMinAligment() const;
 
     public:
         RenderAllocator() = default;
         ~RenderAllocator() = default;
 
     private:
-        uint32_t m_minAlignment = 0;
+        uint32 m_minAlignment = 0;
         RHIBuffer* m_buffer = nullptr;
         void* m_mapped = nullptr;
         uintptr_t m_head = 0;
     };
 
-    inline uint32_t RenderAllocator::GetMinAligment() const
+    inline uint32 RenderAllocator::GetMinAligment() const
     {
         return m_minAlignment;
     }
@@ -86,7 +86,7 @@ namespace Wl
         return m_buffer;
     }
 
-    inline void RenderAllocator::Initialize(RHIBuffer* buffer, uint32_t minAlignment)
+    inline void RenderAllocator::Initialize(RHIBuffer* buffer, uint32 minAlignment)
     {
         m_minAlignment = minAlignment;
         m_buffer = buffer;
@@ -102,14 +102,14 @@ namespace Wl
     template<typename DataType>
     inline RenderAllocation RenderAllocator::Allocate()
     {
-        size_t stride = Memory::AlignUp(sizeof(DataType), m_minAlignment);
+        usize stride = Memory::AlignUp(sizeof(DataType), m_minAlignment);
         return Allocate(stride);
     }
 
     template<typename DataType>
-    inline RenderAllocation RenderAllocator::AllocateArray(size_t count)
+    inline RenderAllocation RenderAllocator::AllocateArray(usize count)
     {
-        size_t stride = Memory::AlignUp(sizeof(DataType), m_minAlignment);
+        usize stride = Memory::AlignUp(sizeof(DataType), m_minAlignment);
         return Allocate(stride * count);
     }
 

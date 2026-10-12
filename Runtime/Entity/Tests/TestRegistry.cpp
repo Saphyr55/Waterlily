@@ -89,7 +89,7 @@ TEST_CASE("Iterate over single components.", "[EntityRegistry]")
     registry.AddComponent<Position>(e2, {2, 2});
     registry.AddComponent<Position>(e3, {3, 3});
 
-    int32_t sumX = 0, sumY = 0;
+    int32 sumX = 0, sumY = 0;
     registry.ForEach<Position>([&](Entity e, Position& p) -> void
     {
         sumX += static_cast<int>(p.x);

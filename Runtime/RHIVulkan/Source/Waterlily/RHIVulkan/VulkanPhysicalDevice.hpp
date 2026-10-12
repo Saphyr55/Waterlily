@@ -27,8 +27,8 @@ namespace Wl
 
         Array<VkQueueFamilyProperties> QueueFamilies;
 
-        uint32_t GraphicsQueueIndex = UINT32_MAX;
-        uint32_t PresentQueueIndex = UINT32_MAX;
+        uint32 GraphicsQueueIndex = UINT32_MAX;
+        uint32 PresentQueueIndex = UINT32_MAX;
 
         bool IsSuitable = false;
     };
@@ -54,7 +54,7 @@ namespace Wl
 
         bool SelectQueueFamilies();
 
-        bool IsValidQueueFamily(const VkQueueFamilyProperties& queueFamilyProperties, int32_t queueFamilyIndex);
+        bool IsValidQueueFamily(const VkQueueFamilyProperties& queueFamilyProperties, int32 queueFamilyIndex);
 
         bool IsPropertiesSuitable() const;
 

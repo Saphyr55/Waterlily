@@ -43,7 +43,7 @@ static bool PersistAsset(FileSystem& fileSystem, StringRef output, SharedPtr<Ass
     return false;
 }
 
-static int32_t StartConsole()
+static int32 StartConsole()
 {
     WL_LOG_INFO("ACP", "Build started");
 

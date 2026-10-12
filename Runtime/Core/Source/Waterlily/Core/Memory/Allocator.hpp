@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstddef>
+#include "Waterlily/Core/Defines.hpp"
 
 namespace Wl
 {
@@ -8,8 +8,8 @@ namespace Wl
     class Allocator
     {
     public:
-        virtual void* Allocate(size_t size, size_t alignment = alignof(std::max_align_t)) = 0;
-        virtual void Deallocate(void* memory, size_t size, size_t alignment = alignof(std::max_align_t)) = 0;
+        virtual void* Allocate(usize size, usize alignment = alignof(std::max_align_t)) = 0;
+        virtual void Deallocate(void* memory, usize size, usize alignment = alignof(std::max_align_t)) = 0;
     };
 
 }// namespace Wl

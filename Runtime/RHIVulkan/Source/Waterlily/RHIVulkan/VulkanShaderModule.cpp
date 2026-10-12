@@ -7,7 +7,7 @@
 namespace Wl
 {
 
-    VulkanShaderModule::VulkanShaderModule(const Array<uint8_t>& byteCode)
+    VulkanShaderModule::VulkanShaderModule(const Array<uint8>& byteCode)
         : m_byteCode(byteCode)
         , handle_(VK_NULL_HANDLE)
     {
@@ -24,7 +24,7 @@ namespace Wl
         VkShaderModuleCreateInfo shaderModuleCreateInfo = {};
         shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         shaderModuleCreateInfo.codeSize = m_byteCode.size();
-        shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(m_byteCode.data());
+        shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32*>(m_byteCode.data());
 
         WL_VULKAN_CHECK(
                 VulkanAPI::vkCreateShaderModule(context.Device, &shaderModuleCreateInfo, context.Allocator, &handle_));

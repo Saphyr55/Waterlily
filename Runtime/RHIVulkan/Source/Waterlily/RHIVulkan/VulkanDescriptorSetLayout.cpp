@@ -46,7 +46,7 @@ namespace Wl
 
         VkDescriptorSetLayoutCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        createInfo.bindingCount = static_cast<uint32_t>(vulkanBindings.size());
+        createInfo.bindingCount = static_cast<uint32>(vulkanBindings.size());
         createInfo.pBindings = vulkanBindings.data();
 
         WL_VULKAN_CHECK(VulkanAPI::vkCreateDescriptorSetLayout(context.Device,

@@ -10,26 +10,26 @@ namespace Wl
     class WL_CORE_API MemoryStream : public Stream
     {
     public:
-        virtual bool Read(uint8_t* destination, size_t nbytes) override;
+        virtual bool Read(uint8* destination, usize nbytes) override;
 
-        virtual bool Write(const uint8_t* source, size_t nbytes) override;
+        virtual bool Write(const uint8* source, usize nbytes) override;
 
         virtual bool Flush() override;
 
-        virtual int64_t Tell() override;
+        virtual int64 Tell() override;
 
-        virtual bool Seek(int64_t position) override;
+        virtual bool Seek(int64 position) override;
 
-        virtual size_t GetSize() override;
+        virtual usize GetSize() override;
 
     public:
-        MemoryStream(uint8_t* buffer, size_t size);
+        MemoryStream(uint8* buffer, usize size);
         virtual ~MemoryStream() override;
 
     private:
-        uint8_t* m_buffer;
-        size_t m_size;
-        int64_t m_head;
+        uint8* m_buffer;
+        usize m_size;
+        int64 m_head;
     };
 
 }// namespace Wl

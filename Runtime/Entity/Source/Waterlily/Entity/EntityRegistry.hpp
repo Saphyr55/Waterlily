@@ -149,14 +149,14 @@ namespace Wl
         {
             std::tuple<ComponentPool<Components>*...> pools = GetPools<Components...>();
             IComponentPool* smallest = nullptr;
-            size_t minSize = std::numeric_limits<size_t>::max();
+            usize minSize = std::numeric_limits<usize>::max();
 
             std::apply([&](auto*... poolsPtr)
             {
-                size_t sizes[] = {poolsPtr->GetStorage().GetSize()...};
+                usize sizes[] = {poolsPtr->GetStorage().GetSize()...};
                 IComponentPool* ptrs[] = {poolsPtr...};
 
-                for (size_t i = 0; i < sizeof...(Components); i++)
+                for (usize i = 0; i < sizeof...(Components); i++)
                 {
                     if (sizes[i] < minSize)
                     {
@@ -171,7 +171,7 @@ namespace Wl
 
     private:
         ComponentPoolMap m_componentPools;
-        HashMap<Entity, size_t> m_entityToIndex;
+        HashMap<Entity, usize> m_entityToIndex;
         Array<Entity> m_LivingEntities;
         Entity m_nextIndex = InvalidEntity;
     };

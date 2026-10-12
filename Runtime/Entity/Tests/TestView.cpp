@@ -79,7 +79,7 @@ TEST_CASE("View with multiple components.", "[EntityView]")
     {
         float sum_x = 0.0f;
         float sum_dx = 0.0f;
-        int32_t count = 0;
+        int32 count = 0;
 
         auto view = registry.View<Position, Velocity>();
         view.ForEach([&](Entity e, Position& pos, Velocity& vel) -> void
@@ -96,7 +96,7 @@ TEST_CASE("View with multiple components.", "[EntityView]")
 
     SECTION("Three components view")
     {
-        int32_t count = 0;
+        int32 count = 0;
 
         registry.ForEach<Position, Velocity, Health>([&](Entity e, Position& pos, Velocity& vel, Health& health) -> void
         {
@@ -134,7 +134,7 @@ TEST_CASE("View with range-based for loop.", "[EntityView]")
     {
         float sum_x = 0.0f;
         float sum_dx = 0.0f;
-        int32_t count = 0;
+        int32 count = 0;
 
         for (const auto [entity, pos, vel]: registry.View<Position, Velocity>())
         {
@@ -150,7 +150,7 @@ TEST_CASE("View with range-based for loop.", "[EntityView]")
 
     SECTION("Three components view, Range-based iteration")
     {
-        int32_t count = 0;
+        int32 count = 0;
 
         for (const auto [entity, pos, vel, h]: registry.View<Position, Velocity, Health>())
         {
@@ -192,7 +192,7 @@ TEST_CASE("View with entity modification.", "[EntityView]")
     SECTION("Remove entities during iteration")
     {
         EntityView<Position> view = registry.View<Position>();
-        int32_t count = 0;
+        int32 count = 0;
 
         view.ForEach([&](Entity e, Position& pos) -> void
         {
@@ -221,7 +221,7 @@ TEST_CASE("Empty view.", "[EntityView]")
         EntityView<Position> view = registry.View<Position>();
         REQUIRE(view.IsEmpty());
 
-        int32_t count = 0;
+        int32 count = 0;
         view.ForEach([&](Entity e, Position& pos) -> void
         {
             count++;
@@ -254,7 +254,7 @@ TEST_CASE("View after entity destruction.", "[EntityView]")
 
     REQUIRE(view.GetSize() == 1);
 
-    int32_t count = 0;
+    int32 count = 0;
     view.ForEach([&](Entity e, Position& pos) -> void
     {
         count++;

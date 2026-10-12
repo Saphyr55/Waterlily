@@ -5,7 +5,7 @@
 namespace Wl
 {
 
-    enum class SRGUpdateFrequency : uint8_t
+    enum class SRGUpdateFrequency : uint8
     {
         PerFrame,
         PerPass,

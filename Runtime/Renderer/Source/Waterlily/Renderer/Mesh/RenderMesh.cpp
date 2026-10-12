@@ -83,7 +83,7 @@ namespace Wl
             m_subMeshes.Append(item);
         }
 
-        auto createVertexBuffer = [&](ArrayView<uint8_t> data) -> RHIBuffer*
+        auto createVertexBuffer = [&](ArrayView<uint8> data) -> RHIBuffer*
         {
             RHIBufferDescription description = {};
             description.Size = data.GetSize();
@@ -106,7 +106,7 @@ namespace Wl
         uploader.Upload(mesh->Tangents.GetData(), mesh->Tangents.GetSize(), m_vertexBuffers[3], 0);
 
         RHIBufferDescription indexBufferDescription = {};
-        indexBufferDescription.Size = mesh->Indices.GetSize() * sizeof(uint32_t);
+        indexBufferDescription.Size = mesh->Indices.GetSize() * sizeof(uint32);
         indexBufferDescription.Usage = RHIBufferUsageFlags::Index | RHIBufferUsageFlags::TransferDst;
         indexBufferDescription.SharingMode = RHISharingMode::Private;
         indexBufferDescription.MemoryUsage = RHIMemoryUsage::Device;
@@ -137,7 +137,7 @@ namespace Wl
     {
         Array<RHIDrawIndexedCommand> commands(m_subMeshes.GetSize());
 
-        for (uint32_t itemIndex = 0; itemIndex < m_subMeshes.GetSize(); itemIndex++)
+        for (uint32 itemIndex = 0; itemIndex < m_subMeshes.GetSize(); itemIndex++)
         {
             RenderSubMesh& submesh = m_subMeshes[itemIndex];
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "TypeInfo.hpp"
 #include "Waterlily/Core/Asserts.hpp"
 #include "Waterlily/Core/Containers/HashMap.hpp"
 #include "Waterlily/Core/Containers/Set.hpp"
@@ -11,14 +10,13 @@
 #include "Waterlily/Core/Object/Type.hpp"
 #include "Waterlily/Core/String/StringID.hpp"
 
-
 namespace Wl
 {
 
     struct TypeTable
     {
         OrderedSet<MemberInfo> memberInfoMap;
-        HashMap<StringID, uint32_t> nameToOffsetMap;
+        HashMap<StringID, uint32> nameToOffsetMap;
         HashMap<StringID, MethodInfo> methodMap;
         HashMap<StringID, PropertyInfo> propertyMap;
         Function<void()> registerBindings;
@@ -141,9 +139,9 @@ namespace Wl
                 Type objectType,
                 const TypeDescriptor& typeDesc,
                 const StringID& name,
-                uint32_t offset,
-                uint32_t size,
-                uint32_t align);
+                uint32 offset,
+                uint32 size,
+                uint32 align);
 
         static HashMap<IdentifierType, TypeInfo>& GetTypes();
         static TypeTable& GetTypeTable(Type type);
@@ -169,7 +167,7 @@ namespace Wl
     T& MetaTable::ReadMember(ObjectType& object, const StringID& name)
     {
         const MemberInfo& info = GetMemberInfo(TypeOf<ObjectType>(), name);
-        uint8_t* base = reinterpret_cast<uint8_t*>(&object);
+        uint8* base = reinterpret_cast<uint8*>(&object);
         T& value = *reinterpret_cast<T*>(base + info.offset);
         return value;
     }
@@ -222,11 +220,6 @@ namespace Wl
         TypeTable typeTable = {};
         typeTable.registerBindings = []()
         {
-            const TypeInfo& info = MetaTable::GetTypeInfo<T>();
-            const char* typeName = info.name.GetData();
-
-            WL_LOG_DEBUG("MetaTable", "Registering type: %s", typeName);
-
             if constexpr (requires { T::_RegisterBindings(); })
             {
                 T::_RegisterBindings();
@@ -247,10 +240,10 @@ namespace Wl
     inline void MetaTable::RegisterMember(const StringID& name, MemberType ObjectType::* member)
     {
         Type objectType = MetaTable::TypeOf<ObjectType>();
-        size_t offset = MemberOffset(member);
+        usize offset = MemberOffset(member);
         TypeDescriptor typeDesc = MetaTable::TypeDescriptorOf<MemberType>();
-        size_t size = sizeof(MemberType);
-        size_t align = alignof(MemberType);
+        usize size = sizeof(MemberType);
+        usize align = alignof(MemberType);
         RegisterMemberImpl(objectType, typeDesc, name, offset, size, align);
     }
 

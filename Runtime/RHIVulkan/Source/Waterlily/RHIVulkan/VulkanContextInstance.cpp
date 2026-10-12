@@ -62,9 +62,9 @@ namespace Wl
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.pApplicationInfo = &applicationInfo;
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.enabledLayerCount = static_cast<uint32>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(desiredExtensions.size());
+        createInfo.enabledExtensionCount = static_cast<uint32>(desiredExtensions.size());
         createInfo.ppEnabledExtensionNames = desiredExtensions.data();
 
         WL_LOG_INFO("Vulkan", "Creating Vulkan instance with the following extensions:");

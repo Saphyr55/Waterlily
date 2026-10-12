@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Waterlily/Core/Defines.hpp"
+
 #include <type_traits>
 #include <utility>
 
@@ -15,10 +17,10 @@ namespace Wl
     template<typename... Ts>
     struct TypeList
     {
-        static constexpr size_t npos = static_cast<size_t>(-1);
-        static constexpr size_t Size = sizeof...(Ts);
+        static constexpr usize npos = static_cast<usize>(-1);
+        static constexpr usize Size = sizeof...(Ts);
 
-        static constexpr size_t GetSize()
+        static constexpr usize GetSize()
         {
             return Size;
         }
@@ -34,16 +36,16 @@ namespace Wl
         }
 
         template<typename T>
-        static constexpr size_t Count()
+        static constexpr usize Count()
         {
-            return (size_t(std::is_same_v<T, Ts>) + ... + size_t(0));
+            return (usize(std::is_same_v<T, Ts>) + ... + usize(0));
         }
 
         template<typename T>
-        static constexpr size_t IndexOf()
+        static constexpr usize IndexOf()
         {
             constexpr bool matches[] = {std::is_same_v<T, Ts>..., false};
-            for (size_t i = 0; i < Size; ++i)
+            for (usize i = 0; i < Size; ++i)
             {
                 if (matches[i])
                 {
@@ -77,9 +79,9 @@ namespace Wl
         template<typename F>
         static constexpr void ForEachIndexed(F&& f)
         {
-            [&]<size_t... I>(std::index_sequence<I...>)
+            [&]<usize... I>(std::index_sequence<I...>)
             {
-                (f(TypeTag<Ts> {}, std::integral_constant<size_t, I> {}), ...);
+                (f(TypeTag<Ts> {}, std::integral_constant<usize, I> {}), ...);
             }(std::index_sequence_for<Ts...> {});
         }
     };

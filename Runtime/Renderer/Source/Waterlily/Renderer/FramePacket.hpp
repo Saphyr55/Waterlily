@@ -19,7 +19,7 @@ namespace Wl
         RenderAllocation DirectionalLightAllocation;
         RenderAllocation CountersAllocation;
 
-        uint32_t DrawCount = 0;
+        uint32 DrawCount = 0;
     };
 
 }// namespace Wl

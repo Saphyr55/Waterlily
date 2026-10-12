@@ -36,7 +36,7 @@ namespace Wl
         m_pendings.Clear();
     }
 
-    RenderAllocation UploadScheduler::Upload(void* data, size_t size, RHIBuffer* dstBuffer, size_t dstOffset)
+    RenderAllocation UploadScheduler::Upload(void* data, usize size, RHIBuffer* dstBuffer, usize dstOffset)
     {
         RenderAllocation alloc = m_stagingAllocator.Write(data, size);
 

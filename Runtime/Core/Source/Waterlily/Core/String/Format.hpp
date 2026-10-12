@@ -11,7 +11,7 @@ namespace Wl
     template<typename... Args>
     inline String Format(StringRef format, Args&&... args)
     {
-        int32_t size = std::snprintf(nullptr, 0, format, std::forward<Args>(args)...);
+        int32 size = std::snprintf(nullptr, 0, format, std::forward<Args>(args)...);
 
         if (size < 0)
         {
@@ -41,7 +41,7 @@ namespace Wl
         }
 
         String buffer;
-        buffer.Resize(static_cast<size_t>(size));
+        buffer.Resize(static_cast<usize>(size));
         size = std::vsnprintf(buffer.data(), buffer.GetSize() + 1, format, args);
 
         WL_CHECK(size == buffer.GetSize());

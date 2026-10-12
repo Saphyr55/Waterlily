@@ -30,10 +30,10 @@ namespace Wl
         FrameGraphBufferHandle CreateBuffer(const FrameGraphBufferInfo& info);
 
         FrameGraphTextureHandle ImportTexture(RHITexture* texture, RHITextureView* view);
-        FrameGraphBufferHandle ImportBuffer(RHIBuffer* buffer, size_t range, size_t offset);
+        FrameGraphBufferHandle ImportBuffer(RHIBuffer* buffer, usize range, usize offset);
 
         void UpdateImportedTexture(FrameGraphTextureHandle handle, RHITexture* texture, RHITextureView* view);
-        void UpdateImportedBuffer(FrameGraphBufferHandle handle, RHIBuffer* buffer, size_t range, size_t offset);
+        void UpdateImportedBuffer(FrameGraphBufferHandle handle, RHIBuffer* buffer, usize range, usize offset);
 
         void AddOutput(FrameGraphTextureHandle& handle);
 
@@ -86,12 +86,12 @@ namespace Wl
             return m_passRenderingInfos[pass.GetIndex()];
         }
 
-        inline const Array<size_t>& GetSortedPasses() const
+        inline const Array<usize>& GetSortedPasses() const
         {
             return m_sortedPasses;
         }
 
-        inline Array<size_t> GetSortedPasses()
+        inline Array<usize> GetSortedPasses()
         {
             return m_sortedPasses;
         }
@@ -158,10 +158,10 @@ namespace Wl
 
         HashSet<FrameGraphTextureHandle> m_outputs;
 
-        HashMap<size_t, RHIGraphicsPipelineRenderingInfo> m_passRenderingInfos;
-        HashMap<StringID, size_t> m_passNames;
+        HashMap<usize, RHIGraphicsPipelineRenderingInfo> m_passRenderingInfos;
+        HashMap<StringID, usize> m_passNames;
         Array<FrameGraphPass> m_passes;
-        Array<size_t> m_sortedPasses;
+        Array<usize> m_sortedPasses;
 
         FrameGraphPhysicalTexturePool m_texturePool;
         HashMap<const RHISwapchainBuffer*, bool> isFirstFrame;

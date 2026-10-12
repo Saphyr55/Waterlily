@@ -11,12 +11,12 @@ namespace Wl
     struct AlignedStorage
     {
 
-        static constexpr const size_t Size = sizeof(T);
-        static constexpr const size_t Alignment = alignof(T);
+        static constexpr const usize Size = sizeof(T);
+        static constexpr const usize Alignment = alignof(T);
 
         struct Type
         {
-            alignas(Alignment) uint8_t Storage[Size];
+            alignas(Alignment) uint8 Storage[Size];
 
             void Emplace(const T& value)
             {

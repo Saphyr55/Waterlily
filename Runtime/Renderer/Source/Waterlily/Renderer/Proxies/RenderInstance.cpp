@@ -5,15 +5,15 @@
 namespace Wl
 {
 
-    void RenderInstanceLayout::UpdateData(uint8_t* dst, const RenderSubMesh& src)
+    void RenderInstanceLayout::UpdateData(uint8* dst, const RenderSubMesh& src)
     {
         Memory::Copy(dst + ModelOffset, &src.Model, sizeof(decltype(src.Model)));
         Memory::Copy(dst + MaterialOffset, &src.Material, sizeof(decltype(src.Material)));
     }
 
-    RenderInstanceLayout RenderInstance::CreateLayout(size_t alignment)
+    RenderInstanceLayout RenderInstance::CreateLayout(usize alignment)
     {
-        size_t offset = 0;
+        usize offset = 0;
         RenderInstanceLayout layout;
 
         offset = MemberOffsetAlignUp<Matrix4f>(offset, alignment, layout.ModelOffset);

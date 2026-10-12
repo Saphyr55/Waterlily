@@ -2,7 +2,6 @@
 
 #include "Waterlily/Core/CoreExports.hpp"
 #include "Waterlily/Core/Object/MetaTable.hpp"
-#include <cstdio>
 
 #define WL_DETAIL_OBJECT_AUTO_REGISTRANT(TypeName, InheritTypeName) \
     AutoRegistrantObjectType<TypeName, InheritTypeName> _AutoRegistrant##TypeName

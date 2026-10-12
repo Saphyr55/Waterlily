@@ -52,14 +52,14 @@ namespace Wl
     void MainUnloadManifest()
     {
         Engine& engine = Engine::GetInstance();
-        for (int32_t i = engine.GetOrderedModuleInformations().GetSize() - 1; i >= 0; i--)
+        for (int32 i = engine.GetOrderedModuleInformations().GetSize() - 1; i >= 0; i--)
         {
             const ModuleInformation* info = engine.GetOrderedModuleInformations()[i];
             ModuleRegistry::GetInstance().UnloadModule(info->Name);
         }
     }
 
-    bool MainPreLaunch(int32_t argc, const char** argv)
+    bool MainPreLaunch(int32 argc, const char** argv)
     {
         MetaTable::Init();
         Logger::RegisterWriter(ConsoleLoggerWriter::Name, MakeShared<ConsoleLoggerWriter>());
@@ -82,9 +82,9 @@ namespace Wl
         MetaTable::Shutdown();
     }
 
-    int32_t MainConsole(int32_t argc, const char* argv[], MainConsoleCallback callback)
+    int32 MainConsole(int32 argc, const char* argv[], MainConsoleCallback callback)
     {
-        int32_t result = EXIT_FAILURE;
+        int32 result = EXIT_FAILURE;
 
         if (!MainPreLaunch(argc, argv))
         {
@@ -107,9 +107,9 @@ namespace Wl
         return result;
     }
 
-    int32_t MainApplication(int32_t argc, const char* argv[])
+    int32 MainApplication(int32 argc, const char* argv[])
     {
-        int32_t result = EXIT_FAILURE;
+        int32 result = EXIT_FAILURE;
 
         if (!MainPreLaunch(argc, argv))
         {

@@ -16,11 +16,11 @@ namespace Wl
 
         bool IsConnected() const;
 
-        size_t GetID() const;
+        usize GetID() const;
 
     public:
         Connection() = default;
-        Connection(size_t id, Signal<ArgumentTypes...>* signal);
+        Connection(usize id, Signal<ArgumentTypes...>* signal);
         ~Connection();
 
         Connection(const Connection&) = delete;
@@ -30,7 +30,7 @@ namespace Wl
         Connection& operator=(Connection&& other) noexcept = default;
 
     private:
-        size_t m_id = 0;
+        usize m_id = 0;
         Signal<ArgumentTypes...>* m_signalPtr = nullptr;
         bool m_isConnected = false;
     };
@@ -53,13 +53,13 @@ namespace Wl
     }
 
     template<typename... Args>
-    size_t Connection<Args...>::GetID() const
+    usize Connection<Args...>::GetID() const
     {
         return m_id;
     }
 
     template<typename... ArgumentTypes>
-    Connection<ArgumentTypes...>::Connection(size_t id, Signal<ArgumentTypes...>* signal)
+    Connection<ArgumentTypes...>::Connection(usize id, Signal<ArgumentTypes...>* signal)
         : m_id(id)
         , m_signalPtr(signal)
         , m_isConnected(true)

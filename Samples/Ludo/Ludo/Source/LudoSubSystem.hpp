@@ -54,7 +54,7 @@ namespace Ludo
         // Render Data.
         SharedPtr<RenderMesh> m_sponzaMesh = nullptr;
         RHIBuffer* m_indirectBuffer = nullptr;
-        size_t m_indirectBufferCount = 0;
+        usize m_indirectBufferCount = 0;
     };
 
 }// namespace Wl

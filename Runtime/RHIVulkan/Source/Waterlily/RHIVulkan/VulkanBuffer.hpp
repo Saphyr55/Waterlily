@@ -16,31 +16,31 @@ namespace Wl
 
         virtual RHISharingMode GetSharingMode() override;
 
-        virtual size_t GetSize() override;
+        virtual usize GetSize() override;
 
         virtual void Bind() override;
 
-        virtual void* Map(size_t offset = 0, size_t size = 0) override;
+        virtual void* Map(usize offset = 0, usize size = 0) override;
 
         virtual void Unmap() override;
 
-        virtual void Update(const void* data, size_t size, size_t offset = 0) override;
+        virtual void Update(const void* data, usize size, usize offset = 0) override;
 
-        void FlushWhenIsHost(size_t offset, size_t size);
+        void FlushWhenIsHost(usize offset, usize size);
 
         VkMemoryRequirements GetMemoryRequirements();
 
-        Array<uint32_t> GetQueueFamilyIndices();
+        Array<uint32> GetQueueFamilyIndices();
 
         void Create(const RHIBufferDescription& description);
         void Destroy();
 
-        inline size_t GetID() const
+        inline usize GetID() const
         {
             return m_id;
         }
 
-        inline void SetID(size_t id)
+        inline void SetID(usize id)
         {
             m_id = id;
         }
@@ -57,7 +57,7 @@ namespace Wl
         VkBuffer m_buffer = VK_NULL_HANDLE;
         VmaAllocation m_allocation = VK_NULL_HANDLE;
         void* m_mapped = nullptr;
-        size_t m_id = 0;
+        usize m_id = 0;
     };
 
 }// namespace Wl

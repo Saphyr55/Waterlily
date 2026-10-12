@@ -23,9 +23,9 @@ namespace Wl
 
     struct RHIDispatchCommand : RHICommand
     {
-        uint32_t GroupCountX;
-        uint32_t GroupCountY;
-        uint32_t GroupCountZ;
+        uint32 GroupCountX;
+        uint32 GroupCountY;
+        uint32 GroupCountZ;
     };
 
     /**
@@ -33,36 +33,36 @@ namespace Wl
      */
     struct RHIDrawCommand : RHICommand
     {
-        uint32_t VertexCount;  // Number of vertices to draw.
-        uint32_t InstanceCount;// Number of instances to draw.
-        uint32_t FirstVertex;  // Index of the first vertex.
-        uint32_t FirstInstance;// Index of the first instance.
+        uint32 VertexCount;  // Number of vertices to draw.
+        uint32 InstanceCount;// Number of instances to draw.
+        uint32 FirstVertex;  // Index of the first vertex.
+        uint32 FirstInstance;// Index of the first instance.
     };
 
     struct RHIDrawIndexedCommand : RHICommand
     {
-        uint32_t IndexCount = 0;
-        uint32_t InstanceCount = 1;
-        uint32_t FirstIndex = 0;
-        uint32_t VertexOffset = 0;
-        uint32_t FirstInstance = 0;
+        uint32 IndexCount = 0;
+        uint32 InstanceCount = 1;
+        uint32 FirstIndex = 0;
+        uint32 VertexOffset = 0;
+        uint32 FirstInstance = 0;
     };
 
     struct RHIDrawIndexedIndirectCommand : RHICommand
     {
         RHIBuffer* Buffer;
-        size_t Offset;
-        uint32_t DrawCount;
-        uint32_t Stride;
+        usize Offset;
+        uint32 DrawCount;
+        uint32 Stride;
     };
 
     struct RHICopyBufferCommand : RHICommand
     {
         RHIBuffer* Source;
-        size_t SourceOffset = 0;
+        usize SourceOffset = 0;
         RHIBuffer* Destination;
-        size_t DestinationOffset = 0;
-        size_t Size = 0;
+        usize DestinationOffset = 0;
+        usize Size = 0;
     };
 
     struct RHICopyBufferToTextureCommand : RHICommand
@@ -77,22 +77,22 @@ namespace Wl
         RHITexture* Destination;
         RHITextureLayout SourceLayout = RHITextureLayout::TransferSrc;
         RHITextureLayout DestinationLayout = RHITextureLayout::TransferDst;
-        uint32_t Width = 2;
-        uint32_t Height = 2;
+        uint32 Width = 2;
+        uint32 Height = 2;
         RHIFilter Filter = RHIFilter::Linear;
     };
 
     struct RHIShaderConstants
     {
         const void* Data = nullptr;
-        uint32_t Size = 0;
-        uint32_t Offset = 0;
+        uint32 Size = 0;
+        uint32 Offset = 0;
         RHIShaderStage Stage = RHIShaderStage::AllGraphics;
 
         RHIShaderConstants() = default;
         RHIShaderConstants(const void* data,
-                           uint32_t size,
-                           uint32_t offset = 0,
+                           uint32 size,
+                           uint32 offset = 0,
                            RHIShaderStage stage = RHIShaderStage::AllGraphics)
             : Data(data)
             , Size(size)
@@ -107,8 +107,8 @@ namespace Wl
         RHIBuffer* Buffer;
         RHIBufferUsageFlags SourceUsage;
         RHIBufferUsageFlags DestinationUsage;
-        size_t Offset;
-        size_t Size;
+        usize Offset;
+        usize Size;
     };
 
     struct RHITextureBarrier
@@ -121,11 +121,11 @@ namespace Wl
         RHITextureUsageFlags SourceUsage;
         RHITextureUsageFlags DestinationUsage;
 
-        uint32_t BaseMip = 0;
-        uint32_t LevelCount = 0;
+        uint32 BaseMip = 0;
+        uint32 LevelCount = 0;
 
-        uint32_t BaseLayer = 0;
-        uint32_t LayerCount = 0;
+        uint32 BaseLayer = 0;
+        uint32 LayerCount = 0;
     };
 
     /**
@@ -138,7 +138,7 @@ namespace Wl
         Rect2D Area = {};
         Vector4f Color = Vector4f(0.0f);
         float Depth = 1.0f;
-        uint32_t Stencil = 0;
+        uint32 Stencil = 0;
     };
 
     struct RHIRenderingAttachmentInfo
@@ -156,7 +156,7 @@ namespace Wl
         Option<RHIRenderingAttachmentInfo> DepthAttachment = Option<RHIRenderingAttachmentInfo>::None();
         Option<RHIRenderingAttachmentInfo> StencilAttachment = Option<RHIRenderingAttachmentInfo>::None();
         Rect2D RenderArea;
-        uint32_t LayerCount = 1;
+        uint32 LayerCount = 1;
     };
 
     /**
@@ -195,7 +195,7 @@ namespace Wl
          */
         virtual void BindPipeline(RHIPipeline* pipeline) = 0;
 
-        virtual void BindSRG(RHIPipeline* pipeline, const Array<RHIShaderResourceGroup*>& groups, size_t groupIndex) = 0;
+        virtual void BindSRG(RHIPipeline* pipeline, const Array<RHIShaderResourceGroup*>& groups, usize groupIndex) = 0;
 
         virtual void SetShaderConstants(RHIPipeline* pipeline, const RHIShaderConstants& constants) = 0;
 
@@ -213,7 +213,7 @@ namespace Wl
          * @param scissors Pointer to an array of scissor rectangles.
          * @param count Number of scissor rectangles.
          */
-        virtual void SetScissors(const Rect2D* scissors, uint32_t count) = 0;
+        virtual void SetScissors(const Rect2D* scissors, uint32 count) = 0;
         virtual void SetScissor(const Rect2D& scissor)
         {
             SetScissors(&scissor, 1);
@@ -224,7 +224,7 @@ namespace Wl
          * @param viewports Pointer to an array of viewports.
          * @param count Number of viewports.
          */
-        virtual void SetViewports(const Viewport* viewports, uint32_t count) = 0;
+        virtual void SetViewports(const Viewport* viewports, uint32 count) = 0;
         virtual void SetViewport(const Viewport& viewport)
         {
             SetViewports(&viewport, 1);
@@ -260,7 +260,7 @@ namespace Wl
     struct RHICommandAllocatorDescription
     {
         SharedPtr<RHICommandQueue> CommandQueue;
-        uint32_t Count = 1;
+        uint32 Count = 1;
     };
 
     /**
@@ -274,7 +274,7 @@ namespace Wl
          * @param index Index identifying which buffer to open.
          * @return Handle to the opened command buffer.
          */
-        virtual RHICommandBuffer* OpenCommandBuffer(uint32_t index = 0) = 0;
+        virtual RHICommandBuffer* OpenCommandBuffer(uint32 index = 0) = 0;
 
         /**
          * @brief Reset a previously recorded command buffer for reuse.

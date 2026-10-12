@@ -1,7 +1,7 @@
 #include "Array.hpp"
 #include "HashMap.hpp"
 
-int32_t main()
+int32 main()
 {
     RunHashMapBenchmarks();
 

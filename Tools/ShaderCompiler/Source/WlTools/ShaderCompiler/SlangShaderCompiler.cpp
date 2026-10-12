@@ -74,7 +74,7 @@ namespace Wl
         WL_RETURN_OBJECT_WHEN(!spvFileResult.HasValue(), ShaderCompileResult::Failed);
 
         SharedPtr<File> spvFileHandle = spvFileResult.GetValue();
-        spvFileHandle->Write(reinterpret_cast<const uint8_t*>(kernelBlob->getBufferPointer()), kernelBlob->getBufferSize());
+        spvFileHandle->Write(reinterpret_cast<const uint8*>(kernelBlob->getBufferPointer()), kernelBlob->getBufferSize());
 
         Shader shader(SPIRVShader(ShaderStageToRHI(desc.Stage), spvFileHandle->ReadAllBytes()), desc.EntryPoint, desc.Stage);
         spvFileHandle->Close();

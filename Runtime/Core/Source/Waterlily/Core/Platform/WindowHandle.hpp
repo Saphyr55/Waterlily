@@ -5,15 +5,15 @@
 namespace Wl
 {
 
-    using WindowHandle = uint32_t;
+    using WindowHandle = uint32;
 
     struct WindowProperties
     {
         StringRef Title;
-        uint32_t Width;
-        uint32_t Height;
-        uint32_t X;
-        uint32_t Y;
+        uint32 Width;
+        uint32 Height;
+        uint32 X;
+        uint32 Y;
     };
 
 }// namespace Wl

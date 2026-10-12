@@ -16,32 +16,32 @@ namespace Wl
         virtual RHIShaderResourceGroup* AllocateSRG(RHIShaderResourceGroupLayout* layout) override;
         virtual void DeallocateSRG(RHIShaderResourceGroup* group) override;
 
-        virtual RHIShaderResourceGroup* GetSRG(size_t poolIndex) override;
+        virtual RHIShaderResourceGroup* GetSRG(usize poolIndex) override;
 
         virtual void Reset() override;
 
-        virtual size_t GetCount() override
+        virtual usize GetCount() override
         {
             return m_allocatedGroups.size();
         }
 
-        virtual uint32_t GetMaxCount() override
+        virtual uint32 GetMaxCount() override
         {
             return m_maxGroupsCount;
         }
 
-        void Create(uint32_t maxGroups, const Array<RHIShaderResourceBinding>& totalBindings);
+        void Create(uint32 maxGroups, const Array<RHIShaderResourceBinding>& totalBindings);
         void Destroy();
 
         VulkanShaderResourceGroupPool() = default;
         virtual ~VulkanShaderResourceGroupPool() override = default;
 
     private:
-        HashSet<size_t> m_freeGroups;
+        HashSet<usize> m_freeGroups;
         Array<VulkanShaderResourceGroup> m_allocatedGroups;
         VkDescriptorPool m_handle = VK_NULL_HANDLE;
-        uint32_t m_maxGroupsCount = 0;
-        size_t m_nextIndexToAllocate = 0;
+        uint32 m_maxGroupsCount = 0;
+        usize m_nextIndexToAllocate = 0;
     };
 
 }// namespace Wl

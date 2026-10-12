@@ -1,4 +1,5 @@
-#include "Waterlily/Core/Serialization/JSONArchive.hpp"
+#include "Waterlily/Core/Serialization/Json/JsonOutputArchive.hpp"
+#include "Waterlily/Core/Serialization/Json/JsonInputArchive.hpp"
 
 #include <catch2/catch_all.hpp>
 
@@ -6,7 +7,7 @@ using namespace Wl;
 
 TEST_CASE("JSON archive round trip")
 {
-    JSONOutputArchive output;
+    JsonOutputArchive output;
 
     output.BeginObject("player");
     {
@@ -22,11 +23,11 @@ TEST_CASE("JSON archive round trip")
     }
     output.EndObject();
 
-    JSONInputArchive input(output.GetJson());
+    JsonInputArchive input(output.GetJson());
 
     REQUIRE(input.BeginObject("player"));
 
-    int32_t health = 0;
+    int32 health = 0;
     bool alive = false;
 
     REQUIRE(input.Read("health", health));
@@ -34,9 +35,9 @@ TEST_CASE("JSON archive round trip")
 
     REQUIRE(input.BeginArray("inventory") == 3);
     {
-        int32_t item1 = 0;
-        int32_t item2 = 0;
-        int32_t item3 = 0;
+        int32 item1 = 0;
+        int32 item2 = 0;
+        int32 item3 = 0;
 
         REQUIRE(input.Read("", item1));
         REQUIRE(input.Read("", item2));
@@ -55,7 +56,7 @@ TEST_CASE("JSON archive round trip")
 
 TEST_CASE("JSON archive output")
 {
-    JSONOutputArchive archive;
+    JsonOutputArchive archive;
 
     archive.BeginObject("player");
     archive.Write("health", 100);
@@ -63,7 +64,7 @@ TEST_CASE("JSON archive output")
     archive.EndObject();
 
     CHECK(archive.GetJson() ==
-          JSONOutputArchive::Json {
+          JsonOutputArchive::Json {
                   {
                    "player",
                    {

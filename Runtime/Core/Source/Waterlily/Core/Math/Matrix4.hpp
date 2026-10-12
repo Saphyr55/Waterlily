@@ -14,11 +14,11 @@ namespace Wl
 
         constexpr Vector4<R> operator*(const Vector4<R>& v) const;
 
-        constexpr Vector4<R>& operator[](size_t i);
+        constexpr Vector4<R>& operator[](usize i);
 
-        constexpr const Vector4<R>& operator[](size_t i) const;
+        constexpr const Vector4<R>& operator[](usize i) const;
 
-        constexpr Vector4<R> Col(uint32_t index) const;
+        constexpr Vector4<R> Col(uint32 index) const;
 
         constexpr Matrix4() = default;
 
@@ -78,13 +78,13 @@ namespace Wl
     template<IsReal RealType>
     inline void operator<<(OutputStream& stream, const Matrix4<RealType>& v)
     {
-        stream.Write(reinterpret_cast<const uint8_t*>(v), sizeof(Matrix4<RealType>));
+        stream.Write(reinterpret_cast<const uint8*>(v), sizeof(Matrix4<RealType>));
     }
 
     template<IsReal RealType>
     inline void operator>>(InputStream& stream, Matrix4<RealType>& v)
     {
-        stream.Read(reinterpret_cast<uint8_t*>(v), sizeof(Matrix4<RealType>));
+        stream.Read(reinterpret_cast<uint8*>(v), sizeof(Matrix4<RealType>));
     }
 
     using Matrix4f = Matrix4<float>;
@@ -227,7 +227,7 @@ namespace Wl
     }
 
     template<IsReal R>
-    constexpr Vector4<R> Matrix4<R>::Col(uint32_t index) const
+    constexpr Vector4<R> Matrix4<R>::Col(uint32 index) const
     {
         return (*this)[index];
     }
@@ -276,12 +276,12 @@ namespace Wl
     constexpr Matrix4<R> Matrix4<R>::operator*(const Matrix4<R>& m) const
     {
         Matrix4<R> result(0);
-        for (int8_t i = 0; i < 4; i++)
+        for (int8 i = 0; i < 4; i++)
         {
-            for (int8_t j = 0; j < 4; j++)
+            for (int8 j = 0; j < 4; j++)
             {
                 R r_ji {};
-                for (int8_t k = 0; k < 4; k++)
+                for (int8 k = 0; k < 4; k++)
                 {
                     r_ji += m[j][k] * m_value[k][i];
                 }
@@ -301,13 +301,13 @@ namespace Wl
     }
 
     template<IsReal R>
-    constexpr const Vector4<R>& Matrix4<R>::operator[](size_t i) const
+    constexpr const Vector4<R>& Matrix4<R>::operator[](usize i) const
     {
         return m_value[i];
     }
 
     template<IsReal R>
-    constexpr Vector4<R>& Matrix4<R>::operator[](size_t i)
+    constexpr Vector4<R>& Matrix4<R>::operator[](usize i)
     {
         return m_value[i];
     }

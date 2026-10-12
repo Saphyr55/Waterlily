@@ -45,13 +45,13 @@ namespace Wl
 
         bool useDynamicRendering = renderPass == nullptr;
 
-        uint32_t colorAttachmentCount = 0;
+        uint32 colorAttachmentCount = 0;
         Array<VkFormat> dynamicColorAttachmentFormats;
         VkFormat dynamicDepthAttachmentFormat = VK_FORMAT_UNDEFINED;
         VkFormat dynamicStencilAttachmentFormat = VK_FORMAT_UNDEFINED;
         if (useDynamicRendering)
         {
-            colorAttachmentCount = static_cast<uint32_t>(m_description.RenderingInfo.ColorAttachmentFormats.GetSize());
+            colorAttachmentCount = static_cast<uint32>(m_description.RenderingInfo.ColorAttachmentFormats.GetSize());
 
             dynamicColorAttachmentFormats.Resize(colorAttachmentCount);
             Wl::Transform(m_description.RenderingInfo.ColorAttachmentFormats.begin(),
@@ -64,7 +64,7 @@ namespace Wl
         }
         else
         {
-            colorAttachmentCount = static_cast<uint32_t>(renderPass->GetDescription().ColorAttachmentDecriptions.GetSize());
+            colorAttachmentCount = static_cast<uint32>(renderPass->GetDescription().ColorAttachmentDecriptions.GetSize());
         }
 
         SPIRVShader& vertexCompiledShader = m_description.VertexShaderInfo.Shader;
@@ -175,7 +175,7 @@ namespace Wl
 
         VkPipelineDynamicStateCreateInfo pipelineDymanicStateCreateInfo = {};
         pipelineDymanicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        pipelineDymanicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.GetSize());
+        pipelineDymanicStateCreateInfo.dynamicStateCount = static_cast<uint32>(dynamicStates.GetSize());
         pipelineDymanicStateCreateInfo.pDynamicStates = dynamicStates.GetData();
 
         VkViewport viewport = {};
@@ -186,13 +186,13 @@ namespace Wl
         viewport.minDepth = m_description.ViewportInfo.Viewport.MinDepth;
         viewport.maxDepth = m_description.ViewportInfo.Viewport.MaxDepth;
 
-        int32_t offset_x = m_description.ViewportInfo.Scissor.X;
-        int32_t offset_y = m_description.ViewportInfo.Scissor.Y;
+        int32 offset_x = m_description.ViewportInfo.Scissor.X;
+        int32 offset_y = m_description.ViewportInfo.Scissor.Y;
         VkRect2D scissor = {};
         scissor.offset = {offset_x, offset_y};
         scissor.extent = {
-                static_cast<uint32_t>(m_description.ViewportInfo.Scissor.Width),
-                static_cast<uint32_t>(m_description.ViewportInfo.Scissor.Height),
+                static_cast<uint32>(m_description.ViewportInfo.Scissor.Width),
+                static_cast<uint32>(m_description.ViewportInfo.Scissor.Height),
         };
 
         VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {};
@@ -205,7 +205,7 @@ namespace Wl
         Array<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
         colorBlendAttachments.Resize(colorAttachmentCount);
 
-        for (size_t i = 0; i < colorBlendAttachments.GetSize(); i++)
+        for (usize i = 0; i < colorBlendAttachments.GetSize(); i++)
         {
             VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState = {};
             pipelineColorBlendAttachmentState.colorWriteMask =

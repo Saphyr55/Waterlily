@@ -20,7 +20,7 @@ namespace Wl
 
         m_frameInFlightFences.Resize(m_swapchain->GetBuffers().GetSize(), nullptr);
 
-        constexpr uint32_t renderFrameFramebufferIndex = 0;
+        constexpr uint32 renderFrameFramebufferIndex = 0;
 
         const RHIDeviceProperties& properties = m_device->GetDeviceProperties();
 
@@ -35,7 +35,7 @@ namespace Wl
 
             frame.FrameAvailableSemaphore = m_device->CreateSemaphore();
 
-            for (size_t i = 0; i < m_swapchain->GetBuffers().GetSize(); i++)
+            for (usize i = 0; i < m_swapchain->GetBuffers().GetSize(); i++)
             {
                 frame.RenderFinishedSemaphore.Append(m_device->CreateSemaphore());
             }
@@ -68,18 +68,18 @@ namespace Wl
         }
     }
 
-    void FrameContext::Resize(uint32_t width, uint32_t height)
+    void FrameContext::Resize(uint32 width, uint32 height)
     {
         m_device->WaitIdle();
         m_device->RecreateSwapchain(m_swapchain, width, height);
     }
 
-    uint32_t FrameContext::GetWidth() const
+    uint32 FrameContext::GetWidth() const
     {
         return m_swapchain->GetWidth();
     }
 
-    uint32_t FrameContext::GetHeight() const
+    uint32 FrameContext::GetHeight() const
     {
         return m_swapchain->GetHeight();
     }
@@ -97,7 +97,7 @@ namespace Wl
         {
             m_device->DestroyCommandAllocator(frame.CommandAllocator);
             m_device->DestroySemaphore(frame.FrameAvailableSemaphore);
-            for (size_t i = 0; i < m_swapchain->GetBuffers().GetSize(); i++)
+            for (usize i = 0; i < m_swapchain->GetBuffers().GetSize(); i++)
             {
                 m_device->DestroySemaphore(frame.RenderFinishedSemaphore[i]);
             }
@@ -174,17 +174,17 @@ namespace Wl
         return m_device;
     }
 
-    uint64_t FrameContext::GetFrameIndex() const
+    uint64 FrameContext::GetFrameIndex() const
     {
         return m_frameIndex;
     }
 
-    uint64_t FrameContext::GetMaxFrameInFlight() const
+    uint64 FrameContext::GetMaxFrameInFlight() const
     {
         return m_maxFrameInFlight;
     }
 
-    uint64_t FrameContext::GetFrameCount() const
+    uint64 FrameContext::GetFrameCount() const
     {
         return m_frameCount;
     }

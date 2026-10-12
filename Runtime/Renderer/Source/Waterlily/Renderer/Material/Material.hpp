@@ -56,9 +56,9 @@ namespace Wl
 template<>
 struct std::hash<Wl::MaterialData>
 {
-    size_t operator()(const Wl::MaterialData& material) const noexcept
+    usize operator()(const Wl::MaterialData& material) const noexcept
     {
-        size_t hash = 0;
+        usize hash = 0;
 
         hash = Wl::Hash(material.baseColorFactor.x);
         hash = Wl::HashCombine(hash, Wl::Hash(material.baseColorFactor.y));

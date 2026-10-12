@@ -12,7 +12,7 @@
 namespace Wl
 {
 
-    using ModifierBase = uint8_t;
+    using ModifierBase = uint8;
 
     enum class Modifier : ModifierBase
     {
@@ -33,7 +33,7 @@ namespace Wl
         using PlainType = std::remove_cvref_t<RemovedPointersType>;
 
         template<typename R = RemovedReferencesType>
-        consteval inline static uint32_t GetPointerCount(uint32_t count = 0)
+        consteval inline static uint32 GetPointerCount(uint32 count = 0)
         {
             if constexpr (std::is_pointer_v<R>)
             {
@@ -42,7 +42,7 @@ namespace Wl
             return count;
         }
 
-        consteval inline static uint32_t GetArraySize()
+        consteval inline static uint32 GetArraySize()
             requires(!std::is_same_v<void, T>)
         {
             return sizeof(T) / sizeof(RemovedExtentsType);
@@ -149,7 +149,7 @@ namespace Wl
             SetModifier(Modifier::RValueReference);
         }
 
-        constexpr inline uint32_t GetPointerCount() const
+        constexpr inline uint32 GetPointerCount() const
         {
             return m_pointerCount;
         }
@@ -159,7 +159,7 @@ namespace Wl
             return m_pointerCount != 0;
         }
 
-        constexpr inline void SetPointerCount(uint32_t count)
+        constexpr inline void SetPointerCount(uint32 count)
         {
             m_pointerCount = count;
         }
@@ -182,12 +182,12 @@ namespace Wl
             return m_arraySize > 1;
         }
 
-        constexpr inline uint32_t GetArraySize() const
+        constexpr inline uint32 GetArraySize() const
         {
             return m_arraySize;
         }
 
-        constexpr inline void SetArraySize(uint32_t size)
+        constexpr inline void SetArraySize(uint32 size)
         {
             m_arraySize = size;
         }
@@ -212,16 +212,19 @@ namespace Wl
             return (m_modifierFlags & modifier) != Modifier::None;
         }
 
-        constexpr inline size_t GetSize() const
+        constexpr inline usize GetSize() const
         {
-            bool isPointOrRef = IsPointer() || IsReference(); 
-            return isPointOrRef ? sizeof(void*) : GetArraySize() * GetUnderlyingType().GetSize();
+            return IsPointerRef() ? sizeof(void*) : GetArraySize() * GetUnderlyingType().GetSize();
         }
 
-        constexpr inline size_t GetAlign() const
+        constexpr inline usize GetAlign() const
         {
-            bool isPointOrRef = IsPointer() || IsReference(); 
-            return isPointOrRef ? alignof(void*) : GetUnderlyingType().GetAlign();
+            return IsPointerRef() ? alignof(void*) : GetUnderlyingType().GetAlign();
+        }
+
+        constexpr bool IsPointerRef() const
+        {
+            return IsPointer() || IsReference();
         }
 
     public:
@@ -248,8 +251,8 @@ namespace Wl
 
     private:
         Type m_underlyingType;
-        uint32_t m_arraySize = 0;
-        uint32_t m_pointerCount = 0;
+        uint32 m_arraySize = 0;
+        uint32 m_pointerCount = 0;
         Modifier m_modifierFlags = Modifier::None;
     };
 
@@ -257,7 +260,7 @@ namespace Wl
 
 WL_HASH_DEFINE(Wl::TypeDescriptor, desc, {
     Wl::Type type = desc.GetUnderlyingType();
-    uint64_t hash = Wl::Hash(type);
+    uint64 hash = Wl::Hash(type);
     hash = Wl::HashCombine(hash, Wl::Hash(desc.GetArraySize()));
     hash = Wl::HashCombine(hash, Wl::Hash(desc.GetPointerCount()));
     hash = Wl::HashCombine(hash, Wl::Hash(static_cast<Wl::ModifierBase>(desc.GetModifiers())));

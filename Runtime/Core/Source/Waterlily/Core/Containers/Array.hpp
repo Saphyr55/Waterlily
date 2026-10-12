@@ -18,7 +18,7 @@ namespace Wl
     {
     public:
         using value_type = ElementType;
-        using size_type = size_t;
+        using size_type = usize;
         using reference = ElementType&;
         using pointer = ElementType*;
         using const_pointer = const ElementType*;
@@ -177,7 +177,7 @@ namespace Wl
             return m_size;
         }
 
-        inline size_t GetSizeInBytes() const
+        inline usize GetSizeInBytes() const
         {
             return m_size * sizeof(ElementType);
         }
@@ -350,7 +350,7 @@ namespace Wl
         {
         }
 
-        Array(size_t capacity, Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
+        Array(usize capacity, Allocator& allocator = *MemoryStack::GetCurrentAllocator()) noexcept
             : m_allocator(allocator)
             , m_data(nullptr)
             , m_size(0)
@@ -616,7 +616,7 @@ namespace Wl
             return false;
         }
 
-        for (size_t i = 0; i < lhs.GetSize(); i++)
+        for (usize i = 0; i < lhs.GetSize(); i++)
         {
             if (lhs[i] != rhs[i])
             {

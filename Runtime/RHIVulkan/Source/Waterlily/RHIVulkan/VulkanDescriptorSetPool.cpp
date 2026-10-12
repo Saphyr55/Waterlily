@@ -21,7 +21,7 @@ namespace Wl
         allocationInfo.descriptorSetCount = 1;
         allocationInfo.pSetLayouts = &vulkanLayoutHandle;
 
-        size_t groupIndex = 0;
+        usize groupIndex = 0;
         if (!m_freeGroups.IsEmpty())
         {
             groupIndex = *m_freeGroups.begin();
@@ -41,7 +41,7 @@ namespace Wl
         return newGroup;
     }
 
-    RHIShaderResourceGroup* VulkanShaderResourceGroupPool::GetSRG(size_t poolIndex)
+    RHIShaderResourceGroup* VulkanShaderResourceGroupPool::GetSRG(usize poolIndex)
     {
         VulkanShaderResourceGroup& group = m_allocatedGroups[poolIndex];
         if (group.GetHandle() == VK_NULL_HANDLE)
@@ -82,7 +82,7 @@ namespace Wl
         }
     }
 
-    void VulkanShaderResourceGroupPool::Create(uint32_t maxGroupsCount, const Array<RHIShaderResourceBinding>& totalBindings)
+    void VulkanShaderResourceGroupPool::Create(uint32 maxGroupsCount, const Array<RHIShaderResourceBinding>& totalBindings)
     {
         m_maxGroupsCount = maxGroupsCount;
 
@@ -91,7 +91,7 @@ namespace Wl
 
         VulkanContext& context = VulkanContextGet();
 
-        HashMap<VkDescriptorType, uint32_t> typeCounts(totalBindings.GetSize());
+        HashMap<VkDescriptorType, uint32> typeCounts(totalBindings.GetSize());
         for (const RHIShaderResourceBinding& binding: totalBindings)
         {
             typeCounts[VulkanDescriptorTypeGet(binding.Type)] += binding.Count;
@@ -121,7 +121,7 @@ namespace Wl
 
     void VulkanShaderResourceGroupPool::Destroy()
     {
-        for (size_t i = 0; i < GetCount(); i++)
+        for (usize i = 0; i < GetCount(); i++)
         {
             if (RHIShaderResourceGroup* group = GetSRG(i))
             {

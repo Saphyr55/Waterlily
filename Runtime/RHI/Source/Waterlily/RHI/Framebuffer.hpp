@@ -13,9 +13,9 @@ namespace Wl
     {
         RHIRenderPass* RenderPass = nullptr;
         Array<RHITextureView*> Attachments;
-        uint32_t Width = 1;
-        uint32_t Height = 1;
-        uint32_t Layers = 1;
+        uint32 Width = 1;
+        uint32 Height = 1;
+        uint32 Layers = 1;
 
         inline bool operator==(const RHIFramebufferDescription& other) const;
 
@@ -41,16 +41,16 @@ namespace std
     template<>
     struct hash<RHIFramebufferDescription>
     {
-        size_t operator()(const RHIFramebufferDescription& description) const noexcept
+        usize operator()(const RHIFramebufferDescription& description) const noexcept
         {
-            size_t h = Hash<RHIRenderPass*>(description.RenderPass);
+            usize h = Hash<RHIRenderPass*>(description.RenderPass);
             for (RHITextureView* view: description.Attachments)
             {
                 h ^= Hash<RHITextureView*>(view);
             }
-            h ^= Hash<uint32_t>(description.Width);
-            h ^= Hash<uint32_t>(description.Height);
-            h ^= Hash<uint32_t>(description.Layers);
+            h ^= Hash<uint32>(description.Width);
+            h ^= Hash<uint32>(description.Height);
+            h ^= Hash<uint32>(description.Layers);
             return h;
         }
     };
@@ -59,8 +59,8 @@ namespace std
 
 inline bool Wl::RHIFramebufferDescription::operator==(const RHIFramebufferDescription& other) const
 {
-    size_t selfHash = std::hash<RHIFramebufferDescription>()(*this);
-    size_t otherHash = std::hash<RHIFramebufferDescription>()(other);
+    usize selfHash = std::hash<RHIFramebufferDescription>()(*this);
+    usize otherHash = std::hash<RHIFramebufferDescription>()(other);
     return selfHash == otherHash;
 }
 

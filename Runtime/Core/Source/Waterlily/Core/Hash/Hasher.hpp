@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstdint>
+#include "Waterlily/Core/Defines.hpp"
+
 #include <functional>
 
 namespace Wl
@@ -10,12 +11,12 @@ namespace Wl
     using Hasher = std::hash<Type>;
 
     template<typename T>
-    inline uint64_t Hash(const T& value)
+    inline uint64 Hash(const T& value)
     {
         return ::Wl::Hasher<T> {}(value);
     }
     
-    inline uint64_t HashCombine(uint64_t seed, uint64_t value)
+    inline uint64 HashCombine(uint64 seed, uint64 value)
     {
         seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         return seed;
@@ -29,7 +30,7 @@ namespace Wl
         template<>                                                        \
         struct hash<TYPE>                                                 \
         {                                                                 \
-            uint64_t operator()(const TYPE& VAR_NAME) const noexcept BODY \
+            uint64 operator()(const TYPE& VAR_NAME) const noexcept BODY \
         };                                                                \
     }
 
@@ -39,6 +40,6 @@ namespace Wl
         template<typename TEMPLATE_TYPE>                                               \
         struct hash<TYPE<TEMPLATE_TYPE>>                                               \
         {                                                                              \
-            size_t operator()(const TYPE<TEMPLATE_TYPE>& VAR_NAME) const noexcept BODY \
+            uint64 operator()(const TYPE<TEMPLATE_TYPE>& VAR_NAME) const noexcept BODY \
         };                                                                             \
     }

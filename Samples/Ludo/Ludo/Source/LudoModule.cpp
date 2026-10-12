@@ -58,7 +58,7 @@ namespace Ludo
             Engine::GetInstance().RequestStop();
         });
 
-        m_window->GetEventHandler().OnResized.Connect([this](uint32_t width, uint32_t height) mutable
+        m_window->GetEventHandler().OnResized.Connect([this](uint32 width, uint32 height) mutable
         {
             WL_LOG_INFO("Ludo", "Window resized to %dx%d", width, height);
             m_renderService->Resize(width, height);

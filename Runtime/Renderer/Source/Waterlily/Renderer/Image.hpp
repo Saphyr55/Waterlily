@@ -8,12 +8,12 @@ namespace Wl
 
     struct Image
     {
-        Array<uint8_t> Data;
-        uint32_t Width = 0;
-        uint32_t Height = 0;
-        uint32_t Channels = 0;
+        Array<uint8> Data;
+        uint32 Width = 0;
+        uint32 Height = 0;
+        uint32 Channels = 0;
 
-        inline size_t GetStride() const
+        inline usize GetStride() const
         {
             return Width * Channels;
         }
@@ -23,7 +23,7 @@ namespace Wl
             return Data.IsEmpty() || Width == 0 || Height == 0 || Channels == 0;
         }
 
-        inline size_t GetSizeInBytes() const
+        inline usize GetSizeInBytes() const
         {
             return Width * Height * Channels;
         }

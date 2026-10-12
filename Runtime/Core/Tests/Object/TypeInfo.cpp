@@ -19,6 +19,11 @@ TEST_CASE("TypeName", "[TypeName]")
         REQUIRE(Wl::TypeName<void>() == "void");
     }
 
+    SECTION("Wl::TypeName<uint32>() == \"uint32\"")
+    {
+        REQUIRE(Wl::TypeName<uint32>() == "uint32");
+    }
+
     SECTION("Wl::TypeName<Namespace1::Namespace2::AClass>() == \"class Namespace1::Namespace2::AClass\"")
     {
         REQUIRE(Wl::TypeName<Namespace1::Namespace2::AClass>() == "class Namespace1::Namespace2::AClass");

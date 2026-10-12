@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Waterlily/Core/Defines.hpp"
+
 #include <functional>
 
 namespace Wl
 {
 
-    template<typename HandleType, typename SizeType = size_t>
+    template<typename HandleType, typename SizeType = usize>
     class Handler
     {
     public:
@@ -47,7 +49,7 @@ template<typename HandleType, typename SizeType>
 class std::hash<Wl::Handler<HandleType, SizeType>>
 {
 public:
-    size_t operator()(const Wl::Handler<HandleType, SizeType>& handler) const
+    usize operator()(const Wl::Handler<HandleType, SizeType>& handler) const
     {
         return std::hash<SizeType>()(handler.GetIndex());
     }

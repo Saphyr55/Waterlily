@@ -17,7 +17,7 @@ namespace Wl
     VulkanCommandQueue::VulkanCommandQueue(VulkanContext& context,
                                            VkQueue queue,
                                            RHIQueueType type,
-                                           uint32_t queueFamilyIndex,
+                                           uint32 queueFamilyIndex,
                                            bool isPresentModeSupported)
         : m_context(context)
         , m_handle(queue)
@@ -57,7 +57,7 @@ namespace Wl
             vulkanCommandBuffers.Append(vulkanCommandBufferPtr->GetHandle());
         }
 
-        submitInfo.commandBufferCount = static_cast<uint32_t>(vulkanCommandBuffers.GetSize());
+        submitInfo.commandBufferCount = static_cast<uint32>(vulkanCommandBuffers.GetSize());
         submitInfo.pCommandBuffers = vulkanCommandBuffers.GetData();
 
         // Wait semaphores
@@ -82,7 +82,7 @@ namespace Wl
 
         // Waiting pipeline stage policy
         Array<VkPipelineStageFlags> waitStages(waitSemaphores.GetSize());
-        for (size_t i = 0; i < waitSemaphores.GetSize(); i++)
+        for (usize i = 0; i < waitSemaphores.GetSize(); i++)
         {
             // TODO: This generic solution should not be use.
             waitStages.Append(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);

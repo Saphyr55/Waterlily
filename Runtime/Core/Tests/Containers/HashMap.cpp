@@ -8,7 +8,7 @@ using namespace Wl;
 
 TEST_CASE("Check insertion.", "[HashMap::put]")
 {
-    HashMap<uint32_t, uint32_t> map;
+    HashMap<uint32, uint32> map;
 
     map.Put(5, 8);
     REQUIRE(map.Get(5) == 8);
@@ -38,7 +38,7 @@ TEST_CASE("Check insertion.", "[HashMap::put]")
 
 TEST_CASE("Check if the hashmap contains an element.", "[HashMap::contains]")
 {
-    HashMap<uint32_t, uint32_t> map;
+    HashMap<uint32, uint32> map;
 
     map.Put(5, 8);
     map.Put(3, 4);
@@ -51,7 +51,7 @@ TEST_CASE("Check if the hashmap contains an element.", "[HashMap::contains]")
 
 TEST_CASE("Check if the hashmap can remove an element.", "[HashMap::remove]")
 {
-    HashMap<uint32_t, uint32_t> map;
+    HashMap<uint32, uint32> map;
 
     map.Put(5, 8);
     map.Put(3, 4);
@@ -67,7 +67,7 @@ TEST_CASE("Check if the hashmap can remove an element.", "[HashMap::remove]")
 
 TEST_CASE("Check is create correctly with an initiliazer list.", "[HashMap::HashMap]")
 {
-    HashMap<uint32_t, uint32_t> map = {
+    HashMap<uint32, uint32> map = {
             {1, 2},
             {3, 20},
             {2, 2},
@@ -95,7 +95,7 @@ TEST_CASE("Check is create correctly with an initiliazer list.", "[HashMap::Hash
 
 TEST_CASE("Copy and move semantics.", "[HashMap::copy_move]")
 {
-    HashMap<uint32_t, uint32_t> map;
+    HashMap<uint32, uint32> map;
     map.Put(1, 10);
     map.Put(2, 20);
     map.Put(3, 30);
@@ -106,7 +106,7 @@ TEST_CASE("Copy and move semantics.", "[HashMap::copy_move]")
 
     SECTION("copy constructor")
     {
-        HashMap<uint32_t, uint32_t> mapCopy(map);
+        HashMap<uint32, uint32> mapCopy(map);
         REQUIRE(mapCopy.GetSize() == map.GetSize());
         REQUIRE(mapCopy.Get(1) == 10);
         REQUIRE(mapCopy.Get(2) == 20);
@@ -115,7 +115,7 @@ TEST_CASE("Copy and move semantics.", "[HashMap::copy_move]")
 
     SECTION("copy assignment")
     {
-        HashMap<uint32_t, uint32_t> mapAssign;
+        HashMap<uint32, uint32> mapAssign;
         mapAssign = map;
         REQUIRE(mapAssign.GetSize() == map.GetSize());
         REQUIRE(mapAssign.Get(1) == 10);
@@ -125,14 +125,14 @@ TEST_CASE("Copy and move semantics.", "[HashMap::copy_move]")
 
     SECTION("move constructor")
     {
-        HashMap<uint32_t, uint32_t> mapMove(map);
-        HashMap<uint32_t, uint32_t> d(std::move(mapMove));
+        HashMap<uint32, uint32> mapMove(map);
+        HashMap<uint32, uint32> d(std::move(mapMove));
         REQUIRE(d.GetSize() == 3);
     }
 
     SECTION("move assignment")
     {
-        HashMap<uint32_t, uint32_t> mapMoveAssign;
+        HashMap<uint32, uint32> mapMoveAssign;
         mapMoveAssign = std::move(map);
         REQUIRE(mapMoveAssign.GetSize() == 3);
     }
@@ -140,7 +140,7 @@ TEST_CASE("Copy and move semantics.", "[HashMap::copy_move]")
 
 TEST_CASE("Clear and operator at behavior.", "[HashMap::clear]")
 {
-    HashMap<uint32_t, uint32_t> map;
+    HashMap<uint32, uint32> map;
     map.Put(10, 100);
     map.Put(20, 200);
 
@@ -150,7 +150,7 @@ TEST_CASE("Clear and operator at behavior.", "[HashMap::clear]")
     REQUIRE(map.GetSize() == 0);
 
     // operator[] should insert a default value if missing
-    uint32_t& v = map[50];
+    uint32& v = map[50];
     REQUIRE(v == 0u);
     REQUIRE(map.GetSize() == 1);
     v = 55;
@@ -159,14 +159,14 @@ TEST_CASE("Clear and operator at behavior.", "[HashMap::clear]")
 
 TEST_CASE("Iterator traversal and const iteration.", "[HashMap::Iterator]")
 {
-    HashMap<uint32_t, uint32_t> map;
-    for (uint32_t i = 1; i <= 10; i++)
+    HashMap<uint32, uint32> map;
+    for (uint32 i = 1; i <= 10; i++)
     {
         map.Put(i, i * 10);
     }
 
-    Array<uint32_t> keys;
-    Array<uint32_t> values;
+    Array<uint32> keys;
+    Array<uint32> values;
     for (auto [key, value]: map)
     {
         keys.Append(key);
@@ -176,9 +176,9 @@ TEST_CASE("Iterator traversal and const iteration.", "[HashMap::Iterator]")
     REQUIRE(keys.GetSize() == map.GetSize());
     REQUIRE(values.GetSize() == map.GetSize());
 
-    const HashMap<uint32_t, uint32_t>& cmap = map;
-    size_t count = 0;
-    for (HashMap<uint32_t, uint32_t>::const_iterator it = cmap.cbegin(); it != cmap.cend(); it++)
+    const HashMap<uint32, uint32>& cmap = map;
+    usize count = 0;
+    for (HashMap<uint32, uint32>::const_iterator it = cmap.cbegin(); it != cmap.cend(); it++)
     {
         REQUIRE(cmap.Contains((*it).Key));
         ++count;
@@ -188,10 +188,10 @@ TEST_CASE("Iterator traversal and const iteration.", "[HashMap::Iterator]")
 
 TEST_CASE("Rehashing preserves entries for many inserts.", "[HashMap::resize_rehash]")
 {
-    HashMap<std::string, uint32_t> map(4);
-    const uint32_t N = 200;
+    HashMap<std::string, uint32> map(4);
+    const uint32 N = 200;
 
-    for (uint32_t i = 0; i < N; i++)
+    for (uint32 i = 0; i < N; i++)
     {
         std::string key = std::to_string(i);
         map.Put(key, i + 1000);
@@ -199,7 +199,7 @@ TEST_CASE("Rehashing preserves entries for many inserts.", "[HashMap::resize_reh
 
     REQUIRE(map.GetSize() == N);
 
-    for (uint32_t i = 0; i < N; i += 7)
+    for (uint32 i = 0; i < N; i += 7)
     {
         std::string key = std::to_string(i);
         REQUIRE(map.Contains(key));
@@ -219,7 +219,7 @@ TEST_CASE("Works with non-trivial value types (Wl::String).", "[HashMap::put]")
     REQUIRE(map.Get("two") == "two");
     REQUIRE(map.Get("three") == "three");
 
-    for (uint32_t i = 0; i < 150; i++)
+    for (uint32 i = 0; i < 150; i++)
     {
         String kv = Wl::Format("%u", i);
         map[kv] = kv;
@@ -229,7 +229,7 @@ TEST_CASE("Works with non-trivial value types (Wl::String).", "[HashMap::put]")
     REQUIRE(map["two"] == "two");
     REQUIRE(map["three"] == "three");
 
-    for (uint32_t i = 0; i < 150; i++)
+    for (uint32 i = 0; i < 150; i++)
     {
         String kv = Wl::Format("%u", i);
         if (i == 4)
@@ -257,7 +257,7 @@ TEST_CASE("Works with non-trivial value types (Wl::String).", "[HashMap::put]")
 
 TEST_CASE("Overwrite value and repeated puts.", "[HashMap::put_overwrite]")
 {
-    HashMap<uint32_t, uint32_t> map;
+    HashMap<uint32, uint32> map;
     map.Put(42, 1);
     REQUIRE(map.Get(42) == 1);
     map.Put(42, 2);
@@ -275,10 +275,10 @@ TEST_CASE("Check nested  HashMap<String, HashMap<String, String>> behavior with 
     REQUIRE(map["one"]["one"] == "hundred");
 }
 
-TEST_CASE("Check nested  HashMap<uint32_t, HashMap<uint32_t, uint32_t>> behavior with operator[].", "[HashMap::HashMap]")
+TEST_CASE("Check nested  HashMap<uint32, HashMap<uint32, uint32>> behavior with operator[].", "[HashMap::HashMap]")
 {
-    HashMap<uint32_t, HashMap<uint32_t, uint32_t>> map;
-    map[0] = HashMap<uint32_t, uint32_t>();
+    HashMap<uint32, HashMap<uint32, uint32>> map;
+    map[0] = HashMap<uint32, uint32>();
     map[0][1] = 100;
     REQUIRE(map[0][1] == 100);
 }

@@ -4,7 +4,7 @@
 namespace Wl
 {
 
-    StackAllocator::StackAllocator(size_t size)
+    StackAllocator::StackAllocator(usize size)
         : m_size(size)
         , m_head(0)
         , m_buffer(nullptr)
@@ -17,7 +17,7 @@ namespace Wl
         Destroy();
     }
 
-    void StackAllocator::Initialize(size_t size)
+    void StackAllocator::Initialize(usize size)
     {
         m_buffer = Memory::Allocate(size);
         m_size = size;
@@ -32,13 +32,13 @@ namespace Wl
         m_head = 0;
     }
 
-    void* StackAllocator::Allocate(size_t size, size_t alignment)
+    void* StackAllocator::Allocate(usize size, usize alignment)
     {
-        uint8_t* currentAddress = m_buffer + m_head;
-        uint8_t* alignedAddress = Memory::Align(currentAddress, alignment);
+        uint8* currentAddress = m_buffer + m_head;
+        uint8* alignedAddress = Memory::Align(currentAddress, alignment);
 
-        size_t padding = alignedAddress - currentAddress;
-        size_t totalSize = size + padding;
+        usize padding = alignedAddress - currentAddress;
+        usize totalSize = size + padding;
 
         if (m_head + totalSize > m_size)
         {
@@ -51,7 +51,7 @@ namespace Wl
         return alignedAddress;
     }
 
-    void StackAllocator::Deallocate(void* /* memory */, size_t /* size */, size_t /* alignment */)
+    void StackAllocator::Deallocate(void* /* memory */, usize /* size */, usize /* alignment */)
     {
         // Stack allocator does not support deallocation of individual blocks.
         // Deallocation is done by resetting the entire allocator.

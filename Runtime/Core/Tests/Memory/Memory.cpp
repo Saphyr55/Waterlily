@@ -53,8 +53,8 @@ TEST_CASE("Memory allocation and deallocation.", "[Memory][Allocation]")
 
     SECTION("Aligned allocation and free.")
     {
-        const size_t alignment = 16;
-        const size_t size = 100;
+        const usize alignment = 16;
+        const usize size = 100;
 
         void* ptr = Memory::Allocate(size, alignment);
         REQUIRE(ptr != nullptr);
@@ -67,12 +67,12 @@ TEST_CASE("Memory allocation and deallocation.", "[Memory][Allocation]")
 
     SECTION("Aligned allocation with various alignments.")
     {
-        const size_t sizes[] = {10, 100, 1024};
-        const size_t alignments[] = {2, 4, 8, 16, 32, 64, 128};
+        const usize sizes[] = {10, 100, 1024};
+        const usize alignments[] = {2, 4, 8, 16, 32, 64, 128};
 
-        for (size_t size: sizes)
+        for (usize size: sizes)
         {
-            for (size_t alignment: alignments)
+            for (usize alignment: alignments)
             {
                 void* ptr = Memory::Allocate(size, alignment);
                 REQUIRE(ptr != nullptr);
@@ -109,13 +109,13 @@ TEST_CASE("Memory utility functions.", "[Memory][Utility]")
 
     SECTION("write() function works correctly.")
     {
-        constexpr size_t size = 10;
+        constexpr usize size = 10;
         char buffer[size];
 
-        void* result = Memory::Write(buffer, int32_t('A'), size);
+        void* result = Memory::Write(buffer, int32('A'), size);
         REQUIRE(result == buffer);
 
-        for (int8_t i = 0; i < size; i++)
+        for (int8 i = 0; i < size; i++)
         {
             REQUIRE(buffer[i] == 0x41);
         }
@@ -144,7 +144,7 @@ TEST_CASE("Edge cases and stress tests", "[Memory][Edge]")
 
     SECTION("Large allocation.")
     {
-        constexpr size_t large_size = 1024 * 1024;// 1MB
+        constexpr usize large_size = 1024 * 1024;// 1MB
         void* ptr = Memory::Allocate(large_size);
         REQUIRE(ptr != nullptr);
         Memory::Deallocate(ptr, large_size);
@@ -152,7 +152,7 @@ TEST_CASE("Edge cases and stress tests", "[Memory][Edge]")
 
     SECTION("Maximum alignment.")
     {
-        constexpr size_t max_alignment = 128;
+        constexpr usize max_alignment = 128;
         void* ptr = Memory::Allocate(100, max_alignment);
         REQUIRE(ptr != nullptr);
         REQUIRE(Memory::IsAligned(reinterpret_cast<uintptr_t>(ptr), max_alignment));

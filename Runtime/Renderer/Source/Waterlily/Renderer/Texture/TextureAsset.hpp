@@ -31,7 +31,7 @@ namespace Wl
 
     inline void operator>>(InputStream& stream, TextureAsset& asset)
     {
-        uint64_t size = 0;
+        uint64 size = 0;
         stream >> asset.Image.Width;
         stream >> asset.Image.Height;
         stream >> asset.Image.Channels;

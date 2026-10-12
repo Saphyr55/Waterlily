@@ -28,13 +28,13 @@ namespace Wl
         Viewport Viewport = {};
         Rect2D Scissor = {};
         RHICullModeFlags CullMode = RHICullModeFlags::Back;
-        HashMap<uint32_t, RHIShaderResourceGroupLayout*> SRGLayouts;
+        HashMap<uint32, RHIShaderResourceGroupLayout*> SRGLayouts;
     };
 
     struct ComputePipelineState
     {
         Shader* ComputeShader;
-        HashMap<uint32_t, RHIShaderResourceGroupLayout*> SRGLayouts;
+        HashMap<uint32, RHIShaderResourceGroupLayout*> SRGLayouts;
     };
 
     class WL_RENDERER_API PipelineManager
@@ -122,7 +122,7 @@ namespace Wl
 
         void ReflectSRGLayouts(
                 SPIRVPipelineReflection& outReflection,
-                HashMap<uint32_t, RHIShaderResourceGroupLayout*>& outStateLayouts,
+                HashMap<uint32, RHIShaderResourceGroupLayout*>& outStateLayouts,
                 Array<RHIShaderResourceGroupLayout*>& outLayouts);
 
     private:

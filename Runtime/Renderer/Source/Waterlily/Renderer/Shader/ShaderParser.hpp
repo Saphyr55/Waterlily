@@ -16,9 +16,9 @@ namespace Wl
     struct SPIRVBinding
     {
         StringID Name;
-        uint32_t Binding;
-        uint32_t Set;
-        uint32_t Count = 1;
+        uint32 Binding;
+        uint32 Set;
+        uint32 Count = 1;
         RHIShaderResourceType Type;
         RHIShaderStage Stage = RHIShaderStage::AllGraphics;
     };
@@ -26,14 +26,14 @@ namespace Wl
     struct SPIRVVertexInput
     {
         RHIFormat Format;
-        uint32_t Location;
-        uint32_t Stride;
+        uint32 Location;
+        uint32 Stride;
     };
 
     struct SPIRVPipelineReflection
     {
         HashMap<RHIShaderStage, String> EntryPointNames;
-        HashMap<uint32_t, Array<SPIRVBinding>> Groups;
+        HashMap<uint32, Array<SPIRVBinding>> Groups;
         Array<SPIRVVertexInput> VertexInputs;
     };
 
@@ -43,9 +43,9 @@ namespace Wl
         static bool Reflect(SPIRVPipelineReflection& outReflect, ArrayView<SPIRVShader> shaders);
         static bool Reflect(SPIRVPipelineReflection& outReflect, const SPIRVShader& shader);
 
-        static HashMap<uint32_t, RHIShaderResourceGroupLayout*> BuildLayouts(const SPIRVPipelineReflection& reflect,
+        static HashMap<uint32, RHIShaderResourceGroupLayout*> BuildLayouts(const SPIRVPipelineReflection& reflect,
                                                                              RHIShaderResourceGroupLayoutCache& cache,
-                                                                             ArrayView<uint32_t> externGroups);
+                                                                             ArrayView<uint32> externGroups);
     };
 
 }// namespace Wl

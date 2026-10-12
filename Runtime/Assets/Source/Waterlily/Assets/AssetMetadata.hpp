@@ -57,7 +57,7 @@ namespace Wl
         stream << metadata.GetUUID();
         stream << metadata.GetAssetType();
         stream << metadata.GetURI();
-        stream << static_cast<uint64_t>(metadata.GetDependencies().GetSize());
+        stream << static_cast<uint64>(metadata.GetDependencies().GetSize());
         for (const AssetUUID& UUID: metadata.GetDependencies())
         {
             stream << UUID;
@@ -69,7 +69,7 @@ namespace Wl
         AssetUUID UUID = AssetUUID::CreateInvalid();
         StringID assetType;
         StringID conditionedURI;
-        uint64_t depsCount = 0;
+        uint64 depsCount = 0;
 
         stream >> UUID;
         stream >> assetType;
@@ -78,7 +78,7 @@ namespace Wl
 
         metadata = AssetMetadata(UUID, assetType, conditionedURI);
 
-        for (uint64_t i = 0; i < depsCount; i++)
+        for (uint64 i = 0; i < depsCount; i++)
         {
             AssetUUID depUUID;
             stream >> depUUID;

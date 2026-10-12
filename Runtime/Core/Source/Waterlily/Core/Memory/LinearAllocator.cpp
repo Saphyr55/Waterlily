@@ -6,11 +6,11 @@
 namespace Wl
 {
 
-    void* LinearAllocator::Allocate(const size_t size, size_t alignment)
+    void* LinearAllocator::Allocate(const usize size, usize alignment)
     {
-        size_t space = m_size - m_offset;
-        uint8_t* block = m_buffer + m_offset;
-        uint8_t* alignedBlock = Memory::Align(block, alignment);
+        usize space = m_size - m_offset;
+        uint8* block = m_buffer + m_offset;
+        uint8* alignedBlock = Memory::Align(block, alignment);
 
         if (!alignedBlock || alignedBlock + size > m_buffer + m_size)
         {
@@ -23,7 +23,7 @@ namespace Wl
         return alignedBlock;
     }
 
-    void LinearAllocator::Deallocate(void* /* block */, size_t /* size */, size_t /* alignment */)
+    void LinearAllocator::Deallocate(void* /* block */, usize /* size */, usize /* alignment */)
     {
         // Linear allocator does not support deallocation of individual blocks.
         // Deallocation is done by resetting the entire allocator.
@@ -47,7 +47,7 @@ namespace Wl
         m_offset = 0;
     }
 
-    LinearAllocator::LinearAllocator(Allocator* parent, size_t size)
+    LinearAllocator::LinearAllocator(Allocator* parent, usize size)
         : m_parent(parent)
         , m_size(size)
         , m_offset(0)
@@ -59,7 +59,7 @@ namespace Wl
         {
             Destroy();
         }
-        m_buffer = reinterpret_cast<uint8_t*>(m_parent->Allocate(m_size));
+        m_buffer = reinterpret_cast<uint8*>(m_parent->Allocate(m_size));
         if (m_buffer)
         {
             Memory::Write(m_buffer, 0, m_size);

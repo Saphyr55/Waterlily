@@ -27,11 +27,11 @@ namespace Wl
         StringRef Name;
         RHIFormat Format;
         SizeClass SizeClass = SizeClass::Swapchain;
-        uint32_t Width = 1'024;
-        uint32_t Height = 1'024;
-        uint32_t MipLevels = 1;
-        size_t Layers = 1;
-        size_t Levels = 1;
+        uint32 Width = 1'024;
+        uint32 Height = 1'024;
+        uint32 MipLevels = 1;
+        usize Layers = 1;
+        usize Levels = 1;
     };
 
     struct FrameGraphPhysicalTexture
@@ -43,8 +43,8 @@ namespace Wl
     struct FrameGraphBufferInfo
     {
         StringRef Name;
-        size_t Size;
-        size_t Offset = 0;
+        usize Size;
+        usize Offset = 0;
     };
 
     struct FrameGraphPhysicalBuffer
@@ -54,14 +54,14 @@ namespace Wl
 
     struct FrameGraphResourceLifetime
     {
-        size_t FirstUse = UINT32_MAX;
-        size_t LastUse = 0;
+        usize FirstUse = UINT32_MAX;
+        usize LastUse = 0;
     };
 
     struct FrameGraphTextureResource
     {
         FrameGraphTextureInfo Info;
-        size_t PooledResource;
+        usize PooledResource;
         FrameGraphPhysicalTexture PersistantResource;
         RHITextureUsageFlags Usage = RHITextureUsageFlags::None;
         RHITextureLayout CurrentLayout = RHITextureLayout::Undefined;
@@ -74,8 +74,8 @@ namespace Wl
     {
         RHIFormat Format;
         RHITextureUsageFlags Usage;
-        uint32_t Width = 1;
-        uint32_t Height = 1;
+        uint32 Width = 1;
+        uint32 Height = 1;
 
         static FrameGraphPhysicalTextureKey Create(const FrameGraphTextureResource& resource);
 
@@ -91,13 +91,13 @@ namespace Wl
     class FrameGraphPhysicalTextureKeyHash
     {
     public:
-        inline uint32_t operator()(const FrameGraphPhysicalTextureKey& key) const noexcept
+        inline uint32 operator()(const FrameGraphPhysicalTextureKey& key) const noexcept
         {
-            uint32_t h = Hash<uint32_t>(uint32_t(key.Format));
+            uint32 h = Hash<uint32>(uint32(key.Format));
             h = HashCombine(h, key.Width);
             h = HashCombine(h, key.Width);
             h = HashCombine(h, key.Height);
-            h = HashCombine(h, uint32_t(key.Usage));
+            h = HashCombine(h, uint32(key.Usage));
             return h;
         }
     };
@@ -123,7 +123,7 @@ namespace Wl
     {
     public:
         static FrameGraphTextureResource CreatePersistantResource(RHITexture* texture, RHITextureView* view);
-        static FrameGraphBufferResource CreatePersistantResource(RHIBuffer* buffer, size_t size, size_t offset);
+        static FrameGraphBufferResource CreatePersistantResource(RHIBuffer* buffer, usize size, usize offset);
     };
 
 

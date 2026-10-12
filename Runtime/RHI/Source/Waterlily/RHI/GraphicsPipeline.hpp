@@ -11,17 +11,17 @@ namespace Wl
 
     struct RHIVertexBindingDescription
     {
-        uint32_t Binding = 0;
-        uint32_t Stride = 0;
+        uint32 Binding = 0;
+        uint32 Stride = 0;
         RHIVertexInputRate InputRate = RHIVertexInputRate::Vertex;
     };
 
     struct RHIVertexAttributeDescription
     {
-        uint32_t Binding = 0;
-        uint32_t Location = 0;
+        uint32 Binding = 0;
+        uint32 Location = 0;
         RHIFormat Format = RHIFormat::R32_FLOAT;
-        uint32_t Offset = 0;
+        uint32 Offset = 0;
     };
 
     struct RHIGraphicsPipelineVertexBindingInformation

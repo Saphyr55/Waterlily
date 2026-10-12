@@ -22,19 +22,19 @@ namespace Wl
     
     void operator<<(OutputStream& stream, const Shader& asset)
     {
-        const Array<uint8_t>& bytecode = asset.GetSPIRVShader().GetByteCode();
-        stream << static_cast<uint32_t>(bytecode.GetSizeInBytes());
+        const Array<uint8>& bytecode = asset.GetSPIRVShader().GetByteCode();
+        stream << static_cast<uint32>(bytecode.GetSizeInBytes());
         stream.Write(bytecode.GetData(), bytecode.GetSizeInBytes());
         stream << asset.GetEntryPoint();
-        stream << static_cast<uint8_t>(asset.GetStage());
+        stream << static_cast<uint8>(asset.GetStage());
     }
 
     void operator>>(InputStream& stream, Shader& asset)
     {
-        uint32_t bytecodeSize = 0;
-        Array<uint8_t> bytecode;
+        uint32 bytecodeSize = 0;
+        Array<uint8> bytecode;
         String entryPoint;
-        uint8_t stageByte = 0;
+        uint8 stageByte = 0;
         
         stream >> bytecodeSize;
 

@@ -11,7 +11,7 @@ namespace Wl
 {
 
     RHIDeviceMemoryUploader::RHIDeviceMemoryUploader(SharedPtr<RHIDevice> device,
-                                                     size_t capacity)
+                                                     usize capacity)
         : m_device(device)
         , m_bufferEntries(capacity)
     {

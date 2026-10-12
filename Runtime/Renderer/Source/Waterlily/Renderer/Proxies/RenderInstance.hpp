@@ -12,11 +12,11 @@ namespace Wl
 
     struct WL_RENDERER_API RenderInstanceLayout
     {
-        size_t ModelOffset;
-        size_t MaterialOffset;
-        size_t Stride;
+        usize ModelOffset;
+        usize MaterialOffset;
+        usize Stride;
 
-        void UpdateData(uint8_t* dst, const RenderSubMesh& src);
+        void UpdateData(uint8* dst, const RenderSubMesh& src);
     };
 
     struct WL_RENDERER_API RenderInstance
@@ -24,7 +24,7 @@ namespace Wl
         Matrix4f Model = Matrix4f::Identity();
         MaterialHandle Material = MaterialRegistry::InvalidHandle;
 
-        static RenderInstanceLayout CreateLayout(size_t minAlignment);
+        static RenderInstanceLayout CreateLayout(usize minAlignment);
     };
 
 }// namespace Wl

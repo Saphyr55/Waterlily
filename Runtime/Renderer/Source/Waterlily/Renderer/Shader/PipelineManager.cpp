@@ -216,10 +216,10 @@ namespace Wl
 
     void PipelineManager::ReflectSRGLayouts(
             SPIRVPipelineReflection& reflection,
-            HashMap<uint32_t, RHIShaderResourceGroupLayout*>& outStateLayouts,
+            HashMap<uint32, RHIShaderResourceGroupLayout*>& outStateLayouts,
             Array<RHIShaderResourceGroupLayout*>& outLayouts)
     {
-        Array<uint32_t> groupIndices;
+        Array<uint32> groupIndices;
         groupIndices.Reserve(outStateLayouts.GetSize());
 
         for (auto [group, _]: outStateLayouts)
@@ -227,10 +227,10 @@ namespace Wl
             groupIndices.Append(group);
         }
 
-        HashMap<uint32_t, RHIShaderResourceGroupLayout*> srgLayoutsMap =
+        HashMap<uint32, RHIShaderResourceGroupLayout*> srgLayoutsMap =
                 SPIRVPipelineReflector::BuildLayouts(reflection, m_srgLayoutCache, groupIndices);
 
-        HashMap<uint32_t, RHIShaderResourceGroupLayout*> merged;
+        HashMap<uint32, RHIShaderResourceGroupLayout*> merged;
         for (auto [group, layout]: srgLayoutsMap)
         {
             groupIndices.Append(group);
@@ -249,7 +249,7 @@ namespace Wl
         // Critical section: we need to ensure the order of the shader resource group layouts is consistent, otherwise
         // pipeline creation will fail.
         std::sort(groupIndices.begin(), groupIndices.end());
-        for (uint32_t group: groupIndices)
+        for (uint32 group: groupIndices)
         {
             outLayouts.Append(merged.Get(group));
         }

@@ -21,8 +21,8 @@ namespace Wl
         constexpr Vector4(R x, R y, R z, R w);
 
         constexpr R Dot(const Vector4& vec) const;
-        constexpr const R& operator[](size_t i) const;
-        constexpr R& operator[](size_t i);
+        constexpr const R& operator[](usize i) const;
+        constexpr R& operator[](usize i);
 
         constexpr Vector4 operator*(const IsReal auto&) const;
         constexpr Vector4 operator+(const IsReal auto&) const;
@@ -53,20 +53,20 @@ namespace Wl
     template<typename RealType>
     inline void operator<<(OutputStream& stream, const Vector4<RealType>& v)
     {
-        stream.Write(reinterpret_cast<const uint8_t*>(&v), sizeof(Vector4<RealType>));
+        stream.Write(reinterpret_cast<const uint8*>(&v), sizeof(Vector4<RealType>));
     }
 
     template<typename RealType>
     inline void operator>>(InputStream& stream, Vector4<RealType>& v)
     {
-        stream.Read(reinterpret_cast<uint8_t*>(&v), sizeof(Vector4<RealType>));
+        stream.Read(reinterpret_cast<uint8*>(&v), sizeof(Vector4<RealType>));
     }
 
     using Vector4f = Vector4<float>;
     using Vector4f32 = Vector4<float>;
     using Vector4f64 = Vector4<double>;
-    using Vector4i = Vector4<int32_t>;
-    using Vector4u = Vector4<uint32_t>;
+    using Vector4i = Vector4<int32>;
+    using Vector4u = Vector4<uint32>;
 
     template<IsReal R>
     constexpr Vector4<R>::Vector4(Vector3<R> vec, R w)
@@ -109,7 +109,7 @@ namespace Wl
     }
 
     template<IsReal R>
-    constexpr R& Vector4<R>::operator[](const size_t i)
+    constexpr R& Vector4<R>::operator[](const usize i)
     {
         WL_CHECK(i < 4);
         switch (i)
@@ -129,7 +129,7 @@ namespace Wl
     }
 
     template<IsReal R>
-    constexpr const R& Vector4<R>::operator[](size_t i) const
+    constexpr const R& Vector4<R>::operator[](usize i) const
     {
         WL_CHECK(i < 4);
         switch (i)

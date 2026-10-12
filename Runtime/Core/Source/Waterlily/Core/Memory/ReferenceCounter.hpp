@@ -27,7 +27,7 @@ namespace Wl
 
         virtual void DestroyResource() = 0;
 
-        int32_t GetSharedReferenceCount() const
+        int32 GetSharedReferenceCount() const
         {
             return m_sharedReferenceCount.load(std::memory_order_relaxed);
         }
@@ -44,7 +44,7 @@ namespace Wl
 
         void ReleaseSharedReference()
         {
-            int32_t prevCount = m_sharedReferenceCount.fetch_sub(1, std::memory_order_relaxed);
+            int32 prevCount = m_sharedReferenceCount.fetch_sub(1, std::memory_order_relaxed);
 
             if (prevCount == 1)
             {

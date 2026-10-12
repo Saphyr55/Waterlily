@@ -21,11 +21,11 @@ namespace Wl
         return memoryRequirements;
     }
 
-    Array<uint32_t> VulkanBuffer::GetQueueFamilyIndices()
+    Array<uint32> VulkanBuffer::GetQueueFamilyIndices()
     {
         VulkanContext& context = VulkanContextGet();
 
-        Array<uint32_t> indices;
+        Array<uint32> indices;
         if (m_description.SharingMode == RHISharingMode::Shared)
         {
             if ((m_description.Usage & RHIBufferUsageFlags::TransferDst) == RHIBufferUsageFlags::TransferDst ||
@@ -43,7 +43,7 @@ namespace Wl
 
         VulkanContext& context = VulkanContextGet();
 
-        Array<uint32_t> indices = GetQueueFamilyIndices();
+        Array<uint32> indices = GetQueueFamilyIndices();
 
         VkBufferCreateInfo bufferCreateInfo = {};
         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -86,7 +86,7 @@ namespace Wl
         WL_VULKAN_CHECK(vmaBindBufferMemory(context.VmaAllocator, m_allocation, m_buffer));
     }
 
-    void* VulkanBuffer::Map(size_t offset, size_t size)
+    void* VulkanBuffer::Map(usize offset, usize size)
     {
         WL_CHECK_MSG(offset + size <= m_description.Size, "Update range exceeds buffer size.");
 
@@ -96,7 +96,7 @@ namespace Wl
 
         FlushWhenIsHost(offset, size);
 
-        return static_cast<uint8_t*>(m_mapped) + offset;
+        return static_cast<uint8*>(m_mapped) + offset;
     }
 
     void VulkanBuffer::Unmap()
@@ -106,7 +106,7 @@ namespace Wl
         m_mapped = nullptr;
     }
 
-    void VulkanBuffer::Update(const void* source, size_t size, size_t offset)
+    void VulkanBuffer::Update(const void* source, usize size, usize offset)
     {
         WL_CHECK_MSG(source, "Source data must not be null.");
 
@@ -123,7 +123,7 @@ namespace Wl
         FlushWhenIsHost(offset, size);
     }
 
-    void VulkanBuffer::FlushWhenIsHost(size_t offset, size_t size)
+    void VulkanBuffer::FlushWhenIsHost(usize offset, usize size)
     {
         VulkanContext& context = VulkanContextGet();
         VkMemoryPropertyFlags properties = VulkanMemoryUsageGet(m_description.MemoryUsage);
@@ -138,7 +138,7 @@ namespace Wl
         return m_description.SharingMode;
     }
 
-    size_t VulkanBuffer::GetSize()
+    usize VulkanBuffer::GetSize()
     {
         return m_description.Size;
     }

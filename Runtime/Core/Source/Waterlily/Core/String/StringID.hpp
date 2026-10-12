@@ -15,12 +15,12 @@ namespace Wl
     class WL_CORE_API StringID
     {
     public:
-        static void Register(uint64_t hash, StringRef str);
+        static void Register(uint64 hash, StringRef str);
         static StringRef Resolve(const StringID& sid);
-        static StringRef Resolve(uint64_t hash);
+        static StringRef Resolve(uint64 hash);
 
     public:
-        inline uint64_t GetHash() const
+        inline uint64 GetHash() const
         {
             return m_hash;
         }
@@ -41,7 +41,7 @@ namespace Wl
 
     public:
         StringID() noexcept = default;
-        StringID(uint64_t hash, StringRef text) noexcept;
+        StringID(uint64 hash, StringRef text) noexcept;
 
         StringID(const char* text) noexcept
             : StringID(StringRef(text))
@@ -89,11 +89,11 @@ namespace Wl
         {
             static Registry& GetInstance();
 
-            HashMap<uint64_t, String> m_registry;
+            HashMap<uint64, String> m_registry;
             std::shared_mutex m_mutex;
         };
 
-        uint64_t m_hash = 0;
+        uint64 m_hash = 0;
 #if WL_DEBUG
         const char* m_text = "";
 #endif
@@ -107,7 +107,7 @@ namespace Wl
 
     inline void operator>>(InputStream& stream, StringID& sid)
     {
-        uint64_t hash = 0;
+        uint64 hash = 0;
         String str;
         stream >> hash;
         stream >> str;

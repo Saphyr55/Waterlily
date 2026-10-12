@@ -102,14 +102,14 @@ namespace Wl
 
         WindowProperties& properties = m_windowPropertiesMap[window];
 
-        int32_t width = 0;
-        int32_t height = 0;
+        int32 width = 0;
+        int32 height = 0;
         SDL_GetWindowSize(sdlWindow, &width, &height);
         properties.Width = static_cast<float>(width);
         properties.Height = static_cast<float>(height);
 
-        int32_t x = 0;
-        int32_t y = 0;
+        int32 x = 0;
+        int32 y = 0;
         SDL_GetWindowPosition(sdlWindow, &x, &y);
         properties.X = static_cast<float>(x);
         properties.Y = static_cast<float>(y);

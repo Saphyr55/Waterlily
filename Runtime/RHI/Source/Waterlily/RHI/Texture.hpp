@@ -8,7 +8,7 @@
 
 namespace Wl
 {
-    inline static size_t s_countTextureAllocation = 0;
+    inline static usize s_countTextureAllocation = 0;
 
     struct RHITextureLayoutTransition
     {
@@ -25,11 +25,11 @@ namespace Wl
         RHIMemoryUsage MemoryUsage = RHIMemoryUsage::Device;
         RHITextureDimension Dimension = RHITextureDimension::Dim2D;
         RHITextureLayout Layout = RHITextureLayout::Undefined;
-        uint32_t Width = 8;
-        uint32_t Height = 8;
-        size_t Depth = 1;
-        uint32_t MipLevels = 1;
-        size_t Layers = 1;
+        uint32 Width = 8;
+        uint32 Height = 8;
+        usize Depth = 1;
+        uint32 MipLevels = 1;
+        usize Layers = 1;
     };
 
     class WL_RHI_API RHITexture : public RHIResource

@@ -7,7 +7,7 @@ namespace Wl
     
     static HeapAllocator s_globalAllocator;
 
-    size_t MemoryStack::s_depth = 0;
+    usize MemoryStack::s_depth = 0;
     Allocator* MemoryStack::s_allocators[MemoryStack::MaxAllocator] = {&s_globalAllocator};
 
     Allocator* MemoryStack::GetGlobalAllocator()
@@ -30,7 +30,7 @@ namespace Wl
         return GetAllocatorAt(s_depth - 1);
     }
 
-    Allocator* MemoryStack::GetAllocatorAt(size_t depth)
+    Allocator* MemoryStack::GetAllocatorAt(usize depth)
     {
         return s_allocators[depth];
     }
@@ -60,12 +60,12 @@ namespace Wl
         MemoryStack::s_depth--;
     }
 
-    void* ContextAllocator::Allocate(size_t size, size_t alignment)
+    void* ContextAllocator::Allocate(usize size, usize alignment)
     {
         return m_allocator->Allocate(size, alignment);
     }
 
-    void ContextAllocator::Deallocate(void* memory, size_t size, size_t alignment)
+    void ContextAllocator::Deallocate(void* memory, usize size, usize alignment)
     {
         m_allocator->Deallocate(memory, size, alignment);
     }

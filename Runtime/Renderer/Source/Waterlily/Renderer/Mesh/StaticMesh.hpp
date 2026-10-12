@@ -13,15 +13,15 @@ namespace Wl
     struct WL_RENDERER_API StaticMesh : Asset
     {
     public:
-        using Buffer = Array<uint8_t>;
+        using Buffer = Array<uint8>;
 
         struct SubMesh
         {
             AssetHandle Material;
-            uint32_t VertexOffset = 0;
-            uint32_t VertexCount = 0;
-            uint32_t IndexOffset = 0;
-            uint32_t IndexCount = 0;
+            uint32 VertexOffset = 0;
+            uint32 VertexCount = 0;
+            uint32 IndexOffset = 0;
+            uint32 IndexCount = 0;
         };
 
     public:
@@ -41,7 +41,7 @@ namespace Wl
         Buffer Normals;
         Buffer UVTextures;
         Buffer Tangents;
-        Array<uint32_t> Indices;
+        Array<uint32> Indices;
         Array<SubMesh> SubMeshes;
     };
 

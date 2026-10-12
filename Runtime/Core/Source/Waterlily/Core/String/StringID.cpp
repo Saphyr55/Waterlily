@@ -12,7 +12,7 @@ namespace Wl
         return s_registry;
     }
 
-    void StringID::Register(uint64_t hash, StringRef str)
+    void StringID::Register(uint64 hash, StringRef str)
     {
         Registry& registry = Registry::GetInstance();
 
@@ -24,7 +24,7 @@ namespace Wl
         }
     }
 
-    StringRef StringID::Resolve(uint64_t hash)
+    StringRef StringID::Resolve(uint64 hash)
     {
         Registry& registry = Registry::GetInstance();
 
@@ -43,7 +43,7 @@ namespace Wl
         return Resolve(sid.GetHash());
     }
 
-    StringID::StringID(uint64_t hash, StringRef text) noexcept
+    StringID::StringID(uint64 hash, StringRef text) noexcept
         : m_hash(hash)
     {
         StringID::Register(m_hash, text);

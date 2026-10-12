@@ -13,7 +13,7 @@ TEST_CASE("StringBase - Construction", "[string]")
         String str;
         REQUIRE(str.GetSize() == 0);
         REQUIRE(str.GetCapacity() >= 0);
-        REQUIRE(strcmp(str.data(), "") == 0);
+        REQUIRE(StringCompare(str.data(), "") == 0);
     }
 
     SECTION("Construction with capacity")
@@ -21,14 +21,14 @@ TEST_CASE("StringBase - Construction", "[string]")
         String str(100);
         REQUIRE(str.GetSize() == 0);
         REQUIRE(str.GetCapacity() >= 100);
-        REQUIRE(strcmp(str.data(), "") == 0);
+        REQUIRE(StringCompare(str.data(), "") == 0);
     }
 
     SECTION("Construction from C-string")
     {
         String str("Hello");
         REQUIRE(str.GetSize() == 5);
-        REQUIRE(strcmp(str.data(), "Hello") == 0);
+        REQUIRE(StringCompare(str.data(), "Hello") == 0);
     }
 
     SECTION("Copy construction")
@@ -37,7 +37,7 @@ TEST_CASE("StringBase - Construction", "[string]")
         String copy(original);
 
         REQUIRE(copy.GetSize() == original.GetSize());
-        REQUIRE(strcmp(copy.data(), original.data()) == 0);
+        REQUIRE(StringCompare(copy.data(), original.data()) == 0);
     }
 }
 
@@ -51,7 +51,7 @@ TEST_CASE("StringBase - Assignment", "[string]")
         assigned = original;
 
         REQUIRE(assigned.GetSize() == original.GetSize());
-        REQUIRE(strcmp(assigned.data(), original.data()) == 0);
+        REQUIRE(StringCompare(assigned.data(), original.data()) == 0);
     }
 
     SECTION("Self assignment")
@@ -59,7 +59,7 @@ TEST_CASE("StringBase - Assignment", "[string]")
         String str("Hello");
         str = str;// Should not cause issues
 
-        REQUIRE(strcmp(str.data(), "Hello") == 0);
+        REQUIRE(StringCompare(str.data(), "Hello") == 0);
     }
 }
 
@@ -71,7 +71,7 @@ TEST_CASE("StringBase - Append operations", "[string]")
         str.Append(" World");
 
         REQUIRE(str.GetSize() == 11);
-        REQUIRE(strcmp(str.GetData(), "Hello World") == 0);
+        REQUIRE(StringCompare(str.GetData(), "Hello World") == 0);
     }
 
     SECTION("Append character")
@@ -80,7 +80,7 @@ TEST_CASE("StringBase - Append operations", "[string]")
         str.Append('!');
 
         REQUIRE(str.GetSize() == 6);
-        REQUIRE(strcmp(str.GetData(), "Hello!") == 0);
+        REQUIRE(StringCompare(str.GetData(), "Hello!") == 0);
     }
 
     SECTION("Append another string")
@@ -91,7 +91,7 @@ TEST_CASE("StringBase - Append operations", "[string]")
         str1.Append(str2);
 
         REQUIRE(str1.GetSize() == 11);
-        REQUIRE(strcmp(str1.GetData(), "Hello World") == 0);
+        REQUIRE(StringCompare(str1.GetData(), "Hello World") == 0);
     }
 
     SECTION("Multiple appends")
@@ -100,7 +100,7 @@ TEST_CASE("StringBase - Append operations", "[string]")
         str.Append("Hello").Append(' ').Append("World").Append('!');
 
         REQUIRE(str.GetSize() == 12);
-        REQUIRE(strcmp(str.GetData(), "Hello World!") == 0);
+        REQUIRE(StringCompare(str.GetData(), "Hello World!") == 0);
     }
 }
 
@@ -111,7 +111,7 @@ TEST_CASE("StringBase - Operator += overloads", "[string]")
         String str("Hello");
         str += " World";
 
-        REQUIRE(strcmp(str.GetData(), "Hello World") == 0);
+        REQUIRE(StringCompare(str.GetData(), "Hello World") == 0);
     }
 
     SECTION("+= with character")
@@ -119,7 +119,7 @@ TEST_CASE("StringBase - Operator += overloads", "[string]")
         String str("Hello");
         str += '!';
 
-        REQUIRE(strcmp(str.GetData(), "Hello!") == 0);
+        REQUIRE(StringCompare(str.GetData(), "Hello!") == 0);
     }
 
     SECTION("+= with another string")
@@ -129,7 +129,7 @@ TEST_CASE("StringBase - Operator += overloads", "[string]")
 
         str1 += str2;
 
-        REQUIRE(strcmp(str1.GetData(), "Hello World") == 0);
+        REQUIRE(StringCompare(str1.GetData(), "Hello World") == 0);
     }
 }
 
@@ -168,7 +168,7 @@ TEST_CASE("StringBase - Capacity management", "[string]")
     SECTION("Reserve operation")
     {
         String str;
-        size_t initialCapacity = str.GetCapacity();
+        usize initialCapacity = str.GetCapacity();
 
         str.Reserve(100);
 

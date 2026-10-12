@@ -21,10 +21,10 @@ namespace Wl
         Matrix4f Model = Matrix4f::Identity();
         MaterialHandle Material = MaterialRegistry::InvalidHandle;
 
-        uint32_t VertexOffset;
-        uint32_t IndexOffset;
-        uint32_t VertexCount;
-        uint32_t IndexCount;
+        uint32 VertexOffset;
+        uint32 IndexOffset;
+        uint32 VertexCount;
+        uint32 IndexCount;
     };
 
     struct WL_RENDERER_API RenderMesh
@@ -51,7 +51,7 @@ namespace Wl
 
         Array<RHIDrawIndexedCommand> CreateDrawIndexedCommands();
 
-        inline size_t GetSubMeshCount()
+        inline usize GetSubMeshCount()
         {
             return GetSubMeshes().GetSize();
         }

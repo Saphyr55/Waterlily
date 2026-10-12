@@ -1,5 +1,7 @@
 #include "Waterlily/Core/Object/Type.hpp"
 #include "MetaTable.hpp"
+#include "Primitive.hpp"
+#include "TypeInfo.hpp"
 
 namespace Wl
 {
@@ -25,7 +27,7 @@ namespace Wl
         }
         return false;
     }
-    
+
     Type Type::GetParent() const
     {
         return MetaTable::GetType(GetTypeInfo().inherit);
@@ -33,6 +35,11 @@ namespace Wl
 
     constexpr Type::Type(IdentifierType id) noexcept
         : m_id(id)
+    {
+    }
+
+    constexpr Type::Type() noexcept
+        : m_id(TypeID<void>())
     {
     }
 

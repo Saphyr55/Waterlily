@@ -20,7 +20,7 @@ namespace Wl
         };
 
     public:
-        void InitPool(Allocator* allocator, size_t blockCount = 64);
+        void InitPool(Allocator* allocator, usize blockCount = 64);
 
         ResourceType* Allocate();
 
@@ -41,17 +41,17 @@ namespace Wl
             return m_allocator;
         }
 
-        size_t GetBlockCount()
+        usize GetBlockCount()
         {
             return m_blockCount;
         }
 
-        size_t GetBlocksSize()
+        usize GetBlocksSize()
         {
             return m_blocks.GetSize();
         }
 
-        size_t GetBlocksCapacity()
+        usize GetBlocksCapacity()
         {
             return m_blocks.GetCapacity();
         }
@@ -67,8 +67,8 @@ namespace Wl
         Allocator* m_allocator;
         Block* m_freeBlock;
         Array<Block*> m_blocks;
-        size_t m_blockCount;
-        size_t m_growFactor;
+        usize m_blockCount;
+        usize m_growFactor;
     };
 
     template<typename ResourceType>
@@ -88,7 +88,7 @@ namespace Wl
     }
 
     template<typename ResourceType>
-    void MemoryPool<ResourceType>::InitPool(Allocator* allocator, size_t block_count)
+    void MemoryPool<ResourceType>::InitPool(Allocator* allocator, usize block_count)
     {
         m_allocator = allocator;
         m_blockCount = block_count;
@@ -164,7 +164,7 @@ namespace Wl
         Block* newBlock = static_cast<Block*>(m_allocator->Allocate(m_blockCount * sizeof(Block)));
         m_blocks.Append(newBlock);
 
-        for (size_t i = 0; i < m_blockCount - 1; i++)
+        for (usize i = 0; i < m_blockCount - 1; i++)
         {
             newBlock[i].Next = &newBlock[i + 1];
         }
@@ -185,7 +185,7 @@ namespace Wl
 
         for (Block* chunk: m_blocks)
         {
-            for (size_t i = 0; i < m_blockCount; i++)
+            for (usize i = 0; i < m_blockCount; i++)
             {
                 Block* current = &chunk[i];
 

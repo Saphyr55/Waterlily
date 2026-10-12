@@ -89,7 +89,7 @@ namespace Wl
         return RHIFormat::Undefined;
     }
 
-    static uint32_t SrideFromSPV(SpvReflectFormat format)
+    static uint32 SrideFromSPV(SpvReflectFormat format)
     {
         switch (format)
         {
@@ -199,18 +199,18 @@ namespace Wl
         return fallback;
     }
 
-    HashMap<uint32_t, RHIShaderResourceGroupLayout*> SPIRVPipelineReflector::BuildLayouts(const SPIRVPipelineReflection& reflect,
+    HashMap<uint32, RHIShaderResourceGroupLayout*> SPIRVPipelineReflector::BuildLayouts(const SPIRVPipelineReflection& reflect,
                                                                                           RHIShaderResourceGroupLayoutCache& cache,
-                                                                                          ArrayView<uint32_t> externGroups)
+                                                                                          ArrayView<uint32> externGroups)
     {
-        Array<uint32_t> groupIndices;
+        Array<uint32> groupIndices;
         for (auto [group, _]: reflect.Groups)
         {
             groupIndices.Append(group);
         }
 
-        HashMap<uint32_t, RHIShaderResourceGroupLayout*> layouts;
-        for (uint32_t group: groupIndices)
+        HashMap<uint32, RHIShaderResourceGroupLayout*> layouts;
+        for (uint32 group: groupIndices)
         {
             // TODO: Find a better way to skip externals group
             if (externGroups.Contains(group))
@@ -268,7 +268,7 @@ namespace Wl
             spvReflectDestroyShaderModule(m);
         });
 
-        uint32_t bindingCount = 0;
+        uint32 bindingCount = 0;
         result = spvReflectEnumerateDescriptorBindings(&spvModule, &bindingCount, nullptr);
         if (!isSuccess())
         {
@@ -288,7 +288,7 @@ namespace Wl
 
         outReflect.EntryPointNames[shader.GetStage()] = String(spvModule.entry_point_name);
 
-        for (size_t i = 0; i < bindingCount; i++)
+        for (usize i = 0; i < bindingCount; i++)
         {
             SpvReflectDescriptorBinding* spvBinding = spvBindings[i];
 
@@ -324,7 +324,7 @@ namespace Wl
 
         if (shader.GetStage() == RHIShaderStage::Vertex)
         {
-            uint32_t inputCount = 0;
+            uint32 inputCount = 0;
             spvReflectEnumerateInputVariables(&spvModule, &inputCount, nullptr);
 
             Array<SpvReflectInterfaceVariable*> rawInputs;

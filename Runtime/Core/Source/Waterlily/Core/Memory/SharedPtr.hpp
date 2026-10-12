@@ -52,7 +52,7 @@ namespace Wl
             return m_referenceCounter;
         }
 
-        int32_t GetSharedReferenceCount() const
+        int32 GetSharedReferenceCount() const
         {
             return m_referenceCounter->GetSharedReferenceCount();
         }
@@ -285,7 +285,7 @@ namespace Wl
 template<typename ResourceType>
 struct std::hash<Wl::SharedPtr<ResourceType>>
 {
-    size_t operator()(const Wl::SharedPtr<ResourceType>& GetRef) const
+    usize operator()(const Wl::SharedPtr<ResourceType>& GetRef) const
     {
         return std::hash<ResourceType*>()(GetRef.GetResource());
     }

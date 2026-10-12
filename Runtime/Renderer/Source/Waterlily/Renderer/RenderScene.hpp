@@ -52,7 +52,7 @@ namespace Wl
             return m_indirectBuffer;
         }
 
-        uint32_t GetDrawCount() const
+        uint32 GetDrawCount() const
         {
             return m_indirectBufferCount;
         }
@@ -69,7 +69,7 @@ namespace Wl
 
         // Indirect draw calls.
         RHIBuffer* m_indirectBuffer = nullptr;
-        size_t m_indirectBufferCount = 0;
+        usize m_indirectBufferCount = 0;
 
         // Instances.
         Array<RenderInstance> m_instances;

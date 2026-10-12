@@ -69,7 +69,7 @@ namespace Wl
         const Array<ModuleInformation>& moduleInformations = manifest.GetModules();
         WL_LOG_INFO("ModuleManifest", "Module Manifest Informations (%d modules):", moduleInformations.GetSize());
 
-        for (size_t i = 0; i < moduleInformations.GetSize(); i++)
+        for (usize i = 0; i < moduleInformations.GetSize(); i++)
         {
             const ModuleInformation& moduleInformation = moduleInformations[i];
             WL_LOG_INFO("ModuleManifest", "Module:");
@@ -82,9 +82,9 @@ namespace Wl
                 continue;
             }
 
-            size_t dependencyCount = moduleInformation.Dependencies.GetSize();
+            usize dependencyCount = moduleInformation.Dependencies.GetSize();
             String dependencyNames(256);
-            for (size_t j = 0; j < dependencyCount; j++)
+            for (usize j = 0; j < dependencyCount; j++)
             {
                 dependencyNames.Append(moduleInformation.Dependencies[j]);
                 if (j < dependencyCount - 1)
@@ -110,11 +110,11 @@ namespace Wl
     bool ModuleManifestResolveDependencies(const ModuleManifest& manifest,
                                            Array<const ModuleInformation*>& outOrder)
     {
-        const size_t size = manifest.GetModules().GetSize();
+        const usize size = manifest.GetModules().GetSize();
         outOrder.Reserve(size);
 
         HashMap<StringRef, const ModuleInformation*> moduleMap(size);
-        HashMap<StringRef, size_t> indegree(size);
+        HashMap<StringRef, usize> indegree(size);
         HashMap<StringRef, Array<String>> graph(size);
 
         for (const ModuleInformation& info: manifest.GetModules())

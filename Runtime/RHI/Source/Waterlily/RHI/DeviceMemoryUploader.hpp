@@ -14,10 +14,10 @@ namespace Wl
     struct WL_RHI_API RHIStagingBufferContext
     {
         RHIBufferUsageFlags Usage;
-        size_t Size;     // Size in bytes;
+        usize Size;     // Size in bytes;
         const void* Data;// Data to transfer to the device.
 
-        RHIStagingBufferContext(RHIBufferUsageFlags usage, size_t sizeInBytes, void* data)
+        RHIStagingBufferContext(RHIBufferUsageFlags usage, usize sizeInBytes, void* data)
             : Usage(usage)
             , Size(sizeInBytes)
             , Data(data)
@@ -40,7 +40,7 @@ namespace Wl
     public:
         RHIBuffer* SendBuffer(const RHIStagingBufferContext& context);
 
-        RHIBuffer* SendBuffer(RHIBufferUsageFlags usage, size_t size, void* data)
+        RHIBuffer* SendBuffer(RHIBufferUsageFlags usage, usize size, void* data)
         {
             return SendBuffer(RHIStagingBufferContext(usage, size, data));
         }
@@ -55,7 +55,7 @@ namespace Wl
 
         void Upload(const SharedPtr<RHICommandQueue>& queue);
 
-        RHIDeviceMemoryUploader(SharedPtr<RHIDevice> device, size_t capacity = 8);
+        RHIDeviceMemoryUploader(SharedPtr<RHIDevice> device, usize capacity = 8);
 
     private:
         RHIBufferDescription CreateStagingBufferDescription(const RHIStagingBufferContext& context);
@@ -66,14 +66,14 @@ namespace Wl
         {
             RHIBuffer* Staging;
             RHIBuffer* Buffer;
-            size_t Size;
+            usize Size;
         };
 
         struct TextureEntry
         {
             RHIBuffer* Staging;
             RHITexture* Texture;
-            size_t Size;
+            usize Size;
         };
 
         Array<RHIBuffer*> m_stangings;

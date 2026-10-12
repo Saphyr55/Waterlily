@@ -22,9 +22,9 @@
 namespace Wl
 {
 
-    uint32_t VulkanSwapchainCountImage(const VkSurfaceCapabilitiesKHR& capabilities)
+    uint32 VulkanSwapchainCountImage(const VkSurfaceCapabilitiesKHR& capabilities)
     {
-        uint32_t imageCount = capabilities.minImageCount + 1;
+        uint32 imageCount = capabilities.minImageCount + 1;
 
         if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)
         {
@@ -75,7 +75,7 @@ namespace Wl
         return availableSurfaceFormats[0];
     }
 
-    VulkanSwapchain::VulkanSwapchain(VulkanContext& context, uint32_t width, uint32_t height, uint32_t imageCount)
+    VulkanSwapchain::VulkanSwapchain(VulkanContext& context, uint32 width, uint32 height, uint32 imageCount)
         : m_context(context)
         , m_extent({width, height})
         , m_format(VK_FORMAT_B8G8R8A8_SRGB)
@@ -98,7 +98,7 @@ namespace Wl
         WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
                 physicalDevice, surface, &swapchainSupportDetails.Capabilities));
 
-        uint32_t formatCount = 0;
+        uint32 formatCount = 0;
         WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfaceFormatsKHR(
                 physicalDevice, surface, &formatCount, nullptr));
 
@@ -109,7 +109,7 @@ namespace Wl
                     physicalDevice, surface, &formatCount, swapchainSupportDetails.SurfaceFormats.data()));
         }
 
-        uint32_t presentModeCount = 0;
+        uint32 presentModeCount = 0;
         WL_VULKAN_CHECK(VulkanAPI::vkGetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice, surface, &presentModeCount, nullptr));
 
@@ -135,7 +135,7 @@ namespace Wl
         VkSurfaceFormatKHR surfaceFormat = VulkanChooseSurfaceFormat(swapchainSupportDetails.SurfaceFormats);
         VkPresentModeKHR presentMode = VulkanChoosePresentMode(swapchainSupportDetails.PresentModes);
         VkExtent2D extent = VulkanChooseSwapchainExtent(m_extent, swapchainSupportDetails.Capabilities);
-        uint32_t minImageCount = VulkanSwapchainCountImage(swapchainSupportDetails.Capabilities);
+        uint32 minImageCount = VulkanSwapchainCountImage(swapchainSupportDetails.Capabilities);
 
         VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
         swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -148,9 +148,9 @@ namespace Wl
         swapchainCreateInfo.imageUsage =
                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-        uint32_t graphicsQueueIndex = m_context.PhysicalDeviceInfo.GraphicsQueueIndex;
-        uint32_t presentQueueIndex = m_context.PhysicalDeviceInfo.PresentQueueIndex;
-        uint32_t queueFamillies[] = {graphicsQueueIndex, presentQueueIndex};
+        uint32 graphicsQueueIndex = m_context.PhysicalDeviceInfo.GraphicsQueueIndex;
+        uint32 presentQueueIndex = m_context.PhysicalDeviceInfo.PresentQueueIndex;
+        uint32 queueFamillies[] = {graphicsQueueIndex, presentQueueIndex};
 
         if (queueFamillies[0] != queueFamillies[1])
         {
@@ -174,7 +174,7 @@ namespace Wl
         WL_VULKAN_CHECK(VulkanAPI::vkCreateSwapchainKHR(
                 m_context.Device, &swapchainCreateInfo, m_context.Allocator, &m_handle));
 
-        uint32_t imageCount = 0;
+        uint32 imageCount = 0;
         VulkanAPI::vkGetSwapchainImagesKHR(m_context.Device, m_handle, &imageCount, nullptr);
 
         if (m_imageCount >= imageCount)
@@ -190,7 +190,7 @@ namespace Wl
         m_extent = extent;
         m_format = surfaceFormat.format;
 
-        for (uint32_t i = 0; i < imageCount; i++)
+        for (uint32 i = 0; i < imageCount; i++)
         {
             VkImage image = m_images[i];
 
@@ -283,12 +283,12 @@ namespace Wl
         return m_currentResult;
     }
 
-    uint32_t VulkanSwapchain::GetWidth()
+    uint32 VulkanSwapchain::GetWidth()
     {
         return m_extent.width;
     }
 
-    uint32_t VulkanSwapchain::GetHeight()
+    uint32 VulkanSwapchain::GetHeight()
     {
         return m_extent.height;
     }

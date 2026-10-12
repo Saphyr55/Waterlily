@@ -35,6 +35,13 @@ public:
         m_x = x;
     }
 
+public:
+    Foo() = default;
+    Foo(int y)
+        : m_y(y)
+    {
+    }
+
 private:
     int m_x = 91;
     const int m_y = 0;
@@ -43,17 +50,17 @@ public:
     String z;
 
 public:
-    static size_t OffsetOfX()
+    static usize OffsetOfX()
     {
         return offsetof(Foo, m_x);
     }
 
-    static size_t OffsetOfY()
+    static usize OffsetOfY()
     {
         return offsetof(Foo, m_y);
     }
 
-    static size_t OffsetOfZ()
+    static usize OffsetOfZ()
     {
         return offsetof(Foo, z);
     }

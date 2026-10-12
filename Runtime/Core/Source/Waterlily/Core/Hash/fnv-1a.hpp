@@ -1,19 +1,19 @@
 #pragma once
 
-#include <cstdint>
+#include "Waterlily/Core/Defines.hpp"
 
 namespace Wl
 {
 
     // See: https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
-    constexpr uint64_t fnv1a(const uint8_t* data, size_t length)
+    constexpr uint64 fnv1a(const uint8* data, usize length)
     {
-        uint64_t FNV_offsetBasis = 0xcbf29ce484222325;
-        uint64_t FNV_prime = 0x100000001b3;
+        uint64 FNV_offsetBasis = 0xcbf29ce484222325;
+        uint64 FNV_prime = 0x100000001b3;
 
-        uint64_t hash = FNV_offsetBasis;
+        uint64 hash = FNV_offsetBasis;
 
-        for (size_t i = 0; i < length; i++)
+        for (usize i = 0; i < length; i++)
         {
             hash ^= data[i];
             hash *= FNV_prime;
@@ -22,14 +22,14 @@ namespace Wl
         return hash;
     }
 
-    constexpr uint64_t fnv1a_cstr(const char* data, size_t length)
+    constexpr uint64 fnv1a_cstr(const char* data, usize length)
     {
-        uint64_t FNV_offsetBasis = 0xcbf29ce484222325;
-        uint64_t FNV_prime = 0x100000001b3;
+        uint64 FNV_offsetBasis = 0xcbf29ce484222325;
+        uint64 FNV_prime = 0x100000001b3;
 
-        uint64_t hash = FNV_offsetBasis;
+        uint64 hash = FNV_offsetBasis;
 
-        for (size_t i = 0; i < length; i++)
+        for (usize i = 0; i < length; i++)
         {
             hash ^= data[i];
             hash *= FNV_prime;
@@ -38,20 +38,20 @@ namespace Wl
         return hash;
     }
     
-    template<size_t N>
-    constexpr uint64_t fnv1a_cstr(const char (&data)[N])
+    template<usize N>
+    constexpr uint64 fnv1a_cstr(const char (&data)[N])
     {
         return fnv1a_cstr(data, N);
     }
 
-    constexpr uint64_t fnv1a_cstr(const wchar_t* data, size_t length)
+    constexpr uint64 fnv1a_cstr(const wchar_t* data, usize length)
     {
-        uint64_t FNV_offsetBasis = 0xcbf29ce484222325;
-        uint64_t FNV_prime = 0x100000001b3;
+        uint64 FNV_offsetBasis = 0xcbf29ce484222325;
+        uint64 FNV_prime = 0x100000001b3;
 
-        uint64_t hash = FNV_offsetBasis;
+        uint64 hash = FNV_offsetBasis;
 
-        for (size_t i = 0; i < length; i++)
+        for (usize i = 0; i < length; i++)
         {
             hash ^= data[i];
             hash *= FNV_prime;

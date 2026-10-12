@@ -12,13 +12,13 @@
 namespace Wl
 {
 
-    using MaterialHandle = uint16_t;
+    using MaterialHandle = uint16;
 
     class WL_RENDERER_API MaterialRegistry
     {
     public:
         inline static constexpr MaterialHandle InvalidHandle = UINT16_MAX;
-        inline static constexpr uint32_t MaxResources = 4096;
+        inline static constexpr uint32 MaxResources = 4096;
 
         MaterialHandle ObtainMaterial(const MaterialData& data = {});
         void RemoveMaterial(MaterialHandle handle);
@@ -30,7 +30,7 @@ namespace Wl
 
         void Destroy();
 
-        inline uint32_t GetShaderBinding()
+        inline uint32 GetShaderBinding()
         {
             return m_shaderBinding;
         }
@@ -46,7 +46,7 @@ namespace Wl
         }
 
     public:
-        MaterialRegistry(const SharedPtr<RHIDevice>& device, uint32_t binding);
+        MaterialRegistry(const SharedPtr<RHIDevice>& device, uint32 binding);
         ~MaterialRegistry() = default;
 
     private:
@@ -56,16 +56,16 @@ namespace Wl
         RHIShaderResourceGroupPool* m_srgPool;
         RHIBuffer* m_bufferStorage;
 
-        using MaterialDataKey = size_t;
+        using MaterialDataKey = usize;
 
         HashMap<MaterialDataKey, MaterialHandle> m_cache;
         HashMap<MaterialHandle, MaterialDataKey> m_reverseCache;
         HashMap<MaterialHandle, MaterialData> m_registry;
 
         MaterialHandle m_last = 0;
-        uint32_t m_shaderBinding;
+        uint32 m_shaderBinding;
 
-        size_t m_materialStride = 0;
+        usize m_materialStride = 0;
     };
 
 }// namespace Wl

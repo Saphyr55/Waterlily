@@ -15,12 +15,12 @@ namespace Wl
             return GetTypeInfo().name;
         }
 
-        inline size_t GetSize() const
+        inline usize GetSize() const
         {
             return GetTypeInfo().size;
         }
 
-        inline size_t GetAlign() const
+        inline usize GetAlign() const
         {
             return GetTypeInfo().align;
         }
@@ -31,7 +31,7 @@ namespace Wl
         }
 
         const TypeInfo& GetTypeInfo() const;
-        
+
         bool InheritFrom(Type parentType) const;
 
         Type GetParent() const;
@@ -48,9 +48,10 @@ namespace Wl
         }
 
     public:
-        constexpr explicit Type(IdentifierType id = TypeID<void>()) noexcept;
+        constexpr Type() noexcept;
+        constexpr explicit Type(IdentifierType id) noexcept;
         constexpr Type(const Type&) noexcept = default;
-        Type(Type&&) noexcept = default;
+        constexpr Type(Type&&) noexcept = default;
         constexpr ~Type() noexcept = default;
 
         constexpr Type& operator=(const Type& other) noexcept = default;
@@ -58,6 +59,26 @@ namespace Wl
 
     private:
         IdentifierType m_id;
+    };
+
+    template<typename T>
+    class TypedType : public Type
+    {
+    public:
+        constexpr explicit TypedType(IdentifierType id) noexcept
+            : Type(id)
+        {
+        }
+        constexpr TypedType(Type type) noexcept
+            : TypedType(type.GetID())
+        {
+        }
+        constexpr TypedType(const TypedType&) noexcept = default;
+        constexpr TypedType(TypedType&&) noexcept = default;
+        constexpr ~TypedType() noexcept = default;
+
+        constexpr TypedType& operator=(const TypedType& other) noexcept = default;
+        constexpr TypedType& operator=(TypedType&& other) noexcept = default;
     };
 
 }// namespace Wl

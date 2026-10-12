@@ -10,15 +10,15 @@ namespace Wl
 
     struct RHIShaderResourceGroupLayoutDescriptionHash
     {
-        size_t operator()(const RHIShaderResourceGroupLayoutDescription& description) const
+        usize operator()(const RHIShaderResourceGroupLayoutDescription& description) const
         {
-            size_t hash = 0;
+            usize hash = 0;
             for (const RHIShaderResourceBinding& binding: description.Bindings)
             {
                 hash = HashCombine(hash, binding.Binding);
                 hash = HashCombine(hash, binding.Count);
-                hash = HashCombine(hash, static_cast<size_t>(binding.Type));
-                hash = HashCombine(hash, static_cast<size_t>(binding.Stage));
+                hash = HashCombine(hash, static_cast<usize>(binding.Type));
+                hash = HashCombine(hash, static_cast<usize>(binding.Stage));
             }
             return hash;
         }

@@ -15,7 +15,7 @@ namespace Wl
         Array<VkAttachmentDescription> attachments(m_description.ColorAttachmentDecriptions.GetSize() + 1);
         Array<VkAttachmentReference> colorAttachmentReferences(m_description.ColorAttachmentDecriptions.GetSize());
 
-        for (size_t attachmenIndex = 0; attachmenIndex < m_description.ColorAttachmentDecriptions.GetSize(); attachmenIndex++)
+        for (usize attachmenIndex = 0; attachmenIndex < m_description.ColorAttachmentDecriptions.GetSize(); attachmenIndex++)
         {
             const RHIColorAttachmentDescription& attachmentDescription = m_description.ColorAttachmentDecriptions[attachmenIndex];
             VkAttachmentDescription colorAttachmentDescription = {};
@@ -96,7 +96,7 @@ namespace Wl
         depthSubpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
         Array<VkSubpassDependency> dependencies(attachments.GetSize());
-        for (size_t i = 0; i < attachments.GetSize() - 1; i++)
+        for (usize i = 0; i < attachments.GetSize() - 1; i++)
         {
             dependencies.Append(subpassDependency);
         }

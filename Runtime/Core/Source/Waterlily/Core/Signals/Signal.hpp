@@ -35,11 +35,11 @@ namespace Wl
 
         void Emit(ArgumentTypes... args);
 
-        void Disconnect(size_t id);
+        void Disconnect(usize id);
 
         void DisconnectAll();
 
-        size_t GetConnectionCount() const;
+        usize GetConnectionCount() const;
 
         bool IsEmpty() const;
 
@@ -60,9 +60,9 @@ namespace Wl
         friend class Connection<ArgumentTypes...>;
 
     private:
-        size_t m_nextID = 1;
-        HashMap<size_t, Function<void(ArgumentTypes...)>> m_handlers;
-        Array<size_t> m_pendingRemovals;
+        usize m_nextID = 1;
+        HashMap<usize, Function<void(ArgumentTypes...)>> m_handlers;
+        Array<usize> m_pendingRemovals;
         bool m_isEmitting = false;
     };
 
@@ -70,7 +70,7 @@ namespace Wl
     template<typename Callable>
     auto Signal<ArgumentTypes...>::Connect(Callable&& callable) -> ConnectionType
     {
-        size_t id = m_nextID++;
+        usize id = m_nextID++;
         m_handlers[id] = [callable = std::move(callable)](ArgumentTypes... args) mutable -> void
         {
             callable(std::forward<ArgumentTypes>(args)...);
@@ -125,7 +125,7 @@ namespace Wl
     }
 
     template<typename... Args>
-    void Signal<Args...>::Disconnect(size_t id)
+    void Signal<Args...>::Disconnect(usize id)
     {
         if (m_isEmitting)
         {
@@ -154,7 +154,7 @@ namespace Wl
     template<typename... Args>
     void Signal<Args...>::Clean()
     {
-        for (size_t id: m_pendingRemovals)
+        for (usize id: m_pendingRemovals)
         {
             m_handlers.Remove(id);
         }
@@ -162,7 +162,7 @@ namespace Wl
     }
 
     template<typename... Args>
-    size_t Signal<Args...>::GetConnectionCount() const
+    usize Signal<Args...>::GetConnectionCount() const
     {
         return m_handlers.GetSize();
     }

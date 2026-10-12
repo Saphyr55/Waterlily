@@ -43,10 +43,10 @@ namespace Wl
         SRGIndex SRGIndexTextures = SRGIndexDefaultTextures;
         SRGBinding SRGBindingMaterials = SRGBindingDefaultMaterials;
 
-        size_t FrameAllocationSize = 16 * WL_MB;
-        size_t StagingBufferSize = 16 * WL_MB;
-        size_t StorageBufferSize = 16 * WL_MB;
-        size_t UniformBufferSize = 16 * WL_MB;
+        usize FrameAllocationSize = 16 * WL_MB;
+        usize StagingBufferSize = 16 * WL_MB;
+        usize StorageBufferSize = 16 * WL_MB;
+        usize UniformBufferSize = 16 * WL_MB;
 
         RenderServiceConfig(const SharedPtr<Window>& window, const SharedPtr<AssetManager>& assetManager)
             : RenderWindow(window)

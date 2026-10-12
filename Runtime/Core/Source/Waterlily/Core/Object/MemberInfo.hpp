@@ -12,9 +12,9 @@ namespace Wl
         StringID name;
         Type owner;
         TypeDescriptor typeDesc;
-        uint32_t offset;
-        uint32_t size;
-        uint32_t align;
+        uint32 offset;
+        uint32 size;
+        uint32 align;
 
         // For the ordered set.
         inline constexpr bool operator<(const MemberInfo& rhs) const

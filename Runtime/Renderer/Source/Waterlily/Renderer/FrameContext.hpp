@@ -46,19 +46,19 @@ namespace Wl
 
     struct FrameContextInitInfo
     {
-        uint32_t FrameWidth;
-        uint32_t FrameHeight;
-        size_t UniformBufferSize;
-        size_t StorageBufferSize;
-        size_t StagingBufferSize;
-        size_t FrameAllocationSize;
-        uint32_t GraphicsCommandBufferCount = 1;
+        uint32 FrameWidth;
+        uint32 FrameHeight;
+        usize UniformBufferSize;
+        usize StorageBufferSize;
+        usize StagingBufferSize;
+        usize FrameAllocationSize;
+        uint32 GraphicsCommandBufferCount = 1;
     };
 
     class WL_RENDERER_API FrameContext
     {
     public:
-        static constexpr uint32_t MaxFrameInFlight = 3;
+        static constexpr uint32 MaxFrameInFlight = 3;
 
     public:
         void Init(const FrameContextInitInfo& info);
@@ -68,10 +68,10 @@ namespace Wl
         // future.
         void InitSRGPools();
 
-        void Resize(uint32_t width, uint32_t height);
+        void Resize(uint32 width, uint32 height);
 
-        uint32_t GetWidth() const;
-        uint32_t GetHeight() const;
+        uint32 GetWidth() const;
+        uint32 GetHeight() const;
         float GetAspectRatio() const;
 
         FrameResult BeginFrame();
@@ -85,9 +85,9 @@ namespace Wl
             return m_frames;
         }
 
-        uint64_t GetFrameIndex() const;
-        uint64_t GetMaxFrameInFlight() const;
-        uint64_t GetFrameCount() const;
+        uint64 GetFrameIndex() const;
+        uint64 GetMaxFrameInFlight() const;
+        uint64 GetFrameCount() const;
 
         RHISwapchain* GetSwapchain();
 
@@ -109,9 +109,9 @@ namespace Wl
 
         RHISwapchain* m_swapchain = nullptr;
 
-        uint64_t m_frameIndex = 0;
-        uint64_t m_maxFrameInFlight = MaxFrameInFlight;
-        uint64_t m_frameCount = 0;
+        uint64 m_frameIndex = 0;
+        uint64 m_maxFrameInFlight = MaxFrameInFlight;
+        uint64 m_frameCount = 0;
     };
 
 

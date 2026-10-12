@@ -17,18 +17,18 @@ namespace Wl
     {
         KeyType Key;
         HashSetElement<KeyType>* Next = nullptr;
-        size_t Hash = 0;
+        usize Hash = 0;
 
         HashSetElement() = default;
 
-        HashSetElement(const KeyType& key, size_t hash)
+        HashSetElement(const KeyType& key, usize hash)
             : Key(key)
             , Next(nullptr)
             , Hash(hash)
         {
         }
 
-        HashSetElement(KeyType&& key, size_t hash)
+        HashSetElement(KeyType&& key, usize hash)
             : Key(std::move(key))
             , Next(nullptr)
             , Hash(hash)
@@ -49,9 +49,9 @@ namespace Wl
         class Iterator
         {
         public:
-            Iterator(HashSet* set = nullptr, size_t bucket_index = 0, ElementType* elem = nullptr)
+            Iterator(HashSet* set = nullptr, usize bucketIndex = 0, ElementType* elem = nullptr)
                 : m_set(set)
-                , m_bucket_index(bucket_index)
+                , m_bucketIndex(bucketIndex)
                 , m_elem(elem)
             {
             }
@@ -71,7 +71,7 @@ namespace Wl
             {
                 if (!m_set || !m_elem)
                 {
-                    m_bucket_index = m_set ? m_set->m_capacity : 0;
+                    m_bucketIndex = m_set ? m_set->m_capacity : 0;
                     m_elem = nullptr;
                     return *this;
                 }
@@ -82,15 +82,15 @@ namespace Wl
                     return *this;
                 }
 
-                m_bucket_index++;
-                while (m_bucket_index < m_set->m_capacity)
+                m_bucketIndex++;
+                while (m_bucketIndex < m_set->m_capacity)
                 {
-                    if (m_set->m_buckets[m_bucket_index])
+                    if (m_set->m_buckets[m_bucketIndex])
                     {
-                        m_elem = m_set->m_buckets[m_bucket_index];
+                        m_elem = m_set->m_buckets[m_bucketIndex];
                         return *this;
                     }
-                    ++m_bucket_index;
+                    ++m_bucketIndex;
                 }
 
                 // Fin
@@ -107,7 +107,7 @@ namespace Wl
 
             bool operator==(const Iterator& other) const
             {
-                return m_set == other.m_set && m_bucket_index == other.m_bucket_index && m_elem == other.m_elem;
+                return m_set == other.m_set && m_bucketIndex == other.m_bucketIndex && m_elem == other.m_elem;
             }
 
             bool operator!=(const Iterator& other) const
@@ -117,16 +117,16 @@ namespace Wl
 
         private:
             HashSet* m_set;
-            size_t m_bucket_index;
+            usize m_bucketIndex;
             ElementType* m_elem;
         };
 
         class ConstIterator
         {
         public:
-            ConstIterator(const HashSet* set = nullptr, size_t bucket_index = 0, const ElementType* elem = nullptr)
+            ConstIterator(const HashSet* set = nullptr, usize bucketIndex = 0, const ElementType* elem = nullptr)
                 : m_set(set)
-                , m_bucket_index(bucket_index)
+                , m_bucketIndex(bucketIndex)
                 , m_elem(elem)
             {
             }
@@ -145,7 +145,7 @@ namespace Wl
             {
                 if (!m_set || !m_elem)
                 {
-                    m_bucket_index = m_set ? m_set->m_capacity : 0;
+                    m_bucketIndex = m_set ? m_set->m_capacity : 0;
                     m_elem = nullptr;
                     return *this;
                 }
@@ -156,15 +156,15 @@ namespace Wl
                     return *this;
                 }
 
-                ++m_bucket_index;
-                while (m_bucket_index < m_set->m_capacity)
+                ++m_bucketIndex;
+                while (m_bucketIndex < m_set->m_capacity)
                 {
-                    if (m_set->m_buckets[m_bucket_index])
+                    if (m_set->m_buckets[m_bucketIndex])
                     {
-                        m_elem = m_set->m_buckets[m_bucket_index];
+                        m_elem = m_set->m_buckets[m_bucketIndex];
                         return *this;
                     }
-                    ++m_bucket_index;
+                    ++m_bucketIndex;
                 }
 
                 m_elem = nullptr;
@@ -180,7 +180,7 @@ namespace Wl
 
             bool operator==(const ConstIterator& other) const
             {
-                return m_set == other.m_set && m_bucket_index == other.m_bucket_index && m_elem == other.m_elem;
+                return m_set == other.m_set && m_bucketIndex == other.m_bucketIndex && m_elem == other.m_elem;
             }
 
             bool operator!=(const ConstIterator& other) const
@@ -190,7 +190,7 @@ namespace Wl
 
         private:
             const HashSet* m_set;
-            size_t m_bucket_index;
+            usize m_bucketIndex;
             const ElementType* m_elem;
         };
 
@@ -198,7 +198,7 @@ namespace Wl
         using const_iterator = ConstIterator;
 
     public:
-        HashSet(size_t capacity = 8, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
+        HashSet(usize capacity = 8, Allocator& allocator = *MemoryStack::GetCurrentAllocator())
             : m_size(0)
             , m_capacity(capacity)
             , m_buckets(nullptr)
@@ -228,7 +228,7 @@ namespace Wl
         {
             InitializeBuckets();
 
-            for (size_t i = 0; i < other.m_capacity; i++)
+            for (usize i = 0; i < other.m_capacity; i++)
             {
                 ElementType* cur = other.m_buckets[i];
                 ElementType** tail = &m_buckets[i];
@@ -309,8 +309,8 @@ namespace Wl
                 Resize(m_capacity * 2);
             }
 
-            size_t h = Hash(key);
-            size_t idx = static_cast<size_t>(h % m_capacity);
+            usize h = Hash(key);
+            usize idx = static_cast<usize>(h % m_capacity);
 
             ElementType* cur = m_buckets[idx];
             while (cur)
@@ -351,8 +351,8 @@ namespace Wl
                 Resize(m_capacity * 2);
             }
 
-            size_t h = Hash(key);
-            size_t idx = static_cast<size_t>(h % m_capacity);
+            usize h = Hash(key);
+            usize idx = static_cast<usize>(h % m_capacity);
 
             ElementType* cur = m_buckets[idx];
             while (cur)
@@ -371,15 +371,15 @@ namespace Wl
             return iterator(this, idx, ne);
         }
 
-        size_t Remove(const KeyType& key)
+        usize Remove(const KeyType& key)
         {
             if (!m_buckets)
             {
                 return 0;
             }
 
-            size_t h = Hash(key);
-            size_t idx = static_cast<size_t>(h % m_capacity);
+            usize h = Hash(key);
+            usize idx = static_cast<usize>(h % m_capacity);
 
             ElementType* cur = m_buckets[idx];
             ElementType* prev = nullptr;
@@ -420,8 +420,8 @@ namespace Wl
                 return end();
             }
 
-            size_t h = Hash(key);
-            size_t idx = static_cast<size_t>(h % m_capacity);
+            usize h = Hash(key);
+            usize idx = static_cast<usize>(h % m_capacity);
             ElementType* cur = m_buckets[idx];
 
             while (cur)
@@ -443,8 +443,8 @@ namespace Wl
                 return end();
             }
 
-            size_t h = Hash(key);
-            size_t idx = static_cast<size_t>(h % m_capacity);
+            usize h = Hash(key);
+            usize idx = static_cast<usize>(h % m_capacity);
             ElementType* cur = m_buckets[idx];
 
             while (cur)
@@ -481,7 +481,7 @@ namespace Wl
                 return;
             }
 
-            for (size_t i = 0; i < m_capacity; i++)
+            for (usize i = 0; i < m_capacity; i++)
             {
                 ElementType* cur = m_buckets[i];
 
@@ -504,12 +504,12 @@ namespace Wl
             return m_size == 0;
         }
 
-        size_t GetSize() const
+        usize GetSize() const
         {
             return m_size;
         }
 
-        size_t GetCapacity() const
+        usize GetCapacity() const
         {
             return m_capacity;
         }
@@ -521,7 +521,7 @@ namespace Wl
                 return end();
             }
 
-            for (size_t i = 0; i < m_capacity; i++)
+            for (usize i = 0; i < m_capacity; i++)
             {
                 if (m_buckets[i])
                 {
@@ -544,7 +544,7 @@ namespace Wl
                 return end();
             }
 
-            for (size_t i = 0; i < m_capacity; i++)
+            for (usize i = 0; i < m_capacity; i++)
             {
                 if (m_buckets[i])
                 {
@@ -575,7 +575,7 @@ namespace Wl
             Resize(m_capacity);
         }
 
-        void Resize(size_t new_capacity)
+        void Resize(usize new_capacity)
         {
             if (new_capacity == 0)
             {
@@ -585,13 +585,13 @@ namespace Wl
             ElementType** new_buckets = new ElementType*[new_capacity];
             Memory::Write(new_buckets, 0, sizeof(ElementType*) * new_capacity);
 
-            for (size_t i = 0; i < m_capacity; i++)
+            for (usize i = 0; i < m_capacity; i++)
             {
                 ElementType* cur = m_buckets[i];
                 while (cur)
                 {
                     ElementType* next = cur->Next;
-                    size_t idx = static_cast<size_t>(cur->Hash % new_capacity);
+                    usize idx = static_cast<usize>(cur->Hash % new_capacity);
 
                     cur->Next = new_buckets[idx];
                     new_buckets[idx] = cur;
@@ -612,8 +612,8 @@ namespace Wl
             {
                 return nullptr;
             }
-            size_t h = Hash(key);
-            size_t idx = static_cast<size_t>(h % m_capacity);
+            usize h = Hash(key);
+            usize idx = static_cast<usize>(h % m_capacity);
             ElementType* cur = m_buckets[idx];
             while (cur)
             {
@@ -626,21 +626,21 @@ namespace Wl
             return nullptr;
         }
 
-        ElementType* CreateElement(const KeyType& key, size_t h)
+        ElementType* CreateElement(const KeyType& key, usize h)
         {
             ElementType* raw = static_cast<ElementType*>(m_allocator.Allocate(sizeof(ElementType), alignof(ElementType)));
             ElementType* element = WL_PLACEMENT_NEW(raw, ElementType(key, h));
             return element;
         }
 
-        ElementType* CreateElement(KeyType&& key, size_t h)
+        ElementType* CreateElement(KeyType&& key, usize h)
         {
             ElementType* raw = static_cast<ElementType*>(m_allocator.Allocate(sizeof(ElementType), alignof(ElementType)));
             ElementType* element = WL_PLACEMENT_NEW(raw, ElementType(std::move(key), h));
             return element;
         }
 
-        size_t Hash(const KeyType& key) const
+        usize Hash(const KeyType& key) const
         {
             return std::hash<KeyType> {}(key);
         }
@@ -666,8 +666,8 @@ namespace Wl
     private:
         Allocator& m_allocator;
         ElementType** m_buckets;
-        size_t m_size = 0;
-        size_t m_capacity = 1;
+        usize m_size = 0;
+        usize m_capacity = 1;
     };
 
 }// namespace Wl

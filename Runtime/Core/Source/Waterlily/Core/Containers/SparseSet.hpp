@@ -7,11 +7,11 @@
 namespace Wl
 {
 
-    template<typename ElementType, typename KeyIndexType = size_t>
+    template<typename ElementType, typename KeyIndexType = usize>
     class SparseSet
     {
     public:
-        using size_type = size_t;
+        using size_type = usize;
         using value_type = ElementType;
         using reference = ElementType&;
         using const_reference = const ElementType&;
@@ -147,7 +147,7 @@ namespace Wl
         }
 
     public:
-        SparseSet(size_t capacityPage = 100)
+        SparseSet(usize capacityPage = 100)
             : m_capacityPage(capacityPage)
             , m_denseValue(capacityPage)
             , m_sparses(capacityPage)

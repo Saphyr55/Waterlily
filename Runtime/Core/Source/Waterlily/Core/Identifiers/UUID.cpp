@@ -11,7 +11,7 @@ namespace Wl
 
     thread_local static std::random_device rd;
     thread_local static std::mt19937_64 gen(rd());
-    thread_local static std::uniform_int_distribution<uint64_t> dis64;
+    thread_local static std::uniform_int_distribution<uint64> dis64;
 
     UUID_64 UUID_64::Generate()
     {

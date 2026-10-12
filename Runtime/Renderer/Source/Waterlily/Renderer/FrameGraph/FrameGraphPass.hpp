@@ -135,12 +135,12 @@ namespace Wl
             return m_name;
         }
 
-        inline size_t GetIndex() const
+        inline usize GetIndex() const
         {
             return m_index;
         }
 
-        inline size_t GetOrder() const
+        inline usize GetOrder() const
         {
             return m_order;
         }
@@ -219,8 +219,8 @@ namespace Wl
 
         Array<FrameGraphTextureBarrier> m_barriers;
 
-        size_t m_order = 0;
-        size_t m_index = UINT_MAX;
+        usize m_order = 0;
+        usize m_index = UINT_MAX;
 
         bool m_isFrameGraphOutput = false;
     };

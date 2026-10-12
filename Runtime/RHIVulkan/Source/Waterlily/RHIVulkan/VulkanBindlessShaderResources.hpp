@@ -21,12 +21,12 @@ namespace Wl
             return &m_layout;
         }
 
-        virtual uint32_t GetMaxResources() override
+        virtual uint32 GetMaxResources() override
         {
             return m_maxResources;
         }
 
-        virtual void Create(uint32_t max_resources, const Array<RHIShaderResourceBinding>& bindings) override;
+        virtual void Create(uint32 max_resources, const Array<RHIShaderResourceBinding>& bindings) override;
 
         virtual void Destroy() override;
 
@@ -40,7 +40,7 @@ namespace Wl
         VulkanShaderResourceGroup m_srg;
         VulkanShaderResourceGroupLayout m_layout;
         VkDescriptorPool m_pool;
-        uint32_t m_maxResources = 0;
+        uint32 m_maxResources = 0;
     };
 
 }// namespace Wl

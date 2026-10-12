@@ -24,20 +24,20 @@ namespace Wl
 
     struct RHIDeviceProperties
     {
-        size_t MinUniformBufferOffsetAlignment = 0;
-        size_t MinStorageBufferOffsetAlignment = 0;
-        size_t MaxUniformBufferRange = 0;
-        size_t MaxStorageBufferRange = 0;
-        size_t MaxBoundShaderResourceGroup = 0;
-        size_t MaxComputeWorkGroupInvocations = 0;
-        size_t NonCoherentAtomSize = 0;
+        usize MinUniformBufferOffsetAlignment = 0;
+        usize MinStorageBufferOffsetAlignment = 0;
+        usize MaxUniformBufferRange = 0;
+        usize MaxStorageBufferRange = 0;
+        usize MaxBoundShaderResourceGroup = 0;
+        usize MaxComputeWorkGroupInvocations = 0;
+        usize NonCoherentAtomSize = 0;
     };
 
     class RHIDevice
     {
     public:
-        virtual size_t GetCountBufferAllocation() = 0;
-        virtual size_t GetCountTextureAllocation() = 0;
+        virtual usize GetCountBufferAllocation() = 0;
+        virtual usize GetCountTextureAllocation() = 0;
 
         virtual const Matrix4f& GetMatrixCorrection() const = 0;
 
@@ -52,7 +52,7 @@ namespace Wl
         virtual const RHIDeviceProperties& GetDeviceProperties() const = 0;
 
         virtual RHIBindlessShaderResources* CreateBindlessShaderResources(
-                uint32_t maxResources,
+                uint32 maxResources,
                 const Array<RHIShaderResourceBinding>& bindings) = 0;
         virtual void DestroyBindlessShaderResources(RHIBindlessShaderResources* bindless) = 0;
 
@@ -61,7 +61,7 @@ namespace Wl
         virtual void DestroySRGLayout(RHIShaderResourceGroupLayout* layout) = 0;
 
         virtual RHIShaderResourceGroupPool* CreateSRGPool(
-                size_t maxGroups,
+                usize maxGroups,
                 const Array<RHIShaderResourceBinding>& totalBindings) = 0;
         virtual void DestroySRGPool(RHIShaderResourceGroupPool* pool) = 0;
 
@@ -99,8 +99,8 @@ namespace Wl
         virtual RHIComputePipeline* CreateComputePipeline(const RHIComputePipelineDescription& description) = 0;
         virtual void DestroyComputePipeline(RHIComputePipeline* pipeline) = 0;
 
-        virtual RHISwapchain* CreateSwapchain(uint32_t width, uint32_t height, uint32_t imageCount) = 0;
-        virtual void RecreateSwapchain(RHISwapchain* swapchain, uint32_t width, uint32_t height) = 0;
+        virtual RHISwapchain* CreateSwapchain(uint32 width, uint32 height, uint32 imageCount) = 0;
+        virtual void RecreateSwapchain(RHISwapchain* swapchain, uint32 width, uint32 height) = 0;
         virtual void DestroySwapchain(RHISwapchain* swapchain) = 0;
 
         virtual RHIFramebuffer* CreateFramebuffer(const RHIFramebufferDescription& description) = 0;

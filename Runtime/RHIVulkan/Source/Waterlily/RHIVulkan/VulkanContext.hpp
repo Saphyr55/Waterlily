@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Waterlily/Core/Function/FunctionRef.hpp"
+#include "Waterlily/Core/Function/Function.hpp"
 #include "Waterlily/Core/Logging/Trace.hpp"
 #include "Waterlily/Core/Memory/SharedPtr.hpp"
 #include "Waterlily/Core/Platform/DynamicLibrary.hpp"
@@ -25,7 +25,7 @@ namespace Wl
 
     struct VulkanContext
     {
-        const uint32_t VulkanAPIVersion = VK_API_VERSION_1_4;
+        const uint32 VulkanAPIVersion = VK_API_VERSION_1_4;
         SharedPtr<DynamicLibrary> Library;
 
         VkInstance Instance = VK_NULL_HANDLE;
@@ -65,15 +65,15 @@ namespace Wl
     const char* VulkanStringOfResult(VkResult result);
 
     // Queues functions.
-    RHIQueueType VulkanQueueType(VulkanContext& context, uint32_t queueFamilyIndex);
-    Array<uint32_t> VulkanQueryQueueFamilyIndices(
+    RHIQueueType VulkanQueueType(VulkanContext& context, uint32 queueFamilyIndex);
+    Array<uint32> VulkanQueryQueueFamilyIndices(
             VulkanContext& context,
-            FunctionRef<bool(const VkQueueFamilyProperties&, uint32_t)> predicate = [](auto&, uint32_t)
+            FunctionRef<bool(const VkQueueFamilyProperties&, uint32)> predicate = [](auto&, uint32)
     {
         return true;
     });
-    VkQueue VulkanQueryQueue(VulkanContext& context, uint32_t queueFamilyIndex, uint32_t queueIndex);
-    bool VulkanQueuePresentModeIsSupported(VulkanContext& context, uint32_t queueFamilyIndex);
+    VkQueue VulkanQueryQueue(VulkanContext& context, uint32 queueFamilyIndex, uint32 queueIndex);
+    bool VulkanQueuePresentModeIsSupported(VulkanContext& context, uint32 queueFamilyIndex);
 
     // Converts RHIAccessMode to VkSharingMode and vice versa.
     RHISharingMode RHIAccessModeGet(VkSharingMode mode);
@@ -125,12 +125,12 @@ namespace Wl
 
     inline bool RHIBufferUsageHas(RHIBufferUsageFlags value, RHIBufferUsageFlags flag)
     {
-        return (static_cast<uint8_t>(value) & static_cast<uint8_t>(flag)) != 0;
+        return (static_cast<uint8>(value) & static_cast<uint8>(flag)) != 0;
     }
 
     inline bool RHITextureUsageHas(RHITextureUsageFlags value, RHITextureUsageFlags flag)
     {
-        return (static_cast<uint8_t>(value) & static_cast<uint8_t>(flag)) != 0;
+        return (static_cast<uint8>(value) & static_cast<uint8>(flag)) != 0;
     }
 
     inline VkAttachmentLoadOp VulkanLoadOpGet(RHIAttachmentLoadOp op)
@@ -382,12 +382,12 @@ namespace Wl
         return flags;
     }
 
-    inline uint32_t VulkanFindMemoryType(VulkanContext& context, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    inline uint32 VulkanFindMemoryType(VulkanContext& context, uint32 typeFilter, VkMemoryPropertyFlags properties)
     {
         VkPhysicalDeviceMemoryProperties memoryProperties;
         VulkanAPI::vkGetPhysicalDeviceMemoryProperties(context.PhysicalDevice, &memoryProperties);
 
-        for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+        for (uint32 i = 0; i < memoryProperties.memoryTypeCount; i++)
         {
             if (typeFilter & (1 << i) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
             {

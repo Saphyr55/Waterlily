@@ -10,15 +10,15 @@ namespace Wl
 {
 
     constexpr StringRef WLCA_EXTENSION = ".wlca";
-    constexpr uint32_t WLCA_FILE_VERSION = 1;
-    constexpr uint64_t WLCA_FILE_TYPE = Wl::CStringPack64("WLCA    ");
+    constexpr uint32 WLCA_FILE_VERSION = 1;
+    constexpr uint64 WLCA_FILE_TYPE = Wl::CStringPack64("WLCA    ");
 
     class FileSystem;
 
     struct WLCAHeader
     {
-        uint64_t Filetype = WLCA_FILE_TYPE;
-        uint32_t Version = WLCA_FILE_VERSION;
+        uint64 Filetype = WLCA_FILE_TYPE;
+        uint32 Version = WLCA_FILE_VERSION;
         StringID AssetType;
     };
 

@@ -208,16 +208,16 @@ namespace Ludo
 
         packet.InstanceAllocation = frame.StorageAllocator.AllocateArray<RenderInstance>(m_sponzaMesh->GetSubMeshCount());
         RenderInstanceLayout layout = RenderInstance::CreateLayout(frame.StorageAllocator.GetMinAligment());
-        for (size_t i = 0; i < m_sponzaMesh->GetSubMeshCount(); i++)
+        for (usize i = 0; i < m_sponzaMesh->GetSubMeshCount(); i++)
         {
             const RenderSubMesh& renderSubMesh = m_sponzaMesh->GetSubMeshes()[i];
-            layout.UpdateData(packet.InstanceAllocation.Get<uint8_t>() + i * layout.Stride, renderSubMesh);
+            layout.UpdateData(packet.InstanceAllocation.Get<uint8>() + i * layout.Stride, renderSubMesh);
         }
 
         // Light allocation
         auto lightEntityView = m_entityRegistry.View<TransformComponent, LightComponent>();
         packet.PointLightsAllocation = frame.UniformAllocator.AllocateArray<PointLight>(lightEntityView.GetSize());
-        size_t i = 0;
+        usize i = 0;
         for (const auto [entity, transform, light]: lightEntityView)
         {
             packet.PointLightsAllocation.Get<PointLight>()[i++] = PointLight(transform.Position, 0.0f, light.Color, light.Intensity);
@@ -238,8 +238,8 @@ namespace Ludo
         RenderAllocation directionalLightViewAllocation = frame.UniformAllocator.Allocate<RenderView>();
         frame.UniformAllocator.UpdateData(directionalLightViewAllocation, directionalLightView);
 
-        packet.CountersAllocation = frame.UniformAllocator.Allocate<uint32_t>();
-        packet.CountersAllocation.Update<uint32_t>(lightEntityView.GetSize());
+        packet.CountersAllocation = frame.UniformAllocator.Allocate<uint32>();
+        packet.CountersAllocation.Update<uint32>(lightEntityView.GetSize());
 
         Viewport viewport(0.0f, 0.0f, width, height, 0.0f, 1.0f);
         Rect2D scissor(0.0f, 0.0f, width, height);

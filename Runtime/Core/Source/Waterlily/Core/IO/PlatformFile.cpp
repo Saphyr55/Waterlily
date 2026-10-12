@@ -5,12 +5,12 @@
 namespace Wl
 {
 
-    int64_t PlatformFile::Tell()
+    int64 PlatformFile::Tell()
     {
         return ftell(m_stream);
     }
 
-    bool PlatformFile::Seek(int64_t position)
+    bool PlatformFile::Seek(int64 position)
     {
         if (fseek(m_stream, position, SEEK_SET))
         {
@@ -27,23 +27,23 @@ namespace Wl
         return true;
     }
 
-    size_t PlatformFile::GetSize()
+    usize PlatformFile::GetSize()
     {
-        int64_t current = Tell();
+        int64 current = Tell();
         fseek(m_stream, 0, SEEK_END);
-        int64_t end = ftell(m_stream);
+        int64 end = ftell(m_stream);
         Seek(current);
-        return static_cast<size_t>(end);
+        return static_cast<usize>(end);
     }
 
-    bool PlatformFile::Write(const uint8_t* buffer, size_t nbytes)
+    bool PlatformFile::Write(const uint8* buffer, usize nbytes)
     {
         if (!m_stream)
         {
             return false;
         }
 
-        size_t bytesWrite = fwrite(buffer, sizeof(uint8_t), nbytes, m_stream);
+        usize bytesWrite = fwrite(buffer, sizeof(uint8), nbytes, m_stream);
         if (bytesWrite != nbytes)
         {
             return false;
@@ -54,14 +54,14 @@ namespace Wl
         return true;
     }
 
-    bool PlatformFile::Read(uint8_t* destination, size_t nbytes)
+    bool PlatformFile::Read(uint8* destination, usize nbytes)
     {
         if (!destination || nbytes == 0)
         {
             return false;
         }
 
-        size_t bytesRead = fread(destination, sizeof(uint8_t), nbytes, m_stream);
+        usize bytesRead = fread(destination, sizeof(uint8), nbytes, m_stream);
         if (bytesRead != nbytes)
         {
             return false;
@@ -72,7 +72,7 @@ namespace Wl
         return true;
     }
 
-    bool PlatformFile::ReadAllBytes(Allocator* allocator, uint8_t** outDestination, size_t* outSize)
+    bool PlatformFile::ReadAllBytes(Allocator* allocator, uint8** outDestination, usize* outSize)
     {
         *outSize = 0;
         *outDestination = nullptr;
@@ -83,7 +83,7 @@ namespace Wl
         }
 
         // Save the current position.
-        int64_t originalPos = ftell(m_stream);
+        int64 originalPos = ftell(m_stream);
         if (originalPos == -1L)
         {
             return false;
@@ -95,7 +95,7 @@ namespace Wl
             return false;
         }
 
-        int64_t fileSize = ftell(m_stream);
+        int64 fileSize = ftell(m_stream);
         if (fileSize == -1L)
         {
             return false;
@@ -108,12 +108,12 @@ namespace Wl
         }
 
         // Allocate buffer.
-        size_t sizeBytes = static_cast<size_t>(fileSize);
+        usize sizeBytes = static_cast<usize>(fileSize);
 
         *outSize = sizeBytes;
-        *outDestination = static_cast<uint8_t*>(allocator->Allocate(sizeBytes, 1));
+        *outDestination = static_cast<uint8*>(allocator->Allocate(sizeBytes, 1));
 
-        size_t bytesRead = fread(*outDestination, sizeof(uint8_t), *outSize, m_stream);
+        usize bytesRead = fread(*outDestination, sizeof(uint8), *outSize, m_stream);
         if (bytesRead != fileSize)
         {
             return false;// Read error or incomplete read.
@@ -125,7 +125,7 @@ namespace Wl
         return true;
     }
 
-    Array<uint8_t> PlatformFile::ReadAllBytes()
+    Array<uint8> PlatformFile::ReadAllBytes()
     {
         if (!m_stream)
         {
@@ -133,7 +133,7 @@ namespace Wl
         }
 
         // Save the current position.
-        int64_t originalPos = ftell(m_stream);
+        int64 originalPos = ftell(m_stream);
         if (originalPos == -1L)
         {
             return {};
@@ -145,7 +145,7 @@ namespace Wl
             return {};
         }
 
-        int64_t fileSize = ftell(m_stream);
+        int64 fileSize = ftell(m_stream);
         if (fileSize == -1L)
         {
             return {};
@@ -158,9 +158,9 @@ namespace Wl
         }
 
         // Allocate buffer.
-        Array<uint8_t> buffer;
-        buffer.Resize(static_cast<size_t>(fileSize));
-        size_t bytesRead = fread(buffer.GetData(), sizeof(uint8_t), buffer.GetSize(), m_stream);
+        Array<uint8> buffer;
+        buffer.Resize(static_cast<usize>(fileSize));
+        usize bytesRead = fread(buffer.GetData(), sizeof(uint8), buffer.GetSize(), m_stream);
         if (bytesRead != buffer.GetSize())
         {
             return {};// Read error or incomplete read.

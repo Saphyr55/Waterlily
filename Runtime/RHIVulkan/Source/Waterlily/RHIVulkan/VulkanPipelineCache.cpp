@@ -12,8 +12,8 @@ namespace Wl
     {
         m_cacheStream = stream;
 
-        uint64_t size = stream->GetSize();
-        Array<uint8_t> data;
+        uint64 size = stream->GetSize();
+        Array<uint8> data;
         data.Resize(size);
         stream->Read(data.data(), data.size());
 

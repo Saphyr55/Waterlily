@@ -25,7 +25,7 @@ namespace Wl
                            LogSeverity severity,
                            const char* channel,
                            const char* file,
-                           uint32_t line,
+                           uint32 line,
                            const char* message) = 0;
     };
 
@@ -43,7 +43,7 @@ namespace Wl
         static void Log(LogSeverity severity,
                         const char* channel,
                         const char* file,
-                        uint32_t line,
+                        uint32 line,
                         const char* format,
                         ...);
 
